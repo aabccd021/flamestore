@@ -1,0 +1,32 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "node",
+            "runtimeArgs": [
+                "--nolazy",
+                "-r",
+                "ts-node/register/transpile-only"
+            ],
+            "args": [
+                "src/index.ts",
+                "-i",
+                "sample/sample.json",
+                "--ro",
+                "firebase/functions/firestore.rules",
+                "--to",
+                "firebase/functions/src/flamestore/triggers.ts",
+            ],
+            "cwd": "${workspaceRoot}",
+            "outputCapture": "std",
+            "internalConsoleOptions": "openOnSessionStart",
+            "skipFiles": [
+                "<node_internals>/**",
+                "node_modules/**"
+            ]
+        }
+    ]
+}

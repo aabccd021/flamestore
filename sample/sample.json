@@ -1,0 +1,129 @@
+{
+  "collections": {
+    "users": {
+      "rules": {
+        "get": "all",
+        "list": "authenticated",
+        "create": "owner",
+        "update": "owner"
+      },
+      "fields": {
+        "uid": {
+          "type": {
+            "string": {
+              "isOwnerUid": true
+            }
+          },
+          "isKey": true
+        },
+        "userName": {
+          "type": {
+            "string": {
+              "minLength": 1,
+              "maxLength": 15
+            }
+          },
+          "isUnique": true
+        },
+        "bio": {
+          "type": {
+            "string": {
+              "minLength": 1,
+              "maxLength": 160
+            }
+          },
+          "isOptional": true
+        },
+        "tweetsCount": {
+          "count": {
+            "collection": "tweets",
+            "reference": "user"
+          }
+        }
+      }
+    },
+    "tweets": {
+      "rules": {
+        "get": "all",
+        "list": "all",
+        "create": "owner",
+        "update": "owner",
+        "delete": "owner"
+      },
+      "fields": {
+        "user": {
+          "type": {
+            "path": {
+              "collection": "users",
+              "isOwnerDocRef": true
+            }
+          },
+          "isKey": true
+        },
+        "userName": {
+          "syncFrom": {
+            "field": "userName",
+            "reference": "user"
+          }
+        },
+        "tweetText": {
+          "type": {
+            "string": {
+              "minLength": 1,
+              "maxLength": 280
+            }
+          }
+        },
+        "likesSum": {
+          "sum": {
+            "collection": "likes",
+            "field": "likeValue",
+            "reference": "tweet"
+          }
+        },
+        "creationTime": {
+          "type": {
+            "timestamp": {
+              "serverTimestamp": true
+            }
+          }
+        }
+      }
+    },
+    "likes": {
+      "rules": {
+        "get": "owner",
+        "create": "owner",
+        "update": "owner",
+        "delete": "owner"
+      },
+      "fields": {
+        "likeValue": {
+          "type": {
+            "int": {
+              "max": 5,
+              "min": 0
+            }
+          }
+        },
+        "user": {
+          "isKey": true,
+          "type": {
+            "path": {
+              "collection": "users",
+              "isOwnerDocRef": true
+            }
+          }
+        },
+        "tweet": {
+          "type": {
+            "path": {
+              "collection": "tweets"
+            }
+          },
+          "isKey": true
+        }
+      }
+    }
+  }
+}

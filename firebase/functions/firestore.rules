@@ -1,0 +1,145 @@
+rules_version = '2';
+service cloud.firestore {
+
+  match /databases/{database}/documents {
+    function isAuthenticated(){
+      return request.auth != null;
+    }
+    function reqData(){
+      return request.resource.data;
+    }
+    function resData(){
+      return resource.data;
+    }
+    function isNotDeleted(fieldName){
+      return fieldName in reqData() && fieldName in resData();
+    }
+    function updatedKeys(){
+      return reqData().diff(resData()).affectedKeys();
+    }
+    match /users/{documentId} {
+      function isReqOwner(){
+        return request.auth.uid == reqData().uid;
+      }
+      function isResOwner(){
+        return request.auth.uid == resData().uid;
+      }
+      function uidIsValid(){
+        let uid = reqData().uid;
+        return uid is string;
+      }
+      function userNameIsValid(){
+        let userName = reqData().userName;
+        return userName is string && userName.size() <= 15 && userName.size() >= 1;
+      }
+      function bioIsValid(){
+        let bio = reqData().bio;
+        return bio is string && bio.size() <= 160 && bio.size() >= 1;
+      }
+      function tweetsCountIsValid(){
+        let tweetsCount = reqData().tweetsCount;
+        return tweetsCount == 0;
+      }
+      function isCreateValid(){
+        return reqData().keys().hasOnly(['uid','userName','bio','tweetsCount'])
+          && uidIsValid()
+          && userNameIsValid()
+          && (!('bio' in reqData()) || bioIsValid())
+          && tweetsCountIsValid();
+      }
+      function isUpdateValid(){
+        return updatedKeys().hasOnly(['userName','bio'])
+          && (!('userName' in reqData()) || userNameIsValid())
+          && isNotDeleted('userName')
+          && (!('bio' in reqData()) || bioIsValid());
+      }
+      allow get: if true;
+      allow list: if isAuthenticated();
+      allow create: if isReqOwner() && isCreateValid();
+      allow update: if isReqOwner() && isResOwner() && isUpdateValid();
+      allow delete: if false;
+    }
+    match /tweets/{documentId} {
+      function isReqOwner(){
+        return request.auth.uid == get(reqData().user).data.uid;
+      }
+      function isResOwner(){
+        return request.auth.uid == get(resData().user).data.uid;
+      }
+      function userIsValid(){
+        let user = reqData().user;
+        return user is path && exists(user);
+      }
+      function userNameIsValid(){
+        let userName = reqData().userName;
+        return userName == get(reqData().user).data.userName;
+      }
+      function tweetTextIsValid(){
+        let tweetText = reqData().tweetText;
+        return tweetText is string && tweetText.size() <= 280 && tweetText.size() >= 1;
+      }
+      function likesSumIsValid(){
+        let likesSum = reqData().likesSum;
+        return likesSum == 0;
+      }
+      function creationTimeIsValid(){
+        let creationTime = reqData().creationTime;
+        return creationTime is timestamp && creationTime == request.time;
+      }
+      function isCreateValid(){
+        return reqData().keys().hasOnly(['user','userName','tweetText','likesSum','creationTime'])
+          && userIsValid()
+          && userNameIsValid()
+          && tweetTextIsValid()
+          && likesSumIsValid()
+          && creationTimeIsValid();
+      }
+      function isUpdateValid(){
+        return updatedKeys().hasOnly(['tweetText'])
+          && (!('tweetText' in reqData()) || tweetTextIsValid())
+          && isNotDeleted('tweetText');
+      }
+      allow get: if true;
+      allow list: if true;
+      allow create: if isReqOwner() && isCreateValid();
+      allow update: if isReqOwner() && isResOwner() && isUpdateValid();
+      allow delete: if isResOwner();
+    }
+    match /likes/{documentId} {
+      function isReqOwner(){
+        return request.auth.uid == get(reqData().user).data.uid;
+      }
+      function isResOwner(){
+        return request.auth.uid == get(resData().user).data.uid;
+      }
+      function likeValueIsValid(){
+        let likeValue = reqData().likeValue;
+        return likeValue is int && likeValue >= 0 && likeValue <= 5;
+      }
+      function userIsValid(){
+        let user = reqData().user;
+        return user is path && exists(user);
+      }
+      function tweetIsValid(){
+        let tweet = reqData().tweet;
+        return tweet is path && exists(tweet);
+      }
+      function isCreateValid(){
+        return reqData().keys().hasOnly(['likeValue','user','tweet'])
+          && likeValueIsValid()
+          && userIsValid()
+          && tweetIsValid();
+      }
+      function isUpdateValid(){
+        return updatedKeys().hasOnly(['likeValue'])
+          && (!('likeValue' in reqData()) || likeValueIsValid())
+          && isNotDeleted('likeValue');
+      }
+      allow get: if isResOwner();
+      allow list: if false;
+      allow create: if isReqOwner() && isCreateValid();
+      allow update: if isReqOwner() && isResOwner() && isUpdateValid();
+      allow delete: if isResOwner();
+    }
+  }
+}
