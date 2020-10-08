@@ -2,7 +2,8 @@ import { CollectionContent, FieldContent, FieldType, FieldTypes, Rule, RuleType,
 import { getColNameToSyncFrom } from "../../utils/sync-from-util";
 
 export default function collectionRuleTemplate(collectionName: string, collection: CollectionContent, schema: Schema) {
-  const isOwnerFunction = getIsOwnerFunction(collection, schema);
+  const extractDocId = getExtractDocumentId(collection, schema);
+  const isOwnerFunction = getIsOwnerFunction(collectionName, collection, schema);
   let fieldIsValidFunctions = '';
   for (const [fieldName, field] of Object.entries(collection.fields)) {
     fieldIsValidFunctions += getIsFieldsValidFunction(fieldName, field);
@@ -10,13 +11,27 @@ export default function collectionRuleTemplate(collectionName: string, collectio
   const isCreateValidFunction = collection.rules.create ? getIsCreateValidFunction(collection) : '';
   const isUpdateValidFunction = collection.rules.update ? getIsUpdateValidFunction(collection) : '';
   return `    match /${collectionName}/{documentId} {
-${isOwnerFunction}${fieldIsValidFunctions}${isCreateValidFunction}${isUpdateValidFunction}
+${extractDocId}${isOwnerFunction}${fieldIsValidFunctions}${isCreateValidFunction}${isUpdateValidFunction}
       allow get: if ${getRule(collection, RuleType.GET)};
       allow list: if ${getRule(collection, RuleType.LIST)};
       allow create: if ${getRule(collection, RuleType.CREATE)};
       allow update: if ${getRule(collection, RuleType.UPDATE)};
       allow delete: if ${getRule(collection, RuleType.DELETE)};
     }`;
+}
+
+function getExtractDocumentId(collection: CollectionContent, schema: Schema) {
+  let content = '';
+  let counter = 0;
+  for (const [fieldName, field] of Object.entries(collection.fields)) {
+    if (field.isKey) {
+      content += `      function ${fieldName}OfDocumentId(){
+        return documentId.split('_')[${counter}];
+      }\n`;
+      counter++;
+    }
+  }
+  return content;
 }
 
 function getRule(collection: CollectionContent, ruleType: RuleType) {
@@ -28,7 +43,6 @@ function getRule(collection: CollectionContent, ruleType: RuleType) {
     if (rule === Rule.NONE) {
       return 'false';
     }
-    // TODO: authenticated trigger
     if (rule === Rule.OWNER || rule === Rule.AUTHENTICATED) {
       if ([RuleType.GET, RuleType.LIST, RuleType.DELETE].includes(ruleType)) {
         let userPermission;
@@ -99,14 +113,16 @@ function getIsUpdateValidFunction(collection: CollectionContent) {
       }`
 }
 
-function getIsOwnerFunction(collection: CollectionContent, schema: Schema) {
+function getIsOwnerFunction(collectionName: string, collection: CollectionContent, schema: Schema) {
   for (const [fieldName, field] of Object.entries(collection.fields)) {
+    const isDocExists = `!(exists(/databases/$(database)/documents/${collectionName}/$(documentId)))`;
     if (field.type?.string?.isOwnerUid) {
       return `      function isReqOwner(){
         return request.auth.uid == reqData().${fieldName};
       }
       function isResOwner(){
-        return request.auth.uid == resData().${fieldName};
+        return ${isDocExists}
+          || request.auth.uid == resData().${fieldName};
       }`
     }
     if (field.type?.path?.isOwnerDocRef) {
@@ -118,7 +134,8 @@ function getIsOwnerFunction(collection: CollectionContent, schema: Schema) {
         return request.auth.uid == get(reqData().${fieldName}).data.${userUidFieldName};
       }
       function isResOwner(){
-        return request.auth.uid == get(resData().${fieldName}).data.${userUidFieldName};
+        return ${isDocExists}
+          || request.auth.uid == get(resData().${fieldName}).data.${userUidFieldName};
       }`
         }
       }
@@ -136,29 +153,35 @@ function getIsFieldsValidFunction(
     additionalRule += `${fieldName} is ${getRuleTypeStringOfField(field)}`;
     if (field.type?.string) {
       if (field.type.string?.maxLength || field.type.string?.maxLength === 0) {
-        additionalRule += ` && ${fieldName}.size() <= ${field.type.string.maxLength}`
+        additionalRule += ` && ${fieldName}.size() <= ${field.type.string.maxLength}`;
       }
       if (field.type.string?.minLength || field.type.string?.minLength === 0) {
-        additionalRule += ` && ${fieldName}.size() >= ${field.type.string.minLength}`
+        additionalRule += ` && ${fieldName}.size() >= ${field.type.string.minLength}`;
+      }
+      if (field.isKey) {
+        additionalRule += ` && ${fieldName} == ${fieldName}OfDocumentId()`;
       }
     } else if (field.type?.int) {
       if (field.type.int?.min || field.type.int?.min === 0) {
-        additionalRule += ` && ${fieldName} >= ${field.type.int.min}`
+        additionalRule += ` && ${fieldName} >= ${field.type.int.min}`;
       }
       if (field.type.int?.max || field.type.int?.max === 0) {
-        additionalRule += ` && ${fieldName} <= ${field.type.int.max}`
+        additionalRule += ` && ${fieldName} <= ${field.type.int.max}`;
       }
     } else if (field.type?.path) {
-      additionalRule += ` && exists(${fieldName})`
+      additionalRule += ` && exists(${fieldName})`;
+      if (field.isKey) {
+        additionalRule += ` && get(${fieldName}).id == ${fieldName}OfDocumentId()`;
+      }
     } else if (field.type?.timestamp) {
       if (field.type.timestamp.serverTimestamp) {
-        additionalRule += ` && ${fieldName} == request.time`
+        additionalRule += ` && ${fieldName} == request.time`;
       }
     }
   } else if (field.sum || field.count) {
-    additionalRule += `${fieldName} == 0`
+    additionalRule += `${fieldName} == 0`;
   } else if (field.syncFrom) {
-    additionalRule += `${fieldName} == get(reqData().${field.syncFrom.reference}).data.${field.syncFrom.field}`
+    additionalRule += `${fieldName} == get(reqData().${field.syncFrom.reference}).data.${field.syncFrom.field}`;
   }
   if (additionalRule !== '') {
     return `

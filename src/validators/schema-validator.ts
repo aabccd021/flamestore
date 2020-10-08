@@ -125,6 +125,7 @@ function validateCollectionStringField(stringField: any, stackTrace: string) {
   if (stringField.isOwnerUid) {
     validateTypeOfPrimitive(stringField.isOwnerUid, 'boolean', `${stackTrace}.isOwnerUid`);
   }
+  // TODO: maxLength >= minLength
   if (stringField.minLength) {
     validateTypeOfPrimitive(stringField.minLength, 'int', `${stackTrace}.minLength`);
   }
@@ -165,6 +166,7 @@ function validateCollectionIntField(intField: any, stackTrace: string) {
     optionalKeys: ['min', 'max'],
     stackTrace
   });
+  // TODO: maxLength >= deleteDocIf >= minLength
   if (intField.min) {
     validateTypeOfPrimitive(intField.min, 'int', `${stackTrace}.min`);
   }

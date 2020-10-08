@@ -18,15 +18,19 @@ service cloud.firestore {
       return reqData().diff(resData()).affectedKeys();
     }
     match /users/{documentId} {
+      function uidOfDocumentId(){
+        return documentId.split('_')[0];
+      }
       function isReqOwner(){
         return request.auth.uid == reqData().uid;
       }
       function isResOwner(){
-        return request.auth.uid == resData().uid;
+        return !(exists(/databases/$(database)/documents/users/$(documentId)))
+          || request.auth.uid == resData().uid;
       }
       function uidIsValid(){
         let uid = reqData().uid;
-        return uid is string;
+        return uid is string && uid == uidOfDocumentId();
       }
       function userNameIsValid(){
         let userName = reqData().userName;
@@ -64,7 +68,8 @@ service cloud.firestore {
         return request.auth.uid == get(reqData().user).data.uid;
       }
       function isResOwner(){
-        return request.auth.uid == get(resData().user).data.uid;
+        return !(exists(/databases/$(database)/documents/tweets/$(documentId)))
+          || request.auth.uid == get(resData().user).data.uid;
       }
       function userIsValid(){
         let user = reqData().user;
@@ -95,7 +100,9 @@ service cloud.firestore {
           && creationTimeIsValid();
       }
       function isUpdateValid(){
-        return updatedKeys().hasOnly(['tweetText'])
+        return updatedKeys().hasOnly(['user','tweetText'])
+          && (!('user' in reqData()) || userIsValid())
+          && isNotDeleted('user')
           && (!('tweetText' in reqData()) || tweetTextIsValid())
           && isNotDeleted('tweetText');
       }
@@ -106,11 +113,18 @@ service cloud.firestore {
       allow delete: if isResOwner();
     }
     match /likes/{documentId} {
+      function userOfDocumentId(){
+        return documentId.split('_')[0];
+      }
+      function tweetOfDocumentId(){
+        return documentId.split('_')[1];
+      }
       function isReqOwner(){
         return request.auth.uid == get(reqData().user).data.uid;
       }
       function isResOwner(){
-        return request.auth.uid == get(resData().user).data.uid;
+        return !(exists(/databases/$(database)/documents/likes/$(documentId)))
+          || request.auth.uid == get(resData().user).data.uid;
       }
       function likeValueIsValid(){
         let likeValue = reqData().likeValue;
@@ -118,11 +132,11 @@ service cloud.firestore {
       }
       function userIsValid(){
         let user = reqData().user;
-        return user is path && exists(user);
+        return user is path && exists(user) && get(user).id == userOfDocumentId();
       }
       function tweetIsValid(){
         let tweet = reqData().tweet;
-        return tweet is path && exists(tweet);
+        return tweet is path && exists(tweet) && get(tweet).id == tweetOfDocumentId();
       }
       function isCreateValid(){
         return reqData().keys().hasOnly(['likeValue','user','tweet'])

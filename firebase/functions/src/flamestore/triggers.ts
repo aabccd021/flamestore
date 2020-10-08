@@ -74,14 +74,6 @@ export const onTweetCreate = functions.firestore
   .document("/tweets/{documentId}")
   .onCreate(async (snapshot, context) => {
     const data = snapshot.data() as Tweet;
-    const keyDuplicates = await firestore()
-      .collection("tweets")
-      .where("user", "==", data.user)
-      .get();
-    if (keyDuplicates.docs.length > 1) {
-      warn("Duplicate key created on tweets", { snapshot, context });
-      return snapshot.ref.delete();
-    }
     const userData: { [fieldName: string]: any } = {};
     userData.tweetsCount = increment(1);
     log(`Update ${data.user.id}`, { updateData: userData });

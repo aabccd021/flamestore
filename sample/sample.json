@@ -57,8 +57,7 @@
               "collection": "users",
               "isOwnerDocRef": true
             }
-          },
-          "isKey": true
+          }
         },
         "userName": {
           "syncFrom": {
@@ -116,12 +115,12 @@
           }
         },
         "tweet": {
+          "isKey": true,
           "type": {
             "path": {
               "collection": "tweets"
             }
-          },
-          "isKey": true
+          }
         }
       }
     }

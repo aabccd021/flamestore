@@ -1,6 +1,6 @@
 {
   "name": "flamestore",
-  "version": "1.0.31",
+  "version": "1.0.30",
   "description": "firestore trigger generator",
   "main": "lib/index.js",
   "dependencies": {
@@ -32,10 +32,10 @@
     "test": "mocha --exit -r ts-node/register tests/**/*.ts",
     "build": "tsc",
     "build:check": "tsc --noEmit",
-    "publish": "npm version patch && npm run build && npm publish",
-    "flamestore2": "npm run build && node lib/index.js -i sample/flamestore2.json -o temp/functions/src/flamestore"
+    "publish": "npm version patch && npm publish",
+    "flamestore2": "npm run build && node lib/index.js -i sample/sample.json --ro firebase/functions/firestore.rules --to firebase/functions/src/flamestore/triggers.ts"
   },
-  "prepublish": "tsc",
+  "prepublish": "npm run build",
   "publishConfig": {
     "access": "public"
   },
