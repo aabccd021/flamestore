@@ -128,7 +128,7 @@ service cloud.firestore {
       }
       function likeValueIsValid(){
         let likeValue = reqData().likeValue;
-        return likeValue is int && likeValue >= 0 && likeValue <= 5;
+        return likeValue is int && likeValue >= 0 && likeValue <= 5 && likeValue != 0;
       }
       function userIsValid(){
         let user = reqData().user;

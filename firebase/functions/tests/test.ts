@@ -2,6 +2,7 @@ import * as firebase from '@firebase/testing';
 import * as fs from 'fs';
 
 // TODO: check document ID extract
+// TODO: check shouldBeDeleted
 const projectId = "lawkwk-id";
 const rules = fs.readFileSync('firestore.rules', 'utf8');
 const myId = "myId";
