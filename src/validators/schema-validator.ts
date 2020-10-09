@@ -125,12 +125,14 @@ function validateCollectionStringField(stringField: any, stackTrace: string) {
   if (stringField.isOwnerUid) {
     validateTypeOfPrimitive(stringField.isOwnerUid, 'boolean', `${stackTrace}.isOwnerUid`);
   }
-  // TODO: maxLength >= minLength
   if (stringField.minLength) {
     validateTypeOfPrimitive(stringField.minLength, 'int', `${stackTrace}.minLength`);
   }
   if (stringField.maxLength) {
     validateTypeOfPrimitive(stringField.maxLength, 'int', `${stackTrace}.maxLength`);
+  }
+  if (stringField.maxLength && stringField.minLength && stringField.maxLength < stringField.minLength) {
+    throw Error(`Invalid Value: maxLength on ${stackTrace}. maxLength can't be smaller that minLength.`)
   }
 }
 
@@ -174,6 +176,9 @@ function validateCollectionIntField(intField: any, stackTrace: string) {
   }
   if (intField.deleteDocWhen) {
     validateTypeOfPrimitive(intField.deleteDocWhen, 'int', `${stackTrace}.deleteDocWhen`);
+  }
+  if (intField.min && intField.max && intField.max < intField.min) {
+    throw Error(`Invalid Value: max on ${stackTrace}. max can't be smaller that min.`)
   }
 }
 
