@@ -152,21 +152,31 @@ function getIsFieldsValidFunction(
   if (field.type) {
     additionalRule += `${fieldName} is ${getRuleTypeStringOfField(field)}`;
     if (field.type?.string) {
-      if (field.type.string?.maxLength || field.type.string?.maxLength === 0) {
-        additionalRule += ` && ${fieldName}.size() <= ${field.type.string.maxLength}`;
+      const maxLength = field.type.string?.maxLength;
+      if (maxLength || maxLength === 0) {
+        additionalRule += ` && ${fieldName}.size() <= ${maxLength}`;
       }
-      if (field.type.string?.minLength || field.type.string?.minLength === 0) {
-        additionalRule += ` && ${fieldName}.size() >= ${field.type.string.minLength}`;
+      const minLength = field.type.string?.minLength;
+      if (minLength || minLength === 0) {
+        additionalRule += ` && ${fieldName}.size() >= ${minLength}`;
       }
       if (field.isKey) {
         additionalRule += ` && ${fieldName} == ${fieldName}OfDocumentId()`;
       }
     } else if (field.type?.int) {
-      if (field.type.int?.min || field.type.int?.min === 0) {
-        additionalRule += ` && ${fieldName} >= ${field.type.int.min}`;
+      const min = field.type.int?.min;
+      if (min || min === 0) {
+        additionalRule += ` && ${fieldName} >= ${min}`;
       }
-      if (field.type.int?.max || field.type.int?.max === 0) {
+
+      const max = field.type.int?.max;
+      if (max || max === 0) {
         additionalRule += ` && ${fieldName} <= ${field.type.int.max}`;
+      }
+
+      const deleteDocWhen = field.type.int?.deleteDocWhen;
+      if (deleteDocWhen || deleteDocWhen === 0) {
+        additionalRule += ` && ${fieldName} != ${deleteDocWhen}`;
       }
     } else if (field.type?.path) {
       additionalRule += ` && exists(${fieldName})`;

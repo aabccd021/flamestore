@@ -163,15 +163,17 @@ function validateCollectionIntField(intField: any, stackTrace: string) {
   validateKeys({
     object: intField,
     requiredKeys: [],
-    optionalKeys: ['min', 'max'],
+    optionalKeys: ['min', 'max', 'deleteDocWhen'],
     stackTrace
   });
-  // TODO: maxLength >= deleteDocIf >= minLength
   if (intField.min) {
     validateTypeOfPrimitive(intField.min, 'int', `${stackTrace}.min`);
   }
   if (intField.max) {
     validateTypeOfPrimitive(intField.max, 'int', `${stackTrace}.max`);
+  }
+  if (intField.deleteDocWhen) {
+    validateTypeOfPrimitive(intField.deleteDocWhen, 'int', `${stackTrace}.deleteDocWhen`);
   }
 }
 

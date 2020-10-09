@@ -101,7 +101,8 @@
           "type": {
             "int": {
               "max": 5,
-              "min": 0
+              "min": 0,
+              "deleteDocWhen": 0
             }
           }
         },

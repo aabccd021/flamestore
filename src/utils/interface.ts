@@ -91,6 +91,7 @@ export interface ReferenceField {
 export interface IntField {
   min?: number,
   max?: number,
+  deleteDocWhen?: number,
 }
 
 export enum FieldTypes {
