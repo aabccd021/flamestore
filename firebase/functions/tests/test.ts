@@ -1,8 +1,7 @@
 import * as firebase from '@firebase/testing';
 import * as fs from 'fs';
 
-// TODO: check document ID extract
-// TODO: check shouldBeDeleted
+// TODO: test document ID extraction
 const projectId = "lawkwk-id";
 const rules = fs.readFileSync('firestore.rules', 'utf8');
 const myId = "myId";
@@ -1091,16 +1090,29 @@ describe("Twitter Security Rule", () => {
               user: myUserDoc, tweet: myTweetDoc, likeValue: 6
             }));
           });
-          it("Can create like document if likeValue is 0", async () => {
+          it("Can't create like document if likeValue is 0", async () => {
             const tweetId = await prepareThirdPersonTweetData();
             const myUserId = await prepareMyUserData();
 
             const db = getFirestore(myAuth);
             const myUserDoc = db.collection("users").doc(myUserId);
             const myTweetDoc = db.collection("tweets").doc(tweetId);
-            await firebase.assertSucceeds(db.collection("likes").doc(`${myUserId}_${tweetId}`).set({
-              user: myUserDoc, tweet: myTweetDoc, likeValue: 0
-            }));
+            await firebase.assertFails(
+              db.collection("likes").doc(`${myUserId}_${tweetId}`).set({
+                user: myUserDoc, tweet: myTweetDoc, likeValue: 0,
+              }));
+          });
+          it("Can create like document if likeValue is 1", async () => {
+            const tweetId = await prepareThirdPersonTweetData();
+            const myUserId = await prepareMyUserData();
+
+            const db = getFirestore(myAuth);
+            const myUserDoc = db.collection("users").doc(myUserId);
+            const myTweetDoc = db.collection("tweets").doc(tweetId);
+            await firebase.assertSucceeds(
+              db.collection("likes").doc(`${myUserId}_${tweetId}`).set({
+                user: myUserDoc, tweet: myTweetDoc, likeValue: 1,
+              }));
           });
           it("Can't create like document if likeValue is -1", async () => {
             const tweetId = await prepareThirdPersonTweetData();
@@ -1206,12 +1218,19 @@ describe("Twitter Security Rule", () => {
             const myLikeDoc = db.collection("likes").doc(likeId);
             await firebase.assertFails(myLikeDoc.update({ likeValue: 6 }));
           });
-          it("Can update likeValue to 0", async () => {
+          it("Can update likeValue to 1", async () => {
             const likeId = await prepareMyLikeData();
 
             const db = getFirestore(myAuth);
             const myLikeDoc = db.collection("likes").doc(likeId);
-            await firebase.assertSucceeds(myLikeDoc.update({ likeValue: 0 }));
+            await firebase.assertSucceeds(myLikeDoc.update({ likeValue: 1 }));
+          });
+          it("Can't update likeValue to 0", async () => {
+            const likeId = await prepareMyLikeData();
+
+            const db = getFirestore(myAuth);
+            const myLikeDoc = db.collection("likes").doc(likeId);
+            await firebase.assertFails(myLikeDoc.update({ likeValue: 0 }));
           });
           it("Can't update likeValue to -1", async () => {
             const likeId = await prepareMyLikeData();
