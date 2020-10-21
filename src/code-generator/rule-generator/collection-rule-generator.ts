@@ -1,5 +1,4 @@
 import { CollectionContent, FieldContent, FieldType, FieldTypes, Rule, RuleType, Schema } from "../../utils/interface";
-import { getColNameToSyncFrom } from "../../utils/sync-from-util";
 
 export default function collectionRuleTemplate(collectionName: string, collection: CollectionContent, schema: Schema) {
   const extractDocId = getExtractDocumentId(collection, schema);
@@ -80,7 +79,7 @@ function getIsCreateValidFunction(collection: CollectionContent) {
   const hasOnlies: string[] = [];
   let isValids = '';
   for (const [fieldName, field] of Object.entries(collection.fields)) {
-    if (field.type || field.syncFrom) {
+    if (field.type) {
       hasOnlies.push(`'${fieldName}'`);
       if (field?.isOptional) {
         isValids += `\n          && (!('${fieldName}' in reqData()) || ${fieldName}IsValid())`;
@@ -184,13 +183,7 @@ function getIsFieldsValidFunction(
       if (field.isKey) {
         additionalRule += ` && get(${fieldName}).id == ${fieldName}OfDocumentId()`;
       }
-    } else if (field.type?.timestamp) {
-      if (field.type.timestamp.serverTimestamp) {
-        additionalRule += ` && ${fieldName} == request.time`;
-      }
     }
-  } else if (field.syncFrom) {
-    additionalRule += `${fieldName} == get(reqData().${field.syncFrom.reference}).data.${field.syncFrom.field}`;
   }
   if (additionalRule !== '') {
     return `

@@ -15,14 +15,14 @@ export function syncFromTriggerGenerator(
     const syncFrom = field.syncFrom;
     const colNameToSyncFrom = getColNameToSyncFrom(collectionName, fieldName, schema);
 
-    // triggerMap[collectionName].createTrigger.dependencyPromises[`ref${colNameToSyncFrom}Data`] =
-    //   { promise: `data.${syncFrom.reference}.get()`, collection: colNameToSyncFrom };
+    triggerMap[collectionName].createTrigger.dependencyPromises[`ref${colNameToSyncFrom}Data`] =
+      { promise: `data.${syncFrom.reference}.get()`, collection: colNameToSyncFrom };
 
-    // triggerMap[collectionName].createTrigger.addData(
-    //   'snapshotRef',
-    //   fieldName,
-    //   `ref${colNameToSyncFrom}Data.${syncFrom.field}`
-    // );
+    triggerMap[collectionName].createTrigger.addData(
+      'snapshotRef',
+      fieldName,
+      `ref${colNameToSyncFrom}Data.${syncFrom.field}`
+    );
 
     triggerMap[colNameToSyncFrom].updateTrigger.addNonUpdateData(
       `${collectionName}${getPascalCollectionName(syncFrom.reference)}`,

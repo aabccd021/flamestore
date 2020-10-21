@@ -75,8 +75,11 @@ export const onTweetCreate = functions.firestore
   .document("/tweets/{documentId}")
   .onCreate(async (snapshot, context) => {
     const data = snapshot.data() as Tweet;
+    const [refusersDataSnapshot] = await Promise.all([data.user.get()]);
+    const refusersData = refusersDataSnapshot.data() as User;
     const snapshotRefData: { [fieldName: string]: any } = {};
     snapshotRefData.likesSum = 0;
+    snapshotRefData.userName = refusersData.userName;
     snapshotRefData.creationTime = firestore.FieldValue.serverTimestamp;
     const userData: { [fieldName: string]: any } = {};
     userData.tweetsCount = increment(1);

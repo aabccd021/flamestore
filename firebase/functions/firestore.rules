@@ -70,22 +70,17 @@ service cloud.firestore {
         let user = reqData().user;
         return user is path && exists(user);
       }
-      function userNameIsValid(){
-        let userName = reqData().userName;
-        return userName == get(reqData().user).data.userName;
-      }
       function tweetTextIsValid(){
         let tweetText = reqData().tweetText;
         return tweetText is string && tweetText.size() <= 280 && tweetText.size() >= 1;
       }
       function creationTimeIsValid(){
         let creationTime = reqData().creationTime;
-        return creationTime is timestamp && creationTime == request.time;
+        return creationTime is timestamp;
       }
       function isCreateValid(){
-        return reqData().keys().hasOnly(['user','userName','tweetText','creationTime'])
+        return reqData().keys().hasOnly(['user','tweetText','creationTime'])
           && userIsValid()
-          && userNameIsValid()
           && tweetTextIsValid()
           && creationTimeIsValid();
       }

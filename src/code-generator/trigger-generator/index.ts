@@ -5,9 +5,8 @@ import { countTriggerGenerator } from "./triggers/count-trigger";
 import { syncFromTriggerGenerator } from "./triggers/sync-from-trigger";
 import { TriggerGenerator } from "./interface";
 import { sumTriggerGenerator } from "./triggers/sum-trigger";
-import { uniqueKeyTriggerGenerator } from "./triggers/unique-key-trigger";
 import { uniqueFieldTriggerGenerator } from "./triggers/unique-field-trigger";
-import { defaultFieldTriggerGenerator } from "./triggers/default-field-trigger";
+import { serverTimestampTrigger } from "./triggers/server-timestamp-trigger";
 
 
 
@@ -17,7 +16,7 @@ export default function getContent(schema: Schema): string {
     sumTriggerGenerator,
     countTriggerGenerator,
     syncFromTriggerGenerator,
-    defaultFieldTriggerGenerator,
+    serverTimestampTrigger,
     // uniqueKeyTriggerGenerator,
     uniqueFieldTriggerGenerator,
   ];
