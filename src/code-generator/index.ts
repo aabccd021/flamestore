@@ -31,6 +31,15 @@ const log = (name: string, value: any) => {
 const warn = functions.logger.warn;
 const handleError = (p: Promise<any>) => p.catch((_) => null);
 const increment = firestore.FieldValue.increment;
+const updateIfNotEmpty = (
+  ref: firestore.DocumentReference,
+  data: { [fieldName: string]: any }
+): Promise<firestore.WriteResult>[] => {
+  if (Object.keys(data).length > 0){
+    return [ref.update(data)];
+  }
+  return [];
+};
 const queryUpdate = async (
   collection: string,
   refField: string,

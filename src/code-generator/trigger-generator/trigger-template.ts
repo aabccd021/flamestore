@@ -125,9 +125,7 @@ function refTriggerDataToBatchCommitString(triggerData: TriggerData, triggerType
   for (const [refName, refTrigger] of Object.entries(triggerData._data)) {
     const setName = refName === 'snapshotRef' ? `snapshot${post}.ref` : `${dataName}.${refName}`
     if (refTrigger !== {}) {
-      content += `...(Object.keys(${refName}Data).length >0 ? [${setName}.update(
-      ${refName}Data,
-    )]:[]),`;
+      content += `...updateIfNotEmpty(${setName},${refName}Data),`;
     }
   }
   content += triggerData._resultPromises;

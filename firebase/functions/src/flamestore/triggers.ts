@@ -39,11 +39,7 @@ export const onUserCreate = functions.firestore
     snapshotRefData.tweetsCount = 0;
     log(`Update ${snapshot.ref.id}`, { updateData: snapshotRefData });
     return Promise.all(
-      [
-        ...(Object.keys(snapshotRefData).length > 0
-          ? [snapshot.ref.update(snapshotRefData)]
-          : []),
-      ].map(handleError)
+      [...updateIfNotEmpty(snapshot.ref, snapshotRefData)].map(handleError)
     );
   });
 
@@ -87,12 +83,8 @@ export const onTweetCreate = functions.firestore
     log(`Update ${data.user.id}`, { updateData: userData });
     return Promise.all(
       [
-        ...(Object.keys(snapshotRefData).length > 0
-          ? [snapshot.ref.update(snapshotRefData)]
-          : []),
-        ...(Object.keys(userData).length > 0
-          ? [data.user.update(userData)]
-          : []),
+        ...updateIfNotEmpty(snapshot.ref, snapshotRefData),
+        ...updateIfNotEmpty(data.user, userData),
       ].map(handleError)
     );
   });
@@ -105,11 +97,7 @@ export const onTweetDelete = functions.firestore
     userData.tweetsCount = increment(-1);
     log(`Update ${data.user.id}`, { updateData: userData });
     return Promise.all(
-      [
-        ...(Object.keys(userData).length > 0
-          ? [data.user.update(userData)]
-          : []),
-      ].map(handleError)
+      [...updateIfNotEmpty(data.user, userData)].map(handleError)
     );
   });
 
@@ -121,11 +109,7 @@ export const onLikeCreate = functions.firestore
     tweetData.likesSum = increment(data.likeValue);
     log(`Update ${data.tweet.id}`, { updateData: tweetData });
     return Promise.all(
-      [
-        ...(Object.keys(tweetData).length > 0
-          ? [data.tweet.update(tweetData)]
-          : []),
-      ].map(handleError)
+      [...updateIfNotEmpty(data.tweet, tweetData)].map(handleError)
     );
   });
 
@@ -138,11 +122,7 @@ export const onLikeUpdate = functions.firestore
     tweetData.likesSum = increment(after.likeValue - before.likeValue);
     log(`Update ${after.tweet.id}`, { updateData: tweetData });
     return Promise.all(
-      [
-        ...(Object.keys(tweetData).length > 0
-          ? [after.tweet.update(tweetData)]
-          : []),
-      ].map(handleError)
+      [...updateIfNotEmpty(after.tweet, tweetData)].map(handleError)
     );
   });
 
@@ -154,11 +134,7 @@ export const onLikeDelete = functions.firestore
     tweetData.likesSum = increment(-data.likeValue);
     log(`Update ${data.tweet.id}`, { updateData: tweetData });
     return Promise.all(
-      [
-        ...(Object.keys(tweetData).length > 0
-          ? [data.tweet.update(tweetData)]
-          : []),
-      ].map(handleError)
+      [...updateIfNotEmpty(data.tweet, tweetData)].map(handleError)
     );
   });
 
@@ -170,6 +146,15 @@ const log = (name: string, value: any) => {
 const warn = functions.logger.warn;
 const handleError = (p: Promise<any>) => p.catch((_) => null);
 const increment = firestore.FieldValue.increment;
+const updateIfNotEmpty = (
+  ref: firestore.DocumentReference,
+  data: { [fieldName: string]: any }
+): Promise<firestore.WriteResult>[] => {
+  if (Object.keys(data).length > 0) {
+    return [ref.update(data)];
+  }
+  return [];
+};
 const queryUpdate = async (
   collection: string,
   refField: string,
