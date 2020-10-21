@@ -23,18 +23,17 @@ import { firestore } from 'firebase-admin';
 `
 
 const footer = `
-const log = (name: string, value: any) => {
-  if (Object.keys(value).length !== 0){
-    functions.logger.log(name, value);
-  }
-};
+
 const warn = functions.logger.warn;
-const handleError = (p: Promise<any>) => p.catch((_) => null);
+const allSettled = (promises: Promise<any>[]): Promise<any> => {
+  return Promise.all(promises.map((p) => p.catch((_) => null)));
+};
 const increment = firestore.FieldValue.increment;
 const updateIfNotEmpty = (
   ref: firestore.DocumentReference,
   data: { [fieldName: string]: any }
 ): Promise<firestore.WriteResult>[] => {
+  functions.logger.log(\`Update \${ref.id}\`, { data: data });
   if (Object.keys(data).length > 0){
     return [ref.update(data)];
   }
@@ -61,7 +60,7 @@ const queryUpdate = async (
     )
   );
   const filteredResult = results.filter((result) => result !== "");
-  log(
+  functions.logger.log(
     \`Update where \${ collection }.\${ refField }.id == \${ ref.id } success on \${ results.length - filteredResult.length } documents\`,
     { updateData: data }
   );

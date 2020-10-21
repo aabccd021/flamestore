@@ -48,16 +48,21 @@ function triggerTemplate(
   const pascalCollectionName = getPascalCollectionName(collectionName);
   const triggerContent = refTriggerDataToString(refTriggerData);
   const dependencyPromises = dependencyPromisesToString(refTriggerData);
-  const consoleLog = refTriggerDataConsoleLog(refTriggerData, triggerType);
   const batchCommit = refTriggerDataToBatchCommitString(refTriggerData, triggerType)
-  const batchCommitPromise = batchCommit ? `return Promise.all([
+  const batchCommitPromise = batchCommit ? `return allSettled([
       ${batchCommit}
-    ].map(handleError));`: 'return;';
+    ]);`: 'return;';
   return `
   export const on${pascalCollectionName}${triggerType} = functions.firestore
   .document('/${collectionName}/{documentId}')
   .on${triggerType}(async (snapshot, context)=>{
-    ${prepareTrigger};${refTriggerData._header};${dependencyPromises};${triggerContent};${consoleLog};
+    ${prepareTrigger};
+
+    ${refTriggerData._header};
+
+    ${dependencyPromises};
+
+    ${triggerContent};
     ${batchCommitPromise}
   });
   `
@@ -94,29 +99,17 @@ function refTriggerDataToString(triggerData: TriggerData) {
   let content = '';
   for (const [refName, refTrigger] of Object.entries(triggerData._data)) {
     if (refTrigger !== {}) {
-      content += `const ${refName}Data: {[fieldName:string]:any} = {};${refTriggerToString(refName, refTrigger)};`;
+      content += `const ${refName}Data: {[fieldName:string]:any} = {};${refTriggerToString(refName, refTrigger)};\n\n`;
     }
   }
   for (const [refName, refTrigger] of Object.entries(triggerData._nonUpdateData)) {
     if (refTrigger !== {}) {
-      content += `const ${refName}Data: {[fieldName:string]:any} = {};${refTriggerToString(refName, refTrigger)};`;
+      content += `const ${refName}Data: {[fieldName:string]:any} = {};${refTriggerToString(refName, refTrigger)};\n\n`;
     }
   }
   return content;
 }
 
-function refTriggerDataConsoleLog(triggerData: TriggerData, triggerType: TriggerType) {
-  const dataName = triggerType === TriggerType.Update ? 'after' : 'data';
-  const post = triggerType === TriggerType.Update ? '.after' : '';
-  let content = '';
-  for (const [refName, refTrigger] of Object.entries(triggerData._data)) {
-    const setName = refName === 'snapshotRef' ? `snapshot${post}.ref` : `${dataName}.${refName}`
-    if (refTrigger !== {}) {
-      content += `log(\`Update \${${setName}.id}\`, {updateData: ${refName}Data});`;
-    }
-  }
-  return content;
-}
 
 function refTriggerDataToBatchCommitString(triggerData: TriggerData, triggerType: TriggerType) {
   const dataName = triggerType === TriggerType.Update ? 'after' : 'data';
