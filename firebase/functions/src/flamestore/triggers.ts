@@ -28,14 +28,7 @@ export const onUserCreate = functions.firestore
   .onCreate(async (snapshot, context) => {
     const data = snapshot.data() as User;
 
-    const userNameDuplicates = await firestore()
-      .collection("users")
-      .where("userName", "==", data.userName)
-      .get();
-    if (userNameDuplicates.docs.length > 1) {
-      warn("Duplicate userName created on users", { snapshot, context });
-      return snapshot.ref.delete();
-    }
+    if (await foundDuplicate("users", "userName", snapshot, context)) return;
 
     const snapshotRefData: { [fieldName: string]: any } = {};
     snapshotRefData.tweetsCount = 0;
@@ -45,18 +38,11 @@ export const onUserCreate = functions.firestore
 
 export const onUserUpdate = functions.firestore
   .document("/users/{documentId}")
-  .onUpdate(async (snapshot, context) => {
-    const before = snapshot.before.data() as User;
-    const after = snapshot.after.data() as User;
+  .onUpdate(async (change, context) => {
+    const before = change.before.data() as User;
+    const after = change.after.data() as User;
 
-    const userNameDuplicates = await firestore()
-      .collection("users")
-      .where("userName", "==", after.userName)
-      .get();
-    if (userNameDuplicates.docs.length > 1) {
-      warn("Duplicate userName updated on users.", { snapshot, context });
-      return snapshot.before.ref.update({ userName: before.userName });
-    }
+    if (await foundDuplicate("users", "userName", change, context)) return;
 
     const tweetsUserData: { [fieldName: string]: any } = {};
     if (after.userName !== before.userName) {
@@ -64,7 +50,7 @@ export const onUserUpdate = functions.firestore
     }
 
     return allSettled([
-      queryUpdate("tweets", "user", snapshot.after.ref, tweetsUserData),
+      queryUpdate("tweets", "user", change.after.ref, tweetsUserData),
     ]);
   });
 
@@ -114,9 +100,9 @@ export const onLikeCreate = functions.firestore
 
 export const onLikeUpdate = functions.firestore
   .document("/likes/{documentId}")
-  .onUpdate(async (snapshot, context) => {
-    const before = snapshot.before.data() as Like;
-    const after = snapshot.after.data() as Like;
+  .onUpdate(async (change, context) => {
+    const before = change.before.data() as Like;
+    const after = change.after.data() as Like;
 
     const tweetData: { [fieldName: string]: any } = {};
     tweetData.likesSum = increment(after.likeValue - before.likeValue);
@@ -135,7 +121,44 @@ export const onLikeDelete = functions.firestore
     return allSettled([...updateIfNotEmpty(data.tweet, tweetData)]);
   });
 
-const warn = functions.logger.warn;
+const foundDuplicate = async (
+  collectionName: string,
+  fieldName: string,
+  snapshotOrChange:
+    | functions.firestore.QueryDocumentSnapshot
+    | functions.Change<functions.firestore.QueryDocumentSnapshot>,
+  context: functions.EventContext
+): Promise<boolean> => {
+  function isSnapshot(
+    value:
+      | functions.firestore.QueryDocumentSnapshot
+      | functions.Change<functions.firestore.QueryDocumentSnapshot>
+  ): value is functions.firestore.QueryDocumentSnapshot {
+    return !value.hasOwnProperty("after");
+  }
+  const snapshot = isSnapshot(snapshotOrChange)
+    ? snapshotOrChange
+    : snapshotOrChange.after;
+  const duplicates = await firestore()
+    .collection(collectionName)
+    .where(fieldName, "==", snapshot.data()[fieldName])
+    .get();
+  if (duplicates.docs.length > 1) {
+    functions.logger.warn(
+      `Duplicate ${fieldName} created on ${collectionName}`,
+      { snapshot, context }
+    );
+    if (isSnapshot(snapshotOrChange)) {
+      await snapshotOrChange.ref.delete();
+    } else {
+      await snapshotOrChange.before.ref.update({
+        [fieldName]: snapshotOrChange.before.data()[fieldName],
+      });
+    }
+    return true;
+  }
+  return false;
+};
 const allSettled = (promises: Promise<any>[]): Promise<any> => {
   return Promise.all(promises.map((p) => p.catch((_) => null)));
 };
@@ -179,7 +202,7 @@ const queryUpdate = async (
     { updateData: data }
   );
   if (filteredResult.length > 0) {
-    warn(
+    functions.logger.warn(
       `Update where ${collection}.${refField}== ${ref.id} fail on ${filteredResult.length} documents`,
       { documentIds: filteredResult }
     );

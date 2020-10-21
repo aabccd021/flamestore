@@ -22,8 +22,8 @@ export function onUpdateTemplate(
     TriggerType.Update,
     collectionName,
     refTriggerData,
-    `const before = snapshot.before.data() as ${getPascalCollectionName(collectionName)};
-    const after = snapshot.after.data() as ${getPascalCollectionName(collectionName)};`
+    `const before = change.before.data() as ${getPascalCollectionName(collectionName)};
+    const after = change.after.data() as ${getPascalCollectionName(collectionName)};`
   );
 }
 
@@ -52,10 +52,11 @@ function triggerTemplate(
   const batchCommitPromise = batchCommit ? `return allSettled([
       ${batchCommit}
     ]);`: 'return;';
+  const firstParam = triggerType === TriggerType.Update ? 'change' : 'snapshot';
   return `
   export const on${pascalCollectionName}${triggerType} = functions.firestore
   .document('/${collectionName}/{documentId}')
-  .on${triggerType}(async (snapshot, context)=>{
+  .on${triggerType}(async (${firstParam}, context)=>{
     ${prepareTrigger};
 
     ${refTriggerData._header};

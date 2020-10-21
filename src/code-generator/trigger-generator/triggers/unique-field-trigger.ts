@@ -10,17 +10,13 @@ export function uniqueFieldTriggerGenerator(
   field: FieldContent,
 ): TriggerMap {
   if (field.isUnique) {
-    const duplicateOnKey = `const ${fieldName}Duplicates = await firestore().collection("${collectionName}")`;
-    triggerMap[collectionName].createTrigger.addHeader(`${duplicateOnKey}.where("${fieldName}","==", data.${fieldName}).get();
-        if (${fieldName}Duplicates.docs.length > 1) {
-          warn('Duplicate ${fieldName} created on ${collectionName}', {snapshot, context});
-          return snapshot.ref.delete();
-        }`);
-    triggerMap[collectionName].updateTrigger.addHeader(`${duplicateOnKey}.where("${fieldName}","==", after.${fieldName}).get();
-        if (${fieldName}Duplicates.docs.length > 1) {
-          warn('Duplicate ${fieldName} updated on ${collectionName}.', {snapshot, context});
-          return snapshot.before.ref.update({${fieldName}: before.${fieldName}})
-        }`);
+    triggerMap[collectionName].createTrigger.addHeader(
+      `if (await foundDuplicate('${collectionName}','${fieldName}', snapshot, context)) return;\n\n`
+    );
+
+    triggerMap[collectionName].updateTrigger.addHeader(
+      `if (await foundDuplicate('${collectionName}','${fieldName}', change, context)) return;\n\n`
+    );
   }
   return triggerMap;
 }

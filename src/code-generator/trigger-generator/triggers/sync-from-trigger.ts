@@ -35,7 +35,7 @@ export function syncFromTriggerGenerator(
       `queryUpdate(
         '${collectionName}',
         '${syncFrom.reference}',
-        snapshot.after.ref,
+        change.after.ref,
         ${collectionName}${getPascalCollectionName(syncFrom.reference)}Data
         ),`
     );
