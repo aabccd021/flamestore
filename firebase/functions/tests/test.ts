@@ -139,13 +139,13 @@ describe("Twitter Security Rule", () => {
           const db = getFirestore(myAuth);
           const userCollection = db.collection("users");
           await firebase.assertSucceeds(
-            userCollection.doc(myId).set({ uid: myId, userName: myUserName, tweetsCount: 0, }));
+            userCollection.doc(myId).set({ uid: myId, userName: myUserName }));
         });
         it("Can create a user document with required fields and optional fields", async () => {
           const db = getFirestore(myAuth);
           const userCollection = db.collection("users");
           await firebase.assertSucceeds(
-            userCollection.doc(myId).set({ uid: myId, userName: myUserName, tweetsCount: 0, bio: 'randomBio' }));
+            userCollection.doc(myId).set({ uid: myId, userName: myUserName, bio: 'randomBio' }));
         });
         it("Can't create a user document with empty document", async () => {
           const db = getFirestore(myAuth);
@@ -161,18 +161,18 @@ describe("Twitter Security Rule", () => {
           const db = getFirestore(myAuth);
           const userCollection = db.collection("users");
           await firebase.assertFails(userCollection.doc(myId).set({
-            uid: myId, userName: myUserName, tweetsCount: 0, unnecessaryField: 'unnecesaryValue'
+            uid: myId, userName: myUserName, unnecessaryField: 'unnecesaryValue'
           }));
         });
         it("Can't create a user document without uid", async () => {
           const db = getFirestore(myAuth);
           const userCollection = db.collection("users");
-          await firebase.assertFails(userCollection.doc(myId).set({ userName: myUserName, tweetsCount: 0, }));
+          await firebase.assertFails(userCollection.doc(myId).set({ userName: myUserName }));
         });
         it("Can't create a user document without userName", async () => {
           const db = getFirestore(myAuth);
           const userCollection = db.collection("users");
-          await firebase.assertFails(userCollection.doc(myId).set({ uid: myId, tweetsCount: 0, }));
+          await firebase.assertFails(userCollection.doc(myId).set({ uid: myId }));
         });
       });
 
@@ -182,7 +182,7 @@ describe("Twitter Security Rule", () => {
             const db = getFirestore(myAuth);
             const userCollection = db.collection("users");
             await firebase.assertFails(
-              userCollection.doc('123').set({ uid: 123, userName: myUserName, tweetsCount: 0, }));
+              userCollection.doc('123').set({ uid: 123, userName: myUserName }));
           });
         });
         describe("userName", () => {
@@ -190,34 +190,34 @@ describe("Twitter Security Rule", () => {
           it("Can't create a user document with non string username", async () => {
             const db = getFirestore(myAuth);
             const userCollection = db.collection("users");
-            await firebase.assertFails(userCollection.doc(myId).set({ uid: myId, userName: 123, tweetsCount: 0 }));
+            await firebase.assertFails(userCollection.doc(myId).set({ uid: myId, userName: 123 }));
           });
           it("Can create a user document with userName of length 15", async () => {
             const db = getFirestore(myAuth);
             const userCollection = db.collection("users");
             await firebase.assertSucceeds(
-              userCollection.doc(myId).set({ uid: myId, userName: 'a'.repeat(15), bio: 'randomBio', tweetsCount: 0 })
+              userCollection.doc(myId).set({ uid: myId, userName: 'a'.repeat(15), bio: 'randomBio' })
             );
           });
           it("Can't create a user document with userName of length 16", async () => {
             const db = getFirestore(myAuth);
             const userCollection = db.collection("users");
             await firebase.assertFails(userCollection.doc(myId).set({
-              uid: myId, userName: 'a'.repeat(16), bio: 'randomBio', tweetsCount: 0
+              uid: myId, userName: 'a'.repeat(16), bio: 'randomBio'
             }));
           });
           it("Can create a user document with userName of length 1", async () => {
             const db = getFirestore(myAuth);
             const userCollection = db.collection("users");
             await firebase.assertSucceeds(userCollection.doc(myId).set({
-              uid: myId, userName: 'a', bio: 'randomBio', tweetsCount: 0
+              uid: myId, userName: 'a', bio: 'randomBio'
             }));
           });
           it("Can't create a user document with userName of length 0", async () => {
             const db = getFirestore(myAuth);
             const userCollection = db.collection("users");
             await firebase.assertFails(userCollection.doc(myId).set({
-              uid: myId, userName: '', bio: 'randomBio', tweetsCount: 0
+              uid: myId, userName: '', bio: 'randomBio'
             }));
           });
         });
@@ -226,35 +226,35 @@ describe("Twitter Security Rule", () => {
             const db = getFirestore(myAuth);
             const userCollection = db.collection("users");
             await firebase.assertFails(userCollection.doc(myId).set({
-              uid: myId, userName: myUserName, bio: 123, tweetsCount: 0
+              uid: myId, userName: myUserName, bio: 123
             }));
           });
           it("Can create a user document with bio of length 160", async () => {
             const db = getFirestore(myAuth);
             const userCollection = db.collection("users");
             await firebase.assertSucceeds(
-              userCollection.doc(myId).set({ uid: myId, userName: myUserName, bio: 'a'.repeat(160), tweetsCount: 0 })
+              userCollection.doc(myId).set({ uid: myId, userName: myUserName, bio: 'a'.repeat(160) })
             );
           });
           it("Can't create a user document with bio of length 161", async () => {
             const db = getFirestore(myAuth);
             const userCollection = db.collection("users");
             await firebase.assertFails(
-              userCollection.doc(myId).set({ uid: myId, userName: myUserName, bio: 'a'.repeat(161), tweetsCount: 0 })
+              userCollection.doc(myId).set({ uid: myId, userName: myUserName, bio: 'a'.repeat(161) })
             );
           });
           it("Can create a user document with bio of length 1", async () => {
             const db = getFirestore(myAuth);
             const userCollection = db.collection("users");
             await firebase.assertSucceeds(userCollection.doc(myId).set({
-              uid: myId, userName: myUserName, bio: 'a', tweetsCount: 0
+              uid: myId, userName: myUserName, bio: 'a'
             }));
           });
           it("Can't create a user document with bio of length 0", async () => {
             const db = getFirestore(myAuth);
             const userCollection = db.collection("users");
             await firebase.assertFails(userCollection.doc(myId).set({
-              uid: myId, userName: myUserName, bio: '', tweetsCount: 0
+              uid: myId, userName: myUserName, bio: ''
             }));
           });
         });
@@ -530,10 +530,7 @@ describe("Twitter Security Rule", () => {
           const myUserDoc = db.collection("users").doc(myUserDocId);
           await firebase.assertSucceeds(tweetCollection.add({
             user: myUserDoc,
-            userName: myUserName,
             tweetText: "randomTweetText",
-            likesSum: 0,
-            creationTime: FieldValue.serverTimestamp(),
           }));
         });
         it("Can't create a tweet document with a different reference.uid as our user", async () => {
@@ -544,10 +541,7 @@ describe("Twitter Security Rule", () => {
           const tweetCollection = db.collection("tweets");
           await firebase.assertFails(tweetCollection.add({
             user: theirUserDoc,
-            userName: theirUserName,
             tweetText: "randomTweetText",
-            likesSum: 0,
-            creationTime: FieldValue.serverTimestamp(),
           }));
         });
         it("Can't create a tweet document with a different reference.uid as our user (2)", async () => {
@@ -558,10 +552,7 @@ describe("Twitter Security Rule", () => {
           const myUserDoc = db.collection("users").doc(myUserDocId);
           await firebase.assertFails(tweetCollection.add({
             user: myUserDoc,
-            userName: myUserName,
             tweetText: "randomTweetText",
-            likesSum: 0,
-            creationTime: FieldValue.serverTimestamp(),
           }));
         });
       });
@@ -576,10 +567,7 @@ describe("Twitter Security Rule", () => {
             const myUserDoc = db.collection("users").doc(myUserDocId);
             await firebase.assertFails(tweetCollection.add({
               user: myUserDoc,
-              userName: myUserName,
               tweetText: 123,
-              likesSum: 0,
-              creationTime: FieldValue.serverTimestamp(),
             }));
           });
           it("Can create a tweet document with tweetText of length 280", async () => {
@@ -590,10 +578,7 @@ describe("Twitter Security Rule", () => {
             const myUserDoc = db.collection("users").doc(myUserDocId);
             await firebase.assertSucceeds(tweetCollection.add({
               user: myUserDoc,
-              userName: myUserName,
               tweetText: 'a'.repeat(280),
-              likesSum: 0,
-              creationTime: FieldValue.serverTimestamp(),
             }));
           });
           it("Can't create a tweet document with tweetText of length 281", async () => {
@@ -604,10 +589,7 @@ describe("Twitter Security Rule", () => {
             const myUserDoc = db.collection("users").doc(myUserDocId);
             await firebase.assertFails(tweetCollection.add({
               user: myUserDoc,
-              userName: myUserName,
               tweetText: 'a'.repeat(281),
-              likesSum: 0,
-              creationTime: FieldValue.serverTimestamp(),
             }));
           });
           it("Can create a tweet document with tweetText of length 1", async () => {
@@ -618,10 +600,7 @@ describe("Twitter Security Rule", () => {
             const myUserDoc = db.collection("users").doc(myUserDocId);
             await firebase.assertSucceeds(tweetCollection.add({
               user: myUserDoc,
-              userName: myUserName,
               tweetText: 'a',
-              likesSum: 0,
-              creationTime: FieldValue.serverTimestamp(),
             }));
           });
           it("Can't create a tweet document with tweetText of length 0", async () => {
@@ -632,10 +611,7 @@ describe("Twitter Security Rule", () => {
             const myUserDoc = db.collection("users").doc(myUserDocId);
             await firebase.assertFails(tweetCollection.add({
               user: myUserDoc,
-              userName: myUserName,
               tweetText: '',
-              likesSum: 0,
-              creationTime: FieldValue.serverTimestamp(),
             }));
           });
         });
@@ -646,10 +622,7 @@ describe("Twitter Security Rule", () => {
             const tweetCollection = db.collection("tweets");
             await firebase.assertFails(tweetCollection.add({
               user: { uid: myId },
-              userName: myUserName,
               tweetText: 123,
-              likesSum: 0,
-              creationTime: FieldValue.serverTimestamp(),
             }));
           });
           it("Can't create tweet if user document doesn't exists", async () => {
@@ -659,10 +632,7 @@ describe("Twitter Security Rule", () => {
             const myUserDoc = db.collection("users").doc(nonexistingUserDocId);
             await firebase.assertFails(tweetCollection.add({
               user: myUserDoc,
-              userName: myUserName,
               tweetText: "randomTweetText",
-              likesSum: 0,
-              creationTime: FieldValue.serverTimestamp(),
             }));
           });
         });
@@ -691,53 +661,8 @@ describe("Twitter Security Rule", () => {
           const myUserDoc = db.collection("users").doc(myUserDocId);
           await firebase.assertFails(tweetCollection.add({
             user: myUserDoc,
-            userName: myUserName,
             tweetText: "randomTweetText",
-            likesSum: 0,
-            creationTime: FieldValue.serverTimestamp(),
             unnecessaryField: 'unnecesaryValue'
-          }));
-        });
-
-        it("Can't create a tweet document without username", async () => {
-          const myUserDocId = await prepareMyUserData();
-
-          const db = getFirestore(myAuth);
-          const tweetCollection = db.collection("tweets");
-          const myUserDoc = db.collection("users").doc(myUserDocId);
-          await firebase.assertFails(tweetCollection.add({
-            user: myUserDoc,
-            likesSum: 0,
-            creationTime: FieldValue.serverTimestamp(),
-            tweetText: "randomTweetText",
-          }));
-        });
-        it("Can't create a tweet document with different userName as user", async () => {
-          const myUserDocId = await prepareMyUserData();
-
-          const db = getFirestore(myAuth);
-          const tweetCollection = db.collection("tweets");
-          const myUserDoc = db.collection("users").doc(myUserDocId);
-          await firebase.assertFails(tweetCollection.add({
-            user: myUserDoc,
-            tweetText: "randomTweetText",
-            likesSum: 0,
-            creationTime: FieldValue.serverTimestamp(),
-            userName: theirUserName,
-          }));
-        });
-        it("Can't create a tweet document with likesSum 1", async () => {
-          const myUserDocId = await prepareMyUserData();
-
-          const db = getFirestore(myAuth);
-          const tweetCollection = db.collection("tweets");
-          const myUserDoc = db.collection("users").doc(myUserDocId);
-          await firebase.assertFails(tweetCollection.add({
-            user: myUserDoc,
-            tweetText: "randomTweetText",
-            likesSum: 1,
-            creationTime: FieldValue.serverTimestamp(),
-            userName: myUserName,
           }));
         });
 

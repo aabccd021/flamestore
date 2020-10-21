@@ -79,10 +79,9 @@ service cloud.firestore {
         return creationTime is timestamp;
       }
       function isCreateValid(){
-        return reqData().keys().hasOnly(['user','tweetText','creationTime'])
+        return reqData().keys().hasOnly(['user','tweetText'])
           && userIsValid()
-          && tweetTextIsValid()
-          && creationTimeIsValid();
+          && tweetTextIsValid();
       }
       function isUpdateValid(){
         return updatedKeys().hasOnly(['user','tweetText'])
