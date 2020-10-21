@@ -80,7 +80,7 @@ export const onTweetCreate = functions.firestore
     const snapshotRefData: { [fieldName: string]: any } = {};
     snapshotRefData.likesSum = 0;
     snapshotRefData.userName = refusersData.userName;
-    snapshotRefData.creationTime = firestore.FieldValue.serverTimestamp;
+    snapshotRefData.creationTime = firestore.FieldValue.serverTimestamp();
     const userData: { [fieldName: string]: any } = {};
     userData.tweetsCount = increment(1);
     log(`Update ${snapshot.ref.id}`, { updateData: snapshotRefData });

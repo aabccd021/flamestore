@@ -12,7 +12,7 @@ export function serverTimestampTrigger(
     triggerMap[collectionName].createTrigger.addData(
       'snapshotRef',
       fieldName,
-      'firestore.FieldValue.serverTimestamp'
+      'firestore.FieldValue.serverTimestamp()'
     );
   }
   return triggerMap;

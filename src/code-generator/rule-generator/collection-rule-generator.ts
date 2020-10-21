@@ -147,10 +147,11 @@ function getIsOwnerFunction(collectionName: string, collection: CollectionConten
 function getIsFieldsValidFunction(
   fieldName: string, field: FieldContent
 ): string {
-  // TODO: kalo datetime servertimestamp harus divalidasi
   let additionalRule = '';
   if (field.type) {
-    additionalRule += `${fieldName} is ${getRuleTypeStringOfField(field)}`;
+    if (!field.type?.timestamp?.serverTimestamp) {
+      additionalRule += `${fieldName} is ${getRuleTypeStringOfField(field)}`;
+    }
     if (field.type?.string) {
       const maxLength = field.type.string?.maxLength;
       if (maxLength || maxLength === 0) {
