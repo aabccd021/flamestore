@@ -3,6 +3,7 @@ import { getPascalCollectionName as pascalOf } from "../../generator-util";
 import { TriggerMap } from "../interface";
 
 export function uniqueKeyTriggerGenerator(
+  // TODO: sepertinya udah ga butuh unique key
   triggerMap: TriggerMap,
   collectionName: string,
   collection: CollectionContent,

@@ -13,11 +13,11 @@ export function countTriggerGenerator(
     const targetRef = field.count.reference;
     const colTriggerMap = triggerMap[field.count.collection];
 
-    // triggerMap[collectionName].createTrigger.addData(
-    //   'snapshotRef',
-    //   fieldName,
-    //   '0',
-    // );
+    triggerMap[collectionName].createTrigger.addData(
+      'snapshotRef',
+      fieldName,
+      '0',
+    );
 
     colTriggerMap.createTrigger.addData(
       targetRef,

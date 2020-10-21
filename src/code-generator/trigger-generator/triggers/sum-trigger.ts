@@ -12,11 +12,11 @@ export function sumTriggerGenerator(
     const targetRef = field.sum.reference;
     const incrementField = field.sum.field;
 
-    // triggerMap[collectionName].createTrigger.addData(
-    //   'snapshotRef',
-    //   fieldName,
-    //   '0',
-    // );
+    triggerMap[collectionName].createTrigger.addData(
+      'snapshotRef',
+      fieldName,
+      '0',
+    );
 
     triggerMap[field.sum.collection].createTrigger.addData(
       targetRef,

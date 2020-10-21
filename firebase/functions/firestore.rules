@@ -40,16 +40,11 @@ service cloud.firestore {
         let bio = reqData().bio;
         return bio is string && bio.size() <= 160 && bio.size() >= 1;
       }
-      function tweetsCountIsValid(){
-        let tweetsCount = reqData().tweetsCount;
-        return tweetsCount == 0;
-      }
       function isCreateValid(){
-        return reqData().keys().hasOnly(['uid','userName','bio','tweetsCount'])
+        return reqData().keys().hasOnly(['uid','userName','bio'])
           && uidIsValid()
           && userNameIsValid()
-          && (!('bio' in reqData()) || bioIsValid())
-          && tweetsCountIsValid();
+          && (!('bio' in reqData()) || bioIsValid());
       }
       function isUpdateValid(){
         return updatedKeys().hasOnly(['userName','bio'])
@@ -83,20 +78,15 @@ service cloud.firestore {
         let tweetText = reqData().tweetText;
         return tweetText is string && tweetText.size() <= 280 && tweetText.size() >= 1;
       }
-      function likesSumIsValid(){
-        let likesSum = reqData().likesSum;
-        return likesSum == 0;
-      }
       function creationTimeIsValid(){
         let creationTime = reqData().creationTime;
         return creationTime is timestamp && creationTime == request.time;
       }
       function isCreateValid(){
-        return reqData().keys().hasOnly(['user','userName','tweetText','likesSum','creationTime'])
+        return reqData().keys().hasOnly(['user','userName','tweetText','creationTime'])
           && userIsValid()
           && userNameIsValid()
           && tweetTextIsValid()
-          && likesSumIsValid()
           && creationTimeIsValid();
       }
       function isUpdateValid(){

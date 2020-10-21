@@ -27,14 +27,6 @@ export const onUserCreate = functions.firestore
   .document("/users/{documentId}")
   .onCreate(async (snapshot, context) => {
     const data = snapshot.data() as User;
-    const keyDuplicates = await firestore()
-      .collection("users")
-      .where("uid", "==", data.uid)
-      .get();
-    if (keyDuplicates.docs.length > 1) {
-      warn("Duplicate key created on users", { snapshot, context });
-      return snapshot.ref.delete();
-    }
     const userNameDuplicates = await firestore()
       .collection("users")
       .where("userName", "==", data.userName)
@@ -43,7 +35,16 @@ export const onUserCreate = functions.firestore
       warn("Duplicate userName created on users", { snapshot, context });
       return snapshot.ref.delete();
     }
-    return;
+    const snapshotRefData: { [fieldName: string]: any } = {};
+    snapshotRefData.tweetsCount = 0;
+    log(`Update ${snapshot.ref.id}`, { updateData: snapshotRefData });
+    return Promise.all(
+      [
+        ...(Object.keys(snapshotRefData).length > 0
+          ? [snapshot.ref.update(snapshotRefData)]
+          : []),
+      ].map(handleError)
+    );
   });
 
 export const onUserUpdate = functions.firestore
@@ -74,11 +75,18 @@ export const onTweetCreate = functions.firestore
   .document("/tweets/{documentId}")
   .onCreate(async (snapshot, context) => {
     const data = snapshot.data() as Tweet;
+    const snapshotRefData: { [fieldName: string]: any } = {};
+    snapshotRefData.likesSum = 0;
+    snapshotRefData.creationTime = firestore.FieldValue.serverTimestamp;
     const userData: { [fieldName: string]: any } = {};
     userData.tweetsCount = increment(1);
+    log(`Update ${snapshot.ref.id}`, { updateData: snapshotRefData });
     log(`Update ${data.user.id}`, { updateData: userData });
     return Promise.all(
       [
+        ...(Object.keys(snapshotRefData).length > 0
+          ? [snapshot.ref.update(snapshotRefData)]
+          : []),
         ...(Object.keys(userData).length > 0
           ? [data.user.update(userData)]
           : []),
@@ -106,15 +114,6 @@ export const onLikeCreate = functions.firestore
   .document("/likes/{documentId}")
   .onCreate(async (snapshot, context) => {
     const data = snapshot.data() as Like;
-    const keyDuplicates = await firestore()
-      .collection("likes")
-      .where("user", "==", data.user)
-      .where("tweet", "==", data.tweet)
-      .get();
-    if (keyDuplicates.docs.length > 1) {
-      warn("Duplicate key created on likes", { snapshot, context });
-      return snapshot.ref.delete();
-    }
     const tweetData: { [fieldName: string]: any } = {};
     tweetData.likesSum = increment(data.likeValue);
     log(`Update ${data.tweet.id}`, { updateData: tweetData });

@@ -80,7 +80,7 @@ function getIsCreateValidFunction(collection: CollectionContent) {
   const hasOnlies: string[] = [];
   let isValids = '';
   for (const [fieldName, field] of Object.entries(collection.fields)) {
-    if (field.type || field.syncFrom || field.sum || field.count) {
+    if (field.type || field.syncFrom) {
       hasOnlies.push(`'${fieldName}'`);
       if (field?.isOptional) {
         isValids += `\n          && (!('${fieldName}' in reqData()) || ${fieldName}IsValid())`;
@@ -148,6 +148,7 @@ function getIsOwnerFunction(collectionName: string, collection: CollectionConten
 function getIsFieldsValidFunction(
   fieldName: string, field: FieldContent
 ): string {
+  // TODO: kalo datetime servertimestamp harus divalidasi
   let additionalRule = '';
   if (field.type) {
     additionalRule += `${fieldName} is ${getRuleTypeStringOfField(field)}`;
@@ -188,8 +189,6 @@ function getIsFieldsValidFunction(
         additionalRule += ` && ${fieldName} == request.time`;
       }
     }
-  } else if (field.sum || field.count) {
-    additionalRule += `${fieldName} == 0`;
   } else if (field.syncFrom) {
     additionalRule += `${fieldName} == get(reqData().${field.syncFrom.reference}).data.${field.syncFrom.field}`;
   }
