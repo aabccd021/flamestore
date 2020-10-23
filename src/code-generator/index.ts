@@ -37,7 +37,7 @@ import { firestore } from 'firebase-admin';
 
 const modelImports = (schema: FlamestoreSchema) => {
   const modelNames = Object.keys(schema.collections).map(n => getPascalCollectionName(n)).join(',');
-  return `import {${modelNames}} from "./model.flamestore"`;
+  return `import {${modelNames}} from "./model"`;
 };
 
 const triggerHeader = (schema: FlamestoreSchema, imports: string) => {
@@ -47,7 +47,7 @@ const triggerHeader = (schema: FlamestoreSchema, imports: string) => {
   return `/* tslint:disable */
 import * as ${importFunction} from 'firebase-functions';
 import { firestore } from 'firebase-admin';
-import { foundDuplicate, allSettled, updateIfNotEmpty, increment, syncField} from './utils.flamestore';
+import { foundDuplicate, allSettled, updateIfNotEmpty, increment, syncField} from './utils';
 ${imports}
 
 ${regionFunction}
