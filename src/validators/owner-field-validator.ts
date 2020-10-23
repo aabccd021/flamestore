@@ -1,12 +1,12 @@
-import { Schema } from "../utils/interface";
+import { FlamestoreSchema } from "../utils/interface";
 
-export default function validateOwnerField(schema: Schema) {
+export default function validateOwnerField(schema: FlamestoreSchema) {
   validateIsOwnerDocRef(schema);
   validateIsOwnerUid(schema);
 }
 
 
-function validateIsOwnerDocRef(schema: Schema) {
+function validateIsOwnerDocRef(schema: FlamestoreSchema) {
   for (const [collectionName, collection] of Object.entries(schema.collections)) {
     let colOwnerDocRef = null;
     for (const [fieldName, field] of Object.entries(collection.fields)) {
@@ -32,7 +32,7 @@ function validateIsOwnerDocRef(schema: Schema) {
   }
 }
 
-function validateIsOwnerUid(schema: Schema) {
+function validateIsOwnerUid(schema: FlamestoreSchema) {
   for (const [collectionName, collection] of Object.entries(schema.collections)) {
     let colOwnerUid = null;
     for (const field of Object.values(collection.fields)) {

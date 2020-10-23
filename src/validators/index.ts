@@ -1,4 +1,4 @@
-import { Schema } from "../utils/interface";
+import { FlamestoreSchema } from "../utils/interface";
 import validateSyncFrom from "./sync-from-validator";
 import validateSchema from "./schema-validator";
 import validateSum from "./sum-validator";
@@ -7,7 +7,7 @@ import validateOwnerField from "./owner-field-validator";
 
 export default function validate(rawSchema: any) {
   validateSchema(rawSchema);
-  const schema: Schema = rawSchema;
+  const schema: FlamestoreSchema = rawSchema;
   validateSyncFrom(schema);
   validateSum(schema);
   validateCount(schema);

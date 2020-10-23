@@ -1,7 +1,7 @@
 import * as fs from 'fs';
-import { Schema } from "./interface";
+import { FlamestoreSchema } from "./interface";
 
-export function getSchema(inputFilePath: string): Schema {
+export function getSchema(inputFilePath: string): FlamestoreSchema {
   const schemaJson = fs.readFileSync(inputFilePath);
   const schemaJsonString = schemaJson.toString();
   return JSON.parse(schemaJsonString);

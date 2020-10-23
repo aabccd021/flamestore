@@ -13,12 +13,6 @@
             ],
             "args": [
                 "src/index.ts",
-                "-i",
-                "sample/sample.json",
-                "--ro",
-                "firebase/functions/firestore.rules",
-                "--to",
-                "firebase/functions/src/flamestore/triggers.ts",
             ],
             "cwd": "${workspaceRoot}",
             "outputCapture": "std",

@@ -1,13 +1,13 @@
-import { Schema } from "../../utils/interface";
+import { FlamestoreSchema } from "../../utils/interface";
 import * as fs from 'fs';
 import collectionRuleTemplate from "./collection-rule-generator";
 
-export default function generateRule(schema: Schema, outputFilePath: string) {
+export default function generateRule(schema: FlamestoreSchema, outputFilePath: string) {
   const ruleContent = getRuleContent(schema);
   fs.writeFileSync(outputFilePath, ruleContent);
 }
 
-function getRuleContent(schema: Schema): string {
+function getRuleContent(schema: FlamestoreSchema): string {
   const collectionsRule: string[] = [];
   for (const [collectionName, collection] of Object.entries(schema.collections)) {
     const collectionRule = collectionRuleTemplate(collectionName, collection, schema);

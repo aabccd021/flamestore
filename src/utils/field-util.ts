@@ -1,7 +1,7 @@
 import { assertCollectionNameExists } from './collection-util';
-import { Schema, FieldContent, FieldType, ReferenceField, IntField, FieldTypes } from './interface';
+import { FlamestoreSchema, FieldContent, FieldType, ReferenceField, IntField, FieldTypes } from './interface';
 
-export function assertFieldExists(collectionName: string, fieldName: string, schema: Schema, stackTrace: string) {
+export function assertFieldExists(collectionName: string, fieldName: string, schema: FlamestoreSchema, stackTrace: string) {
   assertCollectionNameExists(collectionName, schema, stackTrace);
   if (!Object.keys(schema.collections[collectionName].fields).includes(fieldName)) {
     throw Error(
@@ -10,7 +10,7 @@ export function assertFieldExists(collectionName: string, fieldName: string, sch
   }
 }
 
-export function assertFieldHasType(collectionName: string, fieldName: string, schema: Schema, stackTrace: string) {
+export function assertFieldHasType(collectionName: string, fieldName: string, schema: FlamestoreSchema, stackTrace: string) {
   assertFieldExists(collectionName, fieldName, schema, stackTrace);
   const field = schema.collections[collectionName].fields[fieldName];
   if (!field.type) {
@@ -19,13 +19,13 @@ export function assertFieldHasType(collectionName: string, fieldName: string, sc
 }
 
 export function throwFieldTypeError(
-  fieldType: FieldTypes, collectionName: string, fieldName: string, schema: Schema, stackTrace: string
+  fieldType: FieldTypes, collectionName: string, fieldName: string, schema: FlamestoreSchema, stackTrace: string
 ) {
   throw Error(`collections.${collectionName}.${fieldName} must be type of ${fieldType} as required in ${stackTrace}.`)
 }
 
 export function assertFieldHasTypeOf(
-  collectionName: string, fieldName: string, fieldType: FieldTypes, schema: Schema, stackTrace: string
+  collectionName: string, fieldName: string, fieldType: FieldTypes, schema: FlamestoreSchema, stackTrace: string
 ) {
   assertFieldHasType(collectionName, fieldName, schema, stackTrace);
 
@@ -45,7 +45,7 @@ export function assertFieldHasTypeOf(
 }
 
 
-export function assertFieldIsKey(collectionName: string, fieldName: string, schema: Schema, prepend: string) {
+export function assertFieldIsKey(collectionName: string, fieldName: string, schema: FlamestoreSchema, prepend: string) {
   assertFieldExists(collectionName, fieldName, schema, prepend);
   const field = schema.collections[collectionName].fields[fieldName];
   if (!field.isKey) {

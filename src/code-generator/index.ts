@@ -1,29 +1,65 @@
-import { Schema } from "../utils/interface";
+import { FlamestoreSchema } from "../utils/interface";
 import * as fs from 'fs';
 import * as path from 'path';
 import * as prettier from 'prettier';
 import getContent from "./trigger-generator";
 import { getSchemaContent } from "./schema-generator/generate-schema";
+import { getPascalCollectionName } from "./generator-util";
 
-export default function generate(schema: Schema, outputFilePath: string) {
-  let content = '';
-  content += imports;
-  content += getSchemaContent(schema);
-  content += getContent(schema);
-  content += footer;
-  const writeContent = prettier.format(content, { parser: "typescript" });
-  fs.writeFileSync(outputFilePath, writeContent);
+export default function generate(schema: FlamestoreSchema, outputFilePath: string) {
+  Object.entries(getContent(schema)).forEach(([colName, colString]) => {
+    const triggerContent = triggerHeader(schema, modelImports(schema)) + colString;
+    const triggerFileContent = prettier.format(triggerContent, { parser: "typescript" });
+    fs.writeFileSync(path.join(outputFilePath, `${colName}.trigger.ts`), triggerFileContent);
+  }
+  );
+
+  const modelContent = modelHeader + getSchemaContent(schema);
+  const modelFileContent = prettier.format(modelContent, { parser: "typescript" });
+  fs.writeFileSync(path.join(outputFilePath, 'model.ts'), modelFileContent);
+
+  const utilsFileContent = prettier.format(utilsContent, { parser: "typescript" });
+  fs.writeFileSync(path.join(outputFilePath, 'utils.ts'), utilsFileContent);
+
+
+  fs.writeFileSync(path.join(outputFilePath, 'index.ts'), indexHeader(schema));
+}
+
+const indexHeader = (schema: FlamestoreSchema) => {
+  return Object.keys(schema.collections).map(e => `export * from "./${e}.trigger";`).join('\n');
 }
 
 
-const imports = `/* tslint:disable */
-import * as functions from 'firebase-functions';
+const modelHeader = `/* tslint:disable */
 import { firestore } from 'firebase-admin';
 
-`
+`;
 
-const footer = `
-const foundDuplicate = async (
+const modelImports = (schema: FlamestoreSchema) => {
+  const modelNames = Object.keys(schema.collections).map(n => getPascalCollectionName(n)).join(',');
+  return `import {${modelNames}} from "./model.flamestore"`;
+};
+
+const triggerHeader = (schema: FlamestoreSchema, imports: string) => {
+  const region = schema.configuration.region;
+  const importFunction = region ? '_functions' : 'functions';
+  const regionFunction = region ? `const functions = _functions.region('${region}');` : '';
+  return `/* tslint:disable */
+import * as ${importFunction} from 'firebase-functions';
+import { firestore } from 'firebase-admin';
+import { foundDuplicate, allSettled, updateIfNotEmpty, increment, syncField} from './utils.flamestore';
+${imports}
+
+${regionFunction}
+`;
+};
+
+const utilsContent = `
+import { firestore } from 'firebase-admin';
+import * as functions from 'firebase-functions';
+
+export const increment = firestore.FieldValue.increment;
+export const foundDuplicate = async (
   collectionName: string,
   fieldName: string,
   snapshotOrChange: functions.firestore.QueryDocumentSnapshot
@@ -54,21 +90,19 @@ const foundDuplicate = async (
   }
   return false;
 };
-const allSettled = (promises: Promise<any>[]): Promise<any> => {
+export const allSettled = (promises: Promise<any>[]): Promise<any> => {
   return Promise.all(promises.map((p) => p.catch((_) => null)));
 };
-const increment = firestore.FieldValue.increment;
-const updateIfNotEmpty = (
+export const updateIfNotEmpty = async (
   ref: firestore.DocumentReference,
   data: { [fieldName: string]: any }
-): Promise<firestore.WriteResult>[] => {
+) => {
   functions.logger.log(\`Update \${ref.id}\`, { data: data });
-  if (Object.keys(data).length > 0){
-    return [ref.update(data)];
+  if (Object.keys(data).length > 0) {
+    await ref.update(data);
   }
-  return [];
 };
-const queryUpdate = async (
+export const syncField = async (
   collection: string,
   refField: string,
   ref: firestore.DocumentReference,

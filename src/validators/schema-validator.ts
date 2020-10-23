@@ -5,10 +5,21 @@ export default function validateSchema(schema: any) {
   validateKeys({
     object: schema,
     requiredKeys: ['collections'],
-    optionalKeys: [],
+    optionalKeys: ['configuration'],
     stackTrace: 'root'
   });
   validateCollections(schema.collections);
+  validateConfiguration(schema.configuration);
+}
+
+function validateConfiguration(configuration: any) {
+  const stackTrace = `configuration`;
+  validateKeys({
+    object: configuration,
+    requiredKeys: [],
+    optionalKeys: ['region', 'ruleOutputPath', 'triggerOutputPath'],
+    stackTrace
+  });
 }
 
 function validateCollections(collections: any) {

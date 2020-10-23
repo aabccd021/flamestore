@@ -1,6 +1,6 @@
-import { CollectionContent, FieldContent, FieldType, FieldTypes, Rule, RuleType, Schema } from "../../utils/interface";
+import { CollectionContent, FieldContent, FieldType, FieldTypes, Rule, RuleType, FlamestoreSchema } from "../../utils/interface";
 
-export default function collectionRuleTemplate(collectionName: string, collection: CollectionContent, schema: Schema) {
+export default function collectionRuleTemplate(collectionName: string, collection: CollectionContent, schema: FlamestoreSchema) {
   const extractDocId = getExtractDocumentId(collection, schema);
   const isOwnerFunction = getIsOwnerFunction(collectionName, collection, schema);
   let fieldIsValidFunctions = '';
@@ -19,7 +19,7 @@ ${extractDocId}${isOwnerFunction}${fieldIsValidFunctions}${isCreateValidFunction
     }`;
 }
 
-function getExtractDocumentId(collection: CollectionContent, schema: Schema) {
+function getExtractDocumentId(collection: CollectionContent, schema: FlamestoreSchema) {
   let content = '';
   let counter = 0;
   for (const [fieldName, field] of Object.entries(collection.fields)) {
@@ -112,7 +112,7 @@ function getIsUpdateValidFunction(collection: CollectionContent) {
       }`
 }
 
-function getIsOwnerFunction(collectionName: string, collection: CollectionContent, schema: Schema) {
+function getIsOwnerFunction(collectionName: string, collection: CollectionContent, schema: FlamestoreSchema) {
   for (const [fieldName, field] of Object.entries(collection.fields)) {
     const isDocExists = `!(exists(/databases/$(database)/documents/${collectionName}/$(documentId)))`;
     if (field.type?.string?.isOwnerUid) {

@@ -1,9 +1,9 @@
-import { Schema, FieldTypes } from "../utils/interface";
+import { FlamestoreSchema, FieldTypes } from "../utils/interface";
 import { assertFieldHasTypeOf } from "../utils/field-util";
 import { assertCollectionNameExists } from "../utils/collection-util";
 
 
-export default function validateCount(schema: Schema) {
+export default function validateCount(schema: FlamestoreSchema) {
   for (const [collectionName, collection] of Object.entries(schema.collections)) {
     for (const [fieldName, field] of Object.entries(collection.fields)) {
       if (field.count) {

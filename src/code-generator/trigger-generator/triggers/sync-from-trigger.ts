@@ -1,5 +1,5 @@
 import { TriggerMap } from "../interface";
-import { FieldContent, CollectionContent, Schema } from "../../../utils/interface";
+import { FieldContent, CollectionContent, FlamestoreSchema } from "../../../utils/interface";
 import { getPascalCollectionName } from "../../generator-util";
 import { getColNameToSyncFrom } from "../../../utils/sync-from-util";
 
@@ -9,7 +9,7 @@ export function syncFromTriggerGenerator(
   __: CollectionContent,
   fieldName: string,
   field: FieldContent,
-  schema: Schema,
+  schema: FlamestoreSchema,
 ): TriggerMap {
   if (field.syncFrom) {
     const syncFrom = field.syncFrom;
@@ -32,12 +32,12 @@ export function syncFromTriggerGenerator(
     );
 
     triggerMap[colNameToSyncFrom].updateTrigger.addResultPromise(
-      `queryUpdate(
+      `syncField(
         '${collectionName}',
         '${syncFrom.reference}',
         change.after.ref,
         ${collectionName}${getPascalCollectionName(syncFrom.reference)}Data
-        ),`
+        )`
     );
   }
   return triggerMap;

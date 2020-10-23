@@ -1,6 +1,13 @@
 
-export interface Schema {
+export interface FlamestoreSchema {
   collections: Collections;
+  configuration: FlamestoreConfig;
+}
+
+export interface FlamestoreConfig {
+  ruleOutputPath: string;
+  triggerOutputPath: string;
+  region: string;
 }
 
 export interface Collections {

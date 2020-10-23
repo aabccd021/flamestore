@@ -49,9 +49,7 @@ function triggerTemplate(
   const triggerContent = refTriggerDataToString(refTriggerData);
   const dependencyPromises = dependencyPromisesToString(refTriggerData);
   const batchCommit = refTriggerDataToBatchCommitString(refTriggerData, triggerType)
-  const batchCommitPromise = batchCommit ? `return allSettled([
-      ${batchCommit}
-    ]);`: 'return;';
+
   const firstParam = triggerType === TriggerType.Update ? 'change' : 'snapshot';
   return `
   export const on${pascalCollectionName}${triggerType} = functions.firestore
@@ -64,7 +62,7 @@ function triggerTemplate(
     ${dependencyPromises};
 
     ${triggerContent};
-    ${batchCommitPromise}
+    ${batchCommit}
   });
   `
 }
@@ -115,15 +113,20 @@ function refTriggerDataToString(triggerData: TriggerData) {
 function refTriggerDataToBatchCommitString(triggerData: TriggerData, triggerType: TriggerType) {
   const dataName = triggerType === TriggerType.Update ? 'after' : 'data';
   const post = triggerType === TriggerType.Update ? '.after' : '';
-  let content = '';
+  const content: string[] = [];
   for (const [refName, refTrigger] of Object.entries(triggerData._data)) {
     const setName = refName === 'snapshotRef' ? `snapshot${post}.ref` : `${dataName}.${refName}`
     if (refTrigger !== {}) {
-      content += `...updateIfNotEmpty(${setName},${refName}Data),`;
+      content.push(`updateIfNotEmpty(${setName},${refName}Data)`);
     }
   }
-  content += triggerData._resultPromises;
-  return content;
+  const batchCommit = [...content, ...triggerData._resultPromises];
+  if (batchCommit.length === 1) {
+    return `await ${batchCommit[0]};`;
+  }
+  return `await allSettled([
+       ${batchCommit.join(',')}
+  ]);`;
 }
 
 export const importTemplate = `

@@ -1,4 +1,4 @@
-import { Schema, CollectionContent, FieldContent } from "../../../utils/interface";
+import { FlamestoreSchema, CollectionContent, FieldContent } from "../../../utils/interface";
 import { getPascalCollectionName as pascalOf } from "../../generator-util";
 import { TriggerMap } from "../interface";
 

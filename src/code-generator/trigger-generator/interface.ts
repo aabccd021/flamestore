@@ -1,4 +1,4 @@
-import { FieldContent, CollectionContent, Schema } from "../../utils/interface";
+import { FieldContent, CollectionContent, FlamestoreSchema } from "../../utils/interface";
 import TriggerData from "./trigger-data";
 
 
@@ -16,7 +16,7 @@ export type TriggerGenerator = (
   collection: CollectionContent,
   fieldName: string,
   field: FieldContent,
-  schema: Schema,
+  schema: FlamestoreSchema,
 ) => TriggerMap;
 
 export interface TriggerMap {

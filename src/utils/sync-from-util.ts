@@ -1,7 +1,7 @@
 import { assertFieldExists, assertFieldHasTypeOf } from "./field-util";
-import { FieldTypes, Schema } from "./interface";
+import { FieldTypes, FlamestoreSchema } from "./interface";
 
-export function getColNameToSyncFrom(collectionName: string, fieldName: string, schema: Schema) {
+export function getColNameToSyncFrom(collectionName: string, fieldName: string, schema: FlamestoreSchema) {
   const collection = schema.collections[collectionName];
   const field = collection.fields[fieldName];
   const stackTrace = `collections.${collectionName}.${fieldName}.syncFrom`;

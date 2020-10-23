@@ -1,7 +1,7 @@
 export default class TriggerData {
   _header = '';
   dependencyPromises: { [dependencyName: string]: { collection: string, promise: string } } = {};
-  _resultPromises = '';
+  _resultPromises: string[] = [];
   _data: UpdateData = {};
   _nonUpdateData: UpdateData = {};
 
@@ -23,14 +23,14 @@ export default class TriggerData {
     }
   }
   addResultPromise(content: string) {
-    if (!this._resultPromises.includes(content)) {
-      this._resultPromises += content;
+    if (!this._resultPromises.join('').includes(content)) {
+      this._resultPromises.push(content);
     }
   }
   isEmpty(): boolean {
     return this._header === ''
       && Object.keys(this.dependencyPromises).length === 0
-      && this._resultPromises === ''
+      && this._resultPromises.join('') === ''
       && Object.keys(this._data).length === 0
       && Object.keys(this._nonUpdateData).length === 0;
   }

@@ -1,4 +1,7 @@
 {
+  "configuration": {
+    "region": "asia-southeast2"
+  },
   "collections": {
     "users": {
       "rules": {
