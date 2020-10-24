@@ -6,10 +6,10 @@ import validate from './validators/schema-validator';
 import { FlamestoreSchema } from './utils/interface';
 import generateRule from './code-generator/rule-generator';
 
-const rawSchema = getSchema('flamestore.json');
+const rawSchema = getSchema('../flamestore.json');
 validate(rawSchema);
 const schema: FlamestoreSchema = rawSchema;
-const rulePath = schema.configuration.ruleOutputPath || "firebase/firestore/firestore.rules";
+const rulePath = schema.configuration.ruleOutputPath || "firestore/firestore.rules";
 generateRule(schema, rulePath);
-const triggerPath = schema.configuration.triggerOutputPath || "firebase/functions/src/flamestore/";
+const triggerPath = schema.configuration.triggerOutputPath || "functions/src/flamestore/";
 generateTrigger(schema, triggerPath);
