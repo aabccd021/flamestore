@@ -7,8 +7,8 @@
     "source": "functions"
   },
   "firestore": {
-    "rules": "functions/firestore.rules",
-    "indexes": "functions/firestore.indexes.json"
+    "rules": "firestore/firestore.rules",
+    "indexes": "firestore/firestore.indexes.json"
   },
   "emulators": {
     "firestore": {
