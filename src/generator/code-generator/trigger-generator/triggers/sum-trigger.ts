@@ -1,4 +1,4 @@
-import { FieldContent, Collection } from "../../../types/schema";
+import { Field, Collection } from "../../../types/schema";
 import { TriggerMap } from "../interface";
 
 export function sumTriggerGenerator(
@@ -6,7 +6,7 @@ export function sumTriggerGenerator(
   collectionName: string,
   __: Collection,
   fieldName: string,
-  field: FieldContent,
+  field: Field,
 ): TriggerMap {
   if (field.sum) {
     const targetRef = field.sum.reference;

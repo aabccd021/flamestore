@@ -1,5 +1,5 @@
+import { Collection, Field } from "../../../schema";
 import { TriggerMap } from "../interface";
-import { FieldContent, Collection } from "../../../types/schema";
 
 
 export function countTriggerGenerator(
@@ -7,7 +7,7 @@ export function countTriggerGenerator(
   collectionName: string,
   __: Collection,
   fieldName: string,
-  field: FieldContent,
+  field: Field,
 ): TriggerMap {
   if (field.count) {
     const targetRef = field.count.reference;

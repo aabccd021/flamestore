@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { FieldTypes, FlamestoreSchema } from "../types/schema";
+import { FlamestoreSchema, FieldTypes } from './schema';
 
 export function assertCollectionNameExists(collectionName: string, schema: FlamestoreSchema, stackTrace: string) {
   if (!Object.keys(schema.collections).includes(collectionName)) {

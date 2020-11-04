@@ -1,9 +1,9 @@
-import { FieldContent, FlamestoreSchema, FieldType, FieldTypes } from "../types/schema";
+import { Field, FlamestoreSchema, FieldType, FieldTypes } from "../types/schema";
 import * as pluralize from 'pluralize';
 import { getColNameToSyncFrom } from "../utils/sync-from-util";
 
 export function getDataTypeString(
-  field: FieldContent, fieldName: string, collectionName: string, schema: FlamestoreSchema) {
+  field: Field, fieldName: string, collectionName: string, schema: FlamestoreSchema) {
   const typeMap: Record<FieldTypes, string> = {
     [FieldTypes.STRING]: 'string',
     [FieldTypes.DATETIME]: 'firestore.Timestamp',
@@ -14,7 +14,7 @@ export function getDataTypeString(
 }
 
 function getFieldType(
-  field: FieldContent, fieldName: string, collectionName: string, schema: FlamestoreSchema): FieldTypes {
+  field: Field, fieldName: string, collectionName: string, schema: FlamestoreSchema): FieldTypes {
   if (field.type) {
     for (const fieldType of Object.values(FieldTypes)) {
       if (field.type[fieldType]) {
@@ -43,7 +43,7 @@ export function getPascalCollectionName(collectionName: string): string {
 }
 
 export function getStringAdaptor(
-  field: FieldContent, fieldName: string, collectionName: string, schema: FlamestoreSchema
+  field: Field, fieldName: string, collectionName: string, schema: FlamestoreSchema
 ): string {
   const fieldType = getFieldType(field, fieldName, collectionName, schema);
   if (fieldType === FieldTypes.PATH) {

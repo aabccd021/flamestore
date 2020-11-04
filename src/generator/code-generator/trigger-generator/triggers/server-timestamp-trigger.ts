@@ -1,4 +1,4 @@
-import { Collection, FieldContent } from "../../../types/schema";
+import { Collection, Field } from "../../../types/schema";
 import { TriggerMap } from "../interface";
 
 export function serverTimestampTrigger(
@@ -6,7 +6,7 @@ export function serverTimestampTrigger(
   collectionName: string,
   _: Collection,
   fieldName: string,
-  field: FieldContent,
+  field: Field,
 ): TriggerMap {
   if (field.type?.timestamp?.serverTimestamp) {
     triggerMap[collectionName].createTrigger.addData(

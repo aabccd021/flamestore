@@ -1,5 +1,5 @@
-import { FlamestoreSchema, FieldTypes } from "../../types/schema";
-import { assertCollectionNameExists, assertFieldHasTypeOf } from "../../utils/util";
+import { FlamestoreSchema, FieldTypes } from "../../schema";
+import { assertCollectionNameExists, assertFieldHasTypeOf } from "../../util";
 
 
 export function validate(schema: FlamestoreSchema) {

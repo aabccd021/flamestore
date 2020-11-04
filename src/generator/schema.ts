@@ -43,10 +43,10 @@ export enum Rule {
 }
 
 interface Fields {
-  [name: string]: FieldContent;
+  [name: string]: Field;
 }
 
-export interface FieldContent {
+export interface Field {
   type?: FieldType;
   isKey?: boolean;
   isUnique?: boolean;

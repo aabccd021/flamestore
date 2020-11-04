@@ -1,4 +1,4 @@
-import { FlamestoreSchema, Collection, FieldContent } from "../../../types/schema";
+import { Collection, Field } from "../../../schema";
 import { getPascalCollectionName as pascalOf } from "../../generator-util";
 import { TriggerMap } from "../interface";
 
@@ -8,7 +8,7 @@ export function uniqueKeyTriggerGenerator(
   collectionName: string,
   collection: Collection,
   _: string,
-  __: FieldContent,
+  __: Field,
 ): TriggerMap {
   const existingDocsFilter = getExistingDocsFilter(collection);
   if (existingDocsFilter) {

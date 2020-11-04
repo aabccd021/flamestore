@@ -1,4 +1,4 @@
-import { FlamestoreSchema, Collection, FieldContent } from "../../../types/schema";
+import { FlamestoreSchema, Collection, Field } from "../../../types/schema";
 import { getPascalCollectionName as pascalOf } from "../../generator-util";
 import { TriggerMap } from "../interface";
 
@@ -7,7 +7,7 @@ export function uniqueFieldTriggerGenerator(
   collectionName: string,
   _: Collection,
   fieldName: string,
-  field: FieldContent,
+  field: Field,
 ): TriggerMap {
   if (field.isUnique) {
     triggerMap[collectionName].createTrigger.addHeader(

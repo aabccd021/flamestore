@@ -1,5 +1,5 @@
-import { FlamestoreSchema } from "../../types/schema";
 import * as fs from 'fs';
+import { FlamestoreSchema } from '../../schema';
 import collectionRuleTemplate from "./collection-rule-generator";
 
 export default function generateRule(schema: FlamestoreSchema, outputFilePath: string) {

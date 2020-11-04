@@ -1,5 +1,5 @@
 import { TriggerMap } from "../interface";
-import { FieldContent, Collection, FlamestoreSchema } from "../../../types/schema";
+import { Field, Collection, FlamestoreSchema } from "../../../types/schema";
 import { getPascalCollectionName } from "../../generator-util";
 import { getColNameToSyncFrom } from "../../../utils/sync-from-util";
 
@@ -8,7 +8,7 @@ export function syncFromTriggerGenerator(
   collectionName: string,
   __: Collection,
   fieldName: string,
-  field: FieldContent,
+  field: Field,
   schema: FlamestoreSchema,
 ): TriggerMap {
   if (field.syncFrom) {

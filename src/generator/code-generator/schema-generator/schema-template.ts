@@ -1,5 +1,5 @@
+import { Field, FlamestoreSchema } from "../../schema";
 import { getDataTypeString, getPascalCollectionName as getPascalCollectionName, getStringAdaptor } from "../generator-util";
-import { FieldContent, FlamestoreSchema } from "../../types/schema";
 
 export const schemaImports = `
 `
@@ -24,11 +24,11 @@ export function getStaticField(fieldName: string): string {
 }
 
 export function getToString(
-  fieldName: string, field: FieldContent, collectionName: string, schema: FlamestoreSchema): string {
+  fieldName: string, field: Field, collectionName: string, schema: FlamestoreSchema): string {
   return `'${fieldName}': this.${fieldName}${getStringAdaptor(field, fieldName, collectionName, schema)},`;
 }
 
 export function getAttribute(
-  fieldName: string, field: FieldContent, collectionName: string, schema: FlamestoreSchema): string {
+  fieldName: string, field: Field, collectionName: string, schema: FlamestoreSchema): string {
   return `${fieldName}: ${getDataTypeString(field, fieldName, collectionName, schema)};`;
 }

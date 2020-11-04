@@ -1,4 +1,4 @@
-import { Collection, FieldContent, FieldType, FieldTypes, Rule, RuleType, FlamestoreSchema } from "../../types/schema";
+import { Collection, FlamestoreSchema, RuleType, Rule, Field, FieldTypes } from "../../schema";
 
 export default function collectionRuleTemplate(collectionName: string, collection: Collection, schema: FlamestoreSchema) {
   const extractDocId = getExtractDocumentId(collection);
@@ -145,7 +145,7 @@ function getIsOwnerFunction(collectionName: string, collection: Collection, sche
 }
 
 function getIsFieldsValidFunction(
-  fieldName: string, field: FieldContent
+  fieldName: string, field: Field
 ): string {
   let additionalRule = '';
   if (field.type) {
@@ -161,9 +161,9 @@ function getIsFieldsValidFunction(
       if (minLength || minLength === 0) {
         additionalRule += ` && ${fieldName}.size() >= ${minLength}`;
       }
-      if (field.isKey) {
-        additionalRule += ` && ${fieldName} == ${fieldName}OfDocumentId()`;
-      }
+      // if (field.isKey) {
+      //   additionalRule += ` && ${fieldName} == ${fieldName}OfDocumentId()`;
+      // }
     } else if (field.type?.int) {
       const min = field.type.int?.min;
       if (min || min === 0) {
@@ -181,9 +181,9 @@ function getIsFieldsValidFunction(
       }
     } else if (field.type?.path) {
       additionalRule += ` && exists(${fieldName})`;
-      if (field.isKey) {
-        additionalRule += ` && get(${fieldName}).id == ${fieldName}OfDocumentId()`;
-      }
+      // if (field.isKey) {
+      //   additionalRule += ` && get(${fieldName}).id == ${fieldName}OfDocumentId()`;
+      // }
     }
   }
   if (additionalRule !== '') {
@@ -197,7 +197,7 @@ function getIsFieldsValidFunction(
 }
 
 
-function getRuleTypeStringOfField(field: FieldContent) {
+function getRuleTypeStringOfField(field: Field) {
   for (const fieldType of Object.values(FieldTypes)) {
     if (field?.type?.[fieldType]) {
       return fieldType;
