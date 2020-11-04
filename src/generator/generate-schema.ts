@@ -1,8 +1,8 @@
-import { FlamestoreSchema } from "./type";
+import { Field, FieldTypes, FlamestoreSchema } from "./type";
 import * as fs from 'fs';
 import * as path from 'path';
 import * as prettier from 'prettier';
-import { getPascalCollectionName, getDataTypeString } from "./util";
+import { getPascalCollectionName, getFieldType } from "./util";
 
 
 export function generateSchema(outputFilePath: string, schema: FlamestoreSchema) {
@@ -37,15 +37,13 @@ ${schemaContent}
 }
 
 
-// export function getConstructor(fieldName: string): string {
-//   return `this.${fieldName} = snapshot.data().${fieldName}`;
-// }
-
-// export function getStaticField(fieldName: string): string {
-//   return `static ${fieldName}Key = '${fieldName}';`;
-// }
-
-// export function getToString(
-//   fieldName: string, field: Field, collectionName: string, schema: FlamestoreSchema): string {
-//   return `'${fieldName}': this.${fieldName}${getStringAdaptor(field, fieldName, collectionName, schema)},`;
-// }
+function getDataTypeString(
+  field: Field, fieldName: string, collectionName: string, schema: FlamestoreSchema): string {
+  const typeMap: Record<FieldTypes, string> = {
+    [FieldTypes.STRING]: 'string',
+    [FieldTypes.DATETIME]: 'firestore.Timestamp',
+    [FieldTypes.INT]: 'number',
+    [FieldTypes.PATH]: 'firestore.DocumentReference',
+  }
+  return typeMap[getFieldType(field, fieldName, collectionName, schema)];
+}
