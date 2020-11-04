@@ -1,7 +1,46 @@
-import { FlamestoreModule } from "../../module";
-import { Collection, FlamestoreSchema, RuleType, Rule, Field, FieldTypes } from "../../schema";
+import * as fs from 'fs';
+import { FlamestoreModule } from './module';
+import { Collection, Field, FlamestoreSchema, Rule, RuleType } from './schema';
 
-export default function collectionRuleTemplate(
+export default function generateRule(
+  schema: FlamestoreSchema,
+  outputFilePath: string,
+  modules: FlamestoreModule[],
+) {
+  const collectionsRule =
+    Object.entries(schema.collections)
+      .map(([collectionName, collection]) =>
+        collectionRuleTemplate(collectionName, collection, schema, modules))
+      .join('\n');
+  fs.writeFileSync(outputFilePath, ruleTemplate(collectionsRule));
+}
+
+function ruleTemplate(collectionsRule: string) {
+  return `rules_version = '2';
+service cloud.firestore {
+
+  match /databases/{database}/documents {
+    function isAuthenticated(){
+      return request.auth != null;
+    }
+    function reqData(){
+      return request.resource.data;
+    }
+    function resData(){
+      return resource.data;
+    }
+    function isNotDeleted(fieldName){
+      return fieldName in reqData() && fieldName in resData();
+    }
+    function updatedKeys(){
+      return reqData().diff(resData()).affectedKeys();
+    }
+${collectionsRule}
+  }
+}`;
+}
+
+function collectionRuleTemplate(
   collectionName: string,
   collection: Collection,
   schema: FlamestoreSchema,

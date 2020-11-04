@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import generateTrigger from './code-generator';
-import generateRule from './code-generator/rule-generator';
+import generateRule from './generate-rule';
 import { module as countModule } from './modules/count';
 import { module as documentIdModule } from './modules/document-id';
 import { module as intModule } from './modules/int';

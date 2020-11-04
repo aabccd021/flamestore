@@ -1,10 +1,10 @@
-import { FlamestoreSchema } from "../types/schema";
 import * as fs from 'fs';
 import * as path from 'path';
 import * as prettier from 'prettier';
 import getContent from "./trigger-generator";
 import { getSchemaContent } from "./schema-generator/generate-schema";
 import { getPascalCollectionName } from "./generator-util";
+import { FlamestoreSchema } from '../schema';
 
 export default function generate(schema: FlamestoreSchema, outputFilePath: string) {
   Object.entries(getContent(schema)).forEach(([colName, colString]) => {
