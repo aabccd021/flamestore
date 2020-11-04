@@ -12,7 +12,7 @@
                 "ts-node/register/transpile-only"
             ],
             "args": [
-                "${workspaceRoot}/src/index.ts",
+                "${workspaceRoot}/src/generator/index.ts",
             ],
             "cwd": "${workspaceRoot}/firebase",
             "outputCapture": "std",

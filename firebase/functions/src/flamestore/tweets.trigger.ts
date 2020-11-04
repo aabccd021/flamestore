@@ -4,15 +4,15 @@ import { firestore } from "firebase-admin";
 import {
   foundDuplicate,
   allSettled,
-  updateIfNotEmpty,
+  update,
   increment,
   syncField,
-} from "./utils";
+} from "flamestore";
 import { User, Tweet, Like } from "./model";
 
 const functions = _functions.region("asia-southeast2");
 
-export const onTweetCreate = functions.firestore
+export const onCreate = functions.firestore
   .document("/tweets/{documentId}")
   .onCreate(async (snapshot, context) => {
     const data = snapshot.data() as Tweet;
@@ -29,12 +29,12 @@ export const onTweetCreate = functions.firestore
     userData.tweetsCount = increment(1);
 
     await allSettled([
-      updateIfNotEmpty(snapshot.ref, snapshotRefData),
-      updateIfNotEmpty(data.user, userData),
+      update(snapshot.ref, snapshotRefData),
+      update(data.user, userData),
     ]);
   });
 
-export const onTweetDelete = functions.firestore
+export const onDelete = functions.firestore
   .document("/tweets/{documentId}")
   .onDelete(async (snapshot, context) => {
     const data = snapshot.data() as Tweet;
@@ -42,5 +42,5 @@ export const onTweetDelete = functions.firestore
     const userData: { [fieldName: string]: any } = {};
     userData.tweetsCount = increment(-1);
 
-    await updateIfNotEmpty(data.user, userData);
+    await update(data.user, userData);
   });

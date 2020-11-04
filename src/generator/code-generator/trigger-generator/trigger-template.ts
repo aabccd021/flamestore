@@ -52,7 +52,7 @@ function triggerTemplate(
 
   const firstParam = triggerType === TriggerType.Update ? 'change' : 'snapshot';
   return `
-  export const on${pascalCollectionName}${triggerType} = functions.firestore
+  export const on${triggerType} = functions.firestore
   .document('/${collectionName}/{documentId}')
   .on${triggerType}(async (${firstParam}, context)=>{
     ${prepareTrigger};
@@ -117,7 +117,7 @@ function refTriggerDataToBatchCommitString(triggerData: TriggerData, triggerType
   for (const [refName, refTrigger] of Object.entries(triggerData._data)) {
     const setName = refName === 'snapshotRef' ? `snapshot${post}.ref` : `${dataName}.${refName}`
     if (refTrigger !== {}) {
-      content.push(`updateIfNotEmpty(${setName},${refName}Data)`);
+      content.push(`update(${setName},${refName}Data)`);
     }
   }
   const batchCommit = [...content, ...triggerData._resultPromises];

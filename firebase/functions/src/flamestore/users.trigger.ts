@@ -4,15 +4,15 @@ import { firestore } from "firebase-admin";
 import {
   foundDuplicate,
   allSettled,
-  updateIfNotEmpty,
+  update,
   increment,
   syncField,
-} from "./utils";
+} from "flamestore";
 import { User, Tweet, Like } from "./model";
 
 const functions = _functions.region("asia-southeast2");
 
-export const onUserCreate = functions.firestore
+export const onCreate = functions.firestore
   .document("/users/{documentId}")
   .onCreate(async (snapshot, context) => {
     const data = snapshot.data() as User;
@@ -22,10 +22,10 @@ export const onUserCreate = functions.firestore
     const snapshotRefData: { [fieldName: string]: any } = {};
     snapshotRefData.tweetsCount = 0;
 
-    await updateIfNotEmpty(snapshot.ref, snapshotRefData);
+    await update(snapshot.ref, snapshotRefData);
   });
 
-export const onUserUpdate = functions.firestore
+export const onUpdate = functions.firestore
   .document("/users/{documentId}")
   .onUpdate(async (change, context) => {
     const before = change.before.data() as User;

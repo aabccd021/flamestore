@@ -4,15 +4,15 @@ import { firestore } from "firebase-admin";
 import {
   foundDuplicate,
   allSettled,
-  updateIfNotEmpty,
+  update,
   increment,
   syncField,
-} from "./utils";
+} from "flamestore";
 import { User, Tweet, Like } from "./model";
 
 const functions = _functions.region("asia-southeast2");
 
-export const onLikeCreate = functions.firestore
+export const onCreate = functions.firestore
   .document("/likes/{documentId}")
   .onCreate(async (snapshot, context) => {
     const data = snapshot.data() as Like;
@@ -20,10 +20,10 @@ export const onLikeCreate = functions.firestore
     const tweetData: { [fieldName: string]: any } = {};
     tweetData.likesSum = increment(data.likeValue);
 
-    await updateIfNotEmpty(data.tweet, tweetData);
+    await update(data.tweet, tweetData);
   });
 
-export const onLikeUpdate = functions.firestore
+export const onUpdate = functions.firestore
   .document("/likes/{documentId}")
   .onUpdate(async (change, context) => {
     const before = change.before.data() as Like;
@@ -32,10 +32,10 @@ export const onLikeUpdate = functions.firestore
     const tweetData: { [fieldName: string]: any } = {};
     tweetData.likesSum = increment(after.likeValue - before.likeValue);
 
-    await updateIfNotEmpty(after.tweet, tweetData);
+    await update(after.tweet, tweetData);
   });
 
-export const onLikeDelete = functions.firestore
+export const onDelete = functions.firestore
   .document("/likes/{documentId}")
   .onDelete(async (snapshot, context) => {
     const data = snapshot.data() as Like;
@@ -43,5 +43,5 @@ export const onLikeDelete = functions.firestore
     const tweetData: { [fieldName: string]: any } = {};
     tweetData.likesSum = increment(-data.likeValue);
 
-    await updateIfNotEmpty(data.tweet, tweetData);
+    await update(data.tweet, tweetData);
   });

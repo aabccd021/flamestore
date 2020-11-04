@@ -3,6 +3,16 @@
   "version": "1.0.55",
   "description": "firestore trigger generator",
   "main": "lib/index.js",
+  "types": "lib/index.d.js",
+  "bin": {
+    "generate": "lib/generator/index.js"
+  },
+  "scripts": {
+    "test": "mocha --exit -r ts-node/register tests/**/*.ts",
+    "build": "tsc",
+    "build:check": "tsc --noEmit",
+    "flamestore2": "npm run build && node lib/index.js -i sample/sample.json --ro firebase/functions/firestore.rules --to firebase/functions/src/flamestore/triggers.ts"
+  },
   "dependencies": {
     "pluralize": "^8.0.0",
     "prettier": "^2.1.1"
@@ -22,15 +32,6 @@
     "ts-node": "^9.0.0",
     "tslint": "^6.1.3",
     "typescript": "^3.9.7"
-  },
-  "bin": {
-    "generate": "lib/index.js"
-  },
-  "scripts": {
-    "test": "mocha --exit -r ts-node/register tests/**/*.ts",
-    "build": "tsc",
-    "build:check": "tsc --noEmit",
-    "flamestore2": "npm run build && node lib/index.js -i sample/sample.json --ro firebase/functions/firestore.rules --to firebase/functions/src/flamestore/triggers.ts"
   },
   "prepublish": "npm run build",
   "publishConfig": {
