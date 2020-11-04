@@ -15,6 +15,7 @@ import { module as typeModule } from './modules/type';
 import * as fs from 'fs';
 import { FlamestoreModule } from './module';
 import { FlamestoreSchema } from './schema';
+import { generateSchema } from './generate-schema';
 
 const modules: FlamestoreModule[] = [
   typeModule,
@@ -42,6 +43,11 @@ modules.forEach(module => module.validate && module.validate(schema));
 // generate rule
 const rulePath = schema.configuration.ruleOutputPath || "firestore/firestore.rules";
 generateRule(schema, rulePath, modules);
-// const triggerPath = schema.configuration.triggerOutputPath || "functions/src/flamestore/";
+
+const triggerPath = schema.configuration.triggerOutputPath || "functions/src/flamestore/";
+// generate schema
+generateSchema(triggerPath, schema);
+
+// generate triggers
 // generateTrigger(schema, triggerPath);
 

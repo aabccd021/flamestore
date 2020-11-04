@@ -1,5 +1,5 @@
-import * as fs from 'fs';
-import { FlamestoreSchema, FieldTypes } from './schema';
+import pluralize from 'pluralize';
+import { FlamestoreSchema, FieldTypes, Field } from './schema';
 
 export function assertCollectionNameExists(collectionName: string, schema: FlamestoreSchema, stackTrace: string) {
   if (!Object.keys(schema.collections).includes(collectionName)) {
@@ -76,4 +76,54 @@ export function getColNameToSyncFrom(collectionName: string, fieldName: string, 
     return collectionNameToSyncFrom;
   }
   throw Error('Not an syncFrom field');
+}
+
+export function getDataTypeString(
+  field: Field, fieldName: string, collectionName: string, schema: FlamestoreSchema) {
+  const typeMap: Record<FieldTypes, string> = {
+    [FieldTypes.STRING]: 'string',
+    [FieldTypes.DATETIME]: 'firestore.Timestamp',
+    [FieldTypes.INT]: 'number',
+    [FieldTypes.PATH]: 'firestore.DocumentReference',
+  }
+  return typeMap[getFieldType(field, fieldName, collectionName, schema)];
+}
+
+function getFieldType(
+  field: Field, fieldName: string, collectionName: string, schema: FlamestoreSchema): FieldTypes {
+  if (field.type) {
+    for (const fieldType of Object.values(FieldTypes)) {
+      if (field.type[fieldType]) {
+        return fieldType;
+      }
+    }
+  } else {
+    if (field.count || field.sum) {
+      return FieldTypes.INT;
+    } else if (field.syncFrom) {
+      const colNameToSyncFrom = getColNameToSyncFrom(collectionName, fieldName, schema);
+      const type = schema.collections[colNameToSyncFrom].fields[field.syncFrom.field].type!;
+      for (const fieldType of Object.values(FieldTypes)) {
+        if (type[fieldType]) {
+          return fieldType;
+        }
+      }
+    }
+  }
+  throw Error(`Field type ${field.type} is invalid`)
+}
+
+export function getPascalCollectionName(collectionName: string): string {
+  const singularized = pluralize.singular(collectionName);
+  return singularized[0].toUpperCase() + singularized.substring(1);
+}
+
+export function getStringAdaptor(
+  field: Field, fieldName: string, collectionName: string, schema: FlamestoreSchema
+): string {
+  const fieldType = getFieldType(field, fieldName, collectionName, schema);
+  if (fieldType === FieldTypes.PATH) {
+    return '.id';
+  }
+  return '';
 }
