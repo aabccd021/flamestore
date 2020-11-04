@@ -11,10 +11,10 @@ export interface FlamestoreConfig {
 }
 
 export interface Collections {
-  [name: string]: CollectionContent;
+  [name: string]: Collection;
 }
 
-export interface CollectionContent {
+export interface Collection {
   fields: Fields;
   rules: Rules;
 }

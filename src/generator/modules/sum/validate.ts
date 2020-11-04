@@ -1,9 +1,7 @@
-import { FlamestoreSchema, FieldTypes } from "../utils/interface";
-import { assertFieldHasTypeOf } from "../utils/field-util";
-import { assertCollectionNameExists } from "../utils/collection-util";
+import { FlamestoreSchema, FieldTypes } from "../../types/schema";
+import { assertCollectionNameExists, assertFieldHasTypeOf } from "../../utils/util";
 
-
-export default function validateSum(schema: FlamestoreSchema) {
+export function validate(schema: FlamestoreSchema) {
   for (const [collectionName, collection] of Object.entries(schema.collections)) {
     for (const [fieldName, field] of Object.entries(collection.fields)) {
       if (field.sum) {

@@ -1,4 +1,4 @@
-import { FlamestoreSchema } from "../utils/interface";
+import { FlamestoreSchema } from "../types/schema";
 import * as fs from 'fs';
 import * as path from 'path';
 import * as prettier from 'prettier';
@@ -10,20 +10,24 @@ export default function generate(schema: FlamestoreSchema, outputFilePath: strin
   Object.entries(getContent(schema)).forEach(([colName, colString]) => {
     const triggerContent = triggerHeader(schema, modelImports(schema)) + colString;
     const triggerFileContent = prettier.format(triggerContent, { parser: "typescript" });
-    fs.writeFileSync(path.join(outputFilePath, `${colName}.trigger.ts`), triggerFileContent);
+    const triggerDir = path.join(outputFilePath, 'triggers')
+    if (!fs.existsSync(triggerDir)) {
+      fs.mkdirSync(triggerDir);
+    }
+    fs.writeFileSync(path.join(triggerDir, `${colName}.ts`), triggerFileContent);
   }
   );
 
   const modelContent = modelHeader + getSchemaContent(schema);
   const modelFileContent = prettier.format(modelContent, { parser: "typescript" });
-  fs.writeFileSync(path.join(outputFilePath, 'model.ts'), modelFileContent);
+  fs.writeFileSync(path.join(outputFilePath, 'models.ts'), modelFileContent);
 
 
   fs.writeFileSync(path.join(outputFilePath, 'index.ts'), indexHeader(schema));
 }
 
 const indexHeader = (schema: FlamestoreSchema) => {
-  return Object.keys(schema.collections).map(e => `export * as ${e} from "./${e}.trigger";`).join('\n');
+  return Object.keys(schema.collections).map(e => `export * as ${e} from "./triggers/${e}";`).join('\n');
 }
 
 
@@ -34,7 +38,7 @@ import { firestore } from 'firebase-admin';
 
 const modelImports = (schema: FlamestoreSchema) => {
   const modelNames = Object.keys(schema.collections).map(n => getPascalCollectionName(n)).join(',');
-  return `import {${modelNames}} from "./model"`;
+  return `import {${modelNames}} from "../models"`;
 };
 
 const triggerHeader = (schema: FlamestoreSchema, imports: string) => {

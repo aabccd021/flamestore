@@ -1,4 +1,4 @@
-import { FlamestoreSchema, CollectionContent } from "../../utils/interface";
+import { FlamestoreSchema, Collection } from "../../types/schema";
 import { schemaImports, getAttribute, collectionSchema } from "./schema-template";
 
 export function getSchemaContent(schema: FlamestoreSchema): string {
@@ -8,7 +8,7 @@ export function getSchemaContent(schema: FlamestoreSchema): string {
   return content;
 }
 
-function getCollectionSchema(collectionName: string, collection: CollectionContent, schema: FlamestoreSchema): string {
+function getCollectionSchema(collectionName: string, collection: Collection, schema: FlamestoreSchema): string {
   const fieldEntries = Object.entries(collection.fields);
   return collectionSchema(
     collectionName,

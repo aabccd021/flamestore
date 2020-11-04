@@ -1,4 +1,4 @@
-import { FieldContent, CollectionContent, FlamestoreSchema } from "../../utils/interface";
+import { FieldContent, Collection, FlamestoreSchema } from "../../types/schema";
 import TriggerData from "./trigger-data";
 
 
@@ -13,7 +13,7 @@ export type TriggerHeaderGenerator = (
 export type TriggerGenerator = (
   triggerMap: TriggerMap,
   collectionName: string,
-  collection: CollectionContent,
+  collection: Collection,
   fieldName: string,
   field: FieldContent,
   schema: FlamestoreSchema,
@@ -28,7 +28,7 @@ export class CollectionTriggerMap {
   updateTrigger: TriggerData;
   deleteTrigger: TriggerData;
 
-  constructor(collection: CollectionContent) {
+  constructor(collection: Collection) {
     this.createTrigger = new TriggerData();
     this.updateTrigger = new TriggerData();
     this.deleteTrigger = new TriggerData();

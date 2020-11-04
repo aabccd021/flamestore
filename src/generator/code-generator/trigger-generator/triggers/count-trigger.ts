@@ -1,11 +1,11 @@
 import { TriggerMap } from "../interface";
-import { FieldContent, CollectionContent } from "../../../utils/interface";
+import { FieldContent, Collection } from "../../../types/schema";
 
 
 export function countTriggerGenerator(
   triggerMap: TriggerMap,
   collectionName: string,
-  __: CollectionContent,
+  __: Collection,
   fieldName: string,
   field: FieldContent,
 ): TriggerMap {

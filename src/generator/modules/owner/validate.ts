@@ -1,6 +1,6 @@
-import { FlamestoreSchema } from "../utils/interface";
+import { FlamestoreSchema } from "../../types/schema";
 
-export default function validateOwnerField(schema: FlamestoreSchema) {
+export function validate(schema: FlamestoreSchema) {
   validateIsOwnerDocRef(schema);
   validateIsOwnerUid(schema);
 }

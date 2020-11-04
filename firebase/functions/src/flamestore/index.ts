@@ -1,3 +1,3 @@
-export * as users from "./users.trigger";
-export * as tweets from "./tweets.trigger";
-export * as likes from "./likes.trigger";
+export * as users from "./triggers/users";
+export * as tweets from "./triggers/tweets";
+export * as likes from "./triggers/likes";

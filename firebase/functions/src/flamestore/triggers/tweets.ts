@@ -8,7 +8,7 @@ import {
   increment,
   syncField,
 } from "flamestore";
-import { User, Tweet, Like } from "./model";
+import { User, Tweet, Like } from "../models";
 
 const functions = _functions.region("asia-southeast2");
 

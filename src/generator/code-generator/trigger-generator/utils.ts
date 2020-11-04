@@ -1,5 +1,5 @@
 import { TriggerMap, CollectionTriggerMap, TriggerGenerator } from "./interface";
-import { FlamestoreSchema } from "../../utils/interface";
+import { FlamestoreSchema } from "../../types/schema";
 import { onCreateTemplate, onDeleteTemplate, onUpdateTemplate } from "./trigger-template";
 import TriggerData from "./trigger-data";
 

@@ -1,12 +1,12 @@
 import { TriggerMap } from "../interface";
-import { FieldContent, CollectionContent, FlamestoreSchema } from "../../../utils/interface";
+import { FieldContent, Collection, FlamestoreSchema } from "../../../types/schema";
 import { getPascalCollectionName } from "../../generator-util";
 import { getColNameToSyncFrom } from "../../../utils/sync-from-util";
 
 export function syncFromTriggerGenerator(
   triggerMap: TriggerMap,
   collectionName: string,
-  __: CollectionContent,
+  __: Collection,
   fieldName: string,
   field: FieldContent,
   schema: FlamestoreSchema,

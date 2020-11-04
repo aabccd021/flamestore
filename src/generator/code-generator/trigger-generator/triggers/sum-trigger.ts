@@ -1,10 +1,10 @@
-import { FieldContent, CollectionContent } from "../../../utils/interface";
+import { FieldContent, Collection } from "../../../types/schema";
 import { TriggerMap } from "../interface";
 
 export function sumTriggerGenerator(
   triggerMap: TriggerMap,
   collectionName: string,
-  __: CollectionContent,
+  __: Collection,
   fieldName: string,
   field: FieldContent,
 ): TriggerMap {

@@ -1,7 +1,7 @@
-import { CollectionContent, FieldContent, FieldType, FieldTypes, Rule, RuleType, FlamestoreSchema } from "../../utils/interface";
+import { Collection, FieldContent, FieldType, FieldTypes, Rule, RuleType, FlamestoreSchema } from "../../types/schema";
 
-export default function collectionRuleTemplate(collectionName: string, collection: CollectionContent, schema: FlamestoreSchema) {
-  const extractDocId = getExtractDocumentId(collection, schema);
+export default function collectionRuleTemplate(collectionName: string, collection: Collection, schema: FlamestoreSchema) {
+  const extractDocId = getExtractDocumentId(collection);
   const isOwnerFunction = getIsOwnerFunction(collectionName, collection, schema);
   let fieldIsValidFunctions = '';
   for (const [fieldName, field] of Object.entries(collection.fields)) {
@@ -19,7 +19,7 @@ ${extractDocId}${isOwnerFunction}${fieldIsValidFunctions}${isCreateValidFunction
     }`;
 }
 
-function getExtractDocumentId(collection: CollectionContent, schema: FlamestoreSchema) {
+function getExtractDocumentId(collection: Collection) {
   let content = '';
   let counter = 0;
   for (const [fieldName, field] of Object.entries(collection.fields)) {
@@ -33,7 +33,7 @@ function getExtractDocumentId(collection: CollectionContent, schema: FlamestoreS
   return content;
 }
 
-function getRule(collection: CollectionContent, ruleType: RuleType) {
+function getRule(collection: Collection, ruleType: RuleType) {
   if (collection.rules[ruleType]) {
     const rule = collection.rules[ruleType];
     if (rule === Rule.ALL) {
@@ -75,7 +75,7 @@ function getRule(collection: CollectionContent, ruleType: RuleType) {
   return 'false';
 }
 
-function getIsCreateValidFunction(collection: CollectionContent) {
+function getIsCreateValidFunction(collection: Collection) {
   const hasOnlies: string[] = [];
   let isValids = '';
   for (const [fieldName, field] of Object.entries(collection.fields)) {
@@ -94,7 +94,7 @@ function getIsCreateValidFunction(collection: CollectionContent) {
       }`
 }
 
-function getIsUpdateValidFunction(collection: CollectionContent) {
+function getIsUpdateValidFunction(collection: Collection) {
   const hasOnlies: string[] = [];
   let isValids = '';
   for (const [fieldName, field] of Object.entries(collection.fields)) {
@@ -112,7 +112,7 @@ function getIsUpdateValidFunction(collection: CollectionContent) {
       }`
 }
 
-function getIsOwnerFunction(collectionName: string, collection: CollectionContent, schema: FlamestoreSchema) {
+function getIsOwnerFunction(collectionName: string, collection: Collection, schema: FlamestoreSchema) {
   for (const [fieldName, field] of Object.entries(collection.fields)) {
     const isDocExists = `!(exists(/databases/$(database)/documents/${collectionName}/$(documentId)))`;
     if (field.type?.string?.isOwnerUid) {

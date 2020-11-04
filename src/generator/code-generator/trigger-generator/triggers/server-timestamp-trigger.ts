@@ -1,10 +1,10 @@
-import { CollectionContent, FieldContent } from "../../../utils/interface";
+import { Collection, FieldContent } from "../../../types/schema";
 import { TriggerMap } from "../interface";
 
 export function serverTimestampTrigger(
   triggerMap: TriggerMap,
   collectionName: string,
-  _: CollectionContent,
+  _: Collection,
   fieldName: string,
   field: FieldContent,
 ): TriggerMap {

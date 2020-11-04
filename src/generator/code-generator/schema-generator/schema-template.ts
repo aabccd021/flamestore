@@ -1,5 +1,5 @@
 import { getDataTypeString, getPascalCollectionName as getPascalCollectionName, getStringAdaptor } from "../generator-util";
-import { FieldContent, FlamestoreSchema } from "../../utils/interface";
+import { FieldContent, FlamestoreSchema } from "../../types/schema";
 
 export const schemaImports = `
 `

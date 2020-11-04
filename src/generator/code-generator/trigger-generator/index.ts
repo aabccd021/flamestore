@@ -1,5 +1,5 @@
 import { importTemplate } from "./trigger-template";
-import { FlamestoreSchema } from "../../utils/interface";
+import { FlamestoreSchema } from "../../types/schema";
 import { getCompleteTriggerMap, stringOfCollectionTrigger } from './utils';
 import { countTriggerGenerator } from "./triggers/count-trigger";
 import { syncFromTriggerGenerator } from "./triggers/sync-from-trigger";

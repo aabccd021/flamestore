@@ -1,4 +1,4 @@
-import { FieldContent, FlamestoreSchema, FieldType, FieldTypes } from "../utils/interface";
+import { FieldContent, FlamestoreSchema, FieldType, FieldTypes } from "../types/schema";
 import * as pluralize from 'pluralize';
 import { getColNameToSyncFrom } from "../utils/sync-from-util";
 

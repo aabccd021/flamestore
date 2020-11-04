@@ -1,4 +1,4 @@
-import { FlamestoreSchema } from "../../utils/interface";
+import { FlamestoreSchema } from "../../types/schema";
 import * as fs from 'fs';
 import collectionRuleTemplate from "./collection-rule-generator";
 
