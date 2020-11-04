@@ -51,14 +51,24 @@ function collectionRuleTemplate(
     .map(x => `\n${x}`)
     .join('')
   const isOwnerFunction = getIsOwnerFunction(collectionName, collection, schema);
+
+  const isCreateValidFunction: ValidationFunction
+    = collection.rules.create
+      ? getIsCreateValidFunction(collection, modules)
+      : { content: '', usedFields: [] };
+  const isUpdateValidFunction: ValidationFunction
+    = collection.rules.update
+      ? getIsUpdateValidFunction(collection, modules)
+      : { content: '', usedFields: [] };
   const fieldIsValidFunctions =
     Object.entries(collection.fields)
+      .filter(([fieldName, _]) =>
+        isUpdateValidFunction.usedFields.includes(fieldName)
+        || isCreateValidFunction.usedFields.includes(fieldName))
       .map(([fieldName, field]) => getIsFieldsValidFunction(fieldName, field, modules))
       .join('');
-  const isCreateValidFunction = collection.rules.create ? getIsCreateValidFunction(collection, modules) : '';
-  const isUpdateValidFunction = collection.rules.update ? getIsUpdateValidFunction(collection, modules) : '';
   return `    match /${collectionName}/{documentId} {${ruleFunction}
-${isOwnerFunction}${fieldIsValidFunctions}${isCreateValidFunction}${isUpdateValidFunction}
+${isOwnerFunction}${fieldIsValidFunctions}${isCreateValidFunction.content}${isUpdateValidFunction.content}
       allow get: if ${getRule(collection, RuleType.GET)};
       allow list: if ${getRule(collection, RuleType.LIST)};
       allow create: if ${getRule(collection, RuleType.CREATE)};
@@ -67,6 +77,10 @@ ${isOwnerFunction}${fieldIsValidFunctions}${isCreateValidFunction}${isUpdateVali
     }`;
 }
 
+interface ValidationFunction {
+  content: string,
+  usedFields: string[]
+}
 
 function getRule(collection: Collection, ruleType: RuleType) {
   if (collection.rules[ruleType]) {
@@ -110,7 +124,7 @@ function getRule(collection: Collection, ruleType: RuleType) {
   return 'false';
 }
 
-function getIsCreateValidFunction(collection: Collection, modules: FlamestoreModule[]) {
+function getIsCreateValidFunction(collection: Collection, modules: FlamestoreModule[]): ValidationFunction {
   const creatableFields = Object.entries(collection.fields)
     .filter(([_, field]) => modules
       .every(module => module.isCreatable ? module.isCreatable(field) : true))
@@ -125,13 +139,16 @@ function getIsCreateValidFunction(collection: Collection, modules: FlamestoreMod
 
   const hasOnlies = creatableFields.map(x => `'${x}'`);
 
-  return `
+  return {
+    usedFields: creatableFields,
+    content: `
       function isCreateValid(){
         return reqData().keys().hasOnly([${hasOnlies}])${isValids};
-      }`
+      }`,
+  }
 }
 
-function getIsUpdateValidFunction(collection: Collection, modules: FlamestoreModule[]) {
+function getIsUpdateValidFunction(collection: Collection, modules: FlamestoreModule[]): ValidationFunction {
 
   const updatableFields = Object.entries(collection.fields)
     .filter(([_, field]) => modules
@@ -149,10 +166,13 @@ function getIsUpdateValidFunction(collection: Collection, modules: FlamestoreMod
 
   const hasOnlies = updatableFields.map(x => `'${x}'`);
 
-  return `
+  return {
+    usedFields: updatableFields,
+    content: `
       function isUpdateValid(){
         return updatedKeys().hasOnly([${hasOnlies}])${isValids};
       }`
+  }
 }
 
 function getIsOwnerFunction(collectionName: string, collection: Collection, schema: FlamestoreSchema) {
