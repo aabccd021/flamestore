@@ -49,10 +49,13 @@ modules.forEach(module => module.validate && module.validate(schema));
 const rulePath = schema.configuration.ruleOutputPath || "firestore/firestore.rules";
 generateRule(schema, rulePath, modules);
 
-const triggerPath = schema.configuration.triggerOutputPath || "functions/src/flamestore/";
+const flamestoreDir = schema.configuration.triggerOutputPath || "functions/src/triggers/flamestore/";
 // generate schema
-generateSchema(triggerPath, schema);
+if (!fs.existsSync(flamestoreDir)) {
+  fs.mkdirSync(flamestoreDir, { recursive: true });
+}
+generateSchema(flamestoreDir, schema);
 
 // generate triggers
-generateTrigger(schema, triggerPath, modules);
+generateTrigger(schema, flamestoreDir, modules);
 

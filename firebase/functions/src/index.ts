@@ -1,3 +1,3 @@
 import * as admin from "firebase-admin";
 admin.initializeApp();
-export * from "./flamestore";
+export * as triggers from "./triggers";
