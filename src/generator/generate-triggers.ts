@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as prettier from 'prettier';
-import { CollectionTriggerMap, FlamestoreModule, FlamestoreSchema, TriggerGenerator, TriggerMap, TriggerType } from './type';
+import { CollectionTriggerMap, FlamestoreModule, FlamestoreSchema, TriggerGenerator, TriggerMap } from './type';
 import { getPascalCollectionName } from './util';
 
 export default function generate(
@@ -266,4 +266,10 @@ interface UpdateData {
 
 interface UpdateFieldData {
   [fieldName: string]: { fieldValue: string, fieldCondition?: string }
+}
+
+enum TriggerType {
+  Create = 'Create',
+  Update = 'Update',
+  Delete = 'Delete',
 }

@@ -3,13 +3,13 @@ export interface FlamestoreSchema {
   configuration: FlamestoreConfig;
 }
 
-export interface FlamestoreConfig {
+interface FlamestoreConfig {
   ruleOutputPath: string;
   triggerOutputPath: string;
   region: string;
 }
 
-export interface Collections {
+interface Collections {
   [name: string]: Collection;
 }
 
@@ -18,7 +18,7 @@ export interface Collection {
   rules: Rules;
 }
 
-export interface Rules {
+interface Rules {
   [RuleType.GET]?: Rule;
   [RuleType.LIST]?: Rule;
   [RuleType.CREATE]?: Rule;
@@ -55,13 +55,13 @@ export interface Field {
   syncFrom?: SyncFrom;
 }
 
-export interface Sum {
+interface Sum {
   collection: string,
   field: string,
   reference: string,
 }
 
-export interface Count {
+interface Count {
   collection: string,
   reference: string,
 }
@@ -71,7 +71,7 @@ interface SyncFrom {
   reference: string,
 }
 
-export interface FieldType {
+interface FieldType {
   [FieldTypes.STRING]?: StringField,
   [FieldTypes.DATETIME]?: DatetimeField,
   [FieldTypes.PATH]?: ReferenceField,
@@ -84,17 +84,17 @@ interface StringField {
   maxLength?: number,
 }
 
-export interface DatetimeField {
+interface DatetimeField {
   serverTimestamp?: boolean,
 }
 
 
-export interface ReferenceField {
+interface ReferenceField {
   collection: string,
   isOwnerDocRef?: boolean,
 }
 
-export interface IntField {
+interface IntField {
   min?: number,
   max?: number,
   deleteDocWhen?: number,
@@ -114,13 +114,6 @@ export interface FlamestoreModule {
   getRule?: (fieldName: string, field: Field) => string[],
   triggerGenerator?: TriggerGenerator,
 }
-
-export type TriggerHeaderGenerator = (
-  triggerMap: TriggerMap,
-  collectionName: string,
-) => TriggerMap;
-
-
 
 export type TriggerGenerator = (
   triggerMap: TriggerMap,
@@ -148,13 +141,9 @@ export class CollectionTriggerMap {
 }
 
 
-export enum TriggerType {
-  Create = 'Create',
-  Update = 'Update',
-  Delete = 'Delete',
-}
 
-export class TriggerData {
+
+class TriggerData {
   _header = '';
   dependencyPromises: { [dependencyName: string]: { collection: string, promise: string } } = {};
   _resultPromises: string[] = [];
@@ -192,10 +181,10 @@ export class TriggerData {
   }
 }
 
-export interface UpdateData {
+interface UpdateData {
   [dataName: string]: UpdateFieldData;
 }
 
-export interface UpdateFieldData {
+interface UpdateFieldData {
   [fieldName: string]: { fieldValue: string, fieldCondition?: string }
 }
