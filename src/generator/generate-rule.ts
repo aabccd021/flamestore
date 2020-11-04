@@ -116,11 +116,9 @@ function getIsCreateValidFunction(collection: Collection) {
   for (const [fieldName, field] of Object.entries(collection.fields)) {
     if (field.type && !field.type?.timestamp?.serverTimestamp) {
       hasOnlies.push(`'${fieldName}'`);
-      if (field?.isOptional) {
-        isValids += `\n          && (!('${fieldName}' in reqData()) || ${fieldName}IsValid())`;
-      } else {
-        isValids += `\n          && ${fieldName}IsValid()`;
-      }
+      isValids += field?.isOptional
+        ? `\n          && (!('${fieldName}' in reqData()) || ${fieldName}IsValid())`
+        : `\n          && ${fieldName}IsValid()`;
     }
   }
   return `
