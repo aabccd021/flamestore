@@ -113,6 +113,7 @@ export interface FlamestoreModule {
   ruleFunction?: (collection: Collection) => string[],
   getRule?: (fieldName: string, field: Field) => string[],
   triggerGenerator?: TriggerGenerator,
+  isCreatable?: (field: Field) => boolean;
 }
 
 export type TriggerGenerator = (

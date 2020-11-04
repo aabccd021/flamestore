@@ -115,9 +115,8 @@ function getIsCreateValidFunction(collection: Collection) {
     .filter(([_, field]) => field.type && !field.type?.timestamp?.serverTimestamp)
     .map(([fieldName, _]) => fieldName);
 
-  const isValids = Object.entries(collection.fields)
-    .filter(([fieldName, _]) => creatableFields.includes(fieldName))
-    .map(([fieldName, field]) => field?.isOptional
+  const isValids = creatableFields
+    .map((fieldName) => collection.fields[fieldName]?.isOptional
       ? `(!('${fieldName}' in reqData()) || ${fieldName}IsValid())`
       : `${fieldName}IsValid()`)
     .map(x => `\n          && ${x}`)
