@@ -111,16 +111,20 @@ function getRule(collection: Collection, ruleType: RuleType) {
 }
 
 function getIsCreateValidFunction(collection: Collection) {
-  const hasOnlies: string[] = [];
-  let isValids = '';
-  for (const [fieldName, field] of Object.entries(collection.fields)) {
-    if (field.type && !field.type?.timestamp?.serverTimestamp) {
-      hasOnlies.push(`'${fieldName}'`);
-      isValids += field?.isOptional
-        ? `\n          && (!('${fieldName}' in reqData()) || ${fieldName}IsValid())`
-        : `\n          && ${fieldName}IsValid()`;
-    }
-  }
+  const creatableFields = Object.entries(collection.fields)
+    .filter(([_, field]) => field.type && !field.type?.timestamp?.serverTimestamp)
+    .map(([fieldName, _]) => fieldName);
+
+  const isValids = Object.entries(collection.fields)
+    .filter(([fieldName, _]) => creatableFields.includes(fieldName))
+    .map(([fieldName, field]) => field?.isOptional
+      ? `(!('${fieldName}' in reqData()) || ${fieldName}IsValid())`
+      : `${fieldName}IsValid()`)
+    .map(x => `\n          && ${x}`)
+    .join('');
+
+  const hasOnlies = creatableFields.map(x => `'${x}'`);
+
   return `
       function isCreateValid(){
         return reqData().keys().hasOnly([${hasOnlies}])${isValids};
