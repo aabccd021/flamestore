@@ -13,7 +13,7 @@
     "test-watch": "mocha --watch -r ts-node/register tests/**/*.ts"
   },
   "engines": {
-    "node": "10"
+    "node": "8"
   },
   "main": "lib/index.js",
   "dependencies": {
