@@ -46,10 +46,10 @@ function collectionRuleTemplate(
   modules: FlamestoreModule[],
 ) {
   const ruleFunction = modules
-    .map(module => module.ruleFunction ? module.ruleFunction(collection).filter(x => x !== '').join('\n') : '')
-    .filter(x => x !== '')
+    .map(module => module.ruleFunction ? module.ruleFunction(collection) : [])
+    .reduce((a, b) => a.concat(b), [])
     .map(x => `\n${x}`)
-    .join()
+    .join('')
   const isOwnerFunction = getIsOwnerFunction(collectionName, collection, schema);
   const fieldIsValidFunctions =
     Object.entries(collection.fields)
@@ -186,14 +186,8 @@ function getIsFieldsValidFunction(
 ): string {
   const additionalRule =
     Object.values(modules)
-      .map(module =>
-        module.getRule
-          ? module
-            .getRule(fieldName, field)
-            .filter(x => x !== '')
-            .join(' && ')
-          : '')
-      .filter(x => x !== '')
+      .map(module => module.getRule ? module.getRule(fieldName, field) : [])
+      .reduce((a, b) => a.concat(b), [])
       .join(' && ');
 
   if (additionalRule === '') {
