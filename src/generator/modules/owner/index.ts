@@ -2,7 +2,7 @@ import { FlamestoreModule } from "../../module";
 import { FlamestoreSchema } from "../../schema";
 
 export const module: FlamestoreModule = {
-  validateRaw: (_) => { },
+  validate,
 };
 
 function validate(schema: FlamestoreSchema) {

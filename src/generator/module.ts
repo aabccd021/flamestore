@@ -4,5 +4,5 @@ export interface FlamestoreModule {
   validateRaw?: (rawSchema: any) => void,
   validate?: (schema: FlamestoreSchema) => void,
   ruleFunction?: (collection: Collection) => string[],
-  rule?: (fieldName: string, field: Field) => string[],
+  getRule?: (fieldName: string, field: Field) => string[],
 }

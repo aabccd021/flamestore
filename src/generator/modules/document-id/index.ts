@@ -3,13 +3,14 @@ import { Collection, Field } from "../../schema";
 
 export const module: FlamestoreModule = {
   ruleFunction,
-  rule,
+  getRule: rule,
 }
 
 function ruleFunction(collection: Collection): string[] {
   return Object.entries(collection.fields)
     .filter(([_, field]) => field.isKey)
-    .map(([fieldName, _], counter) => `function ${fieldName}OfDocumentId(){
+    .map(([fieldName, _], counter) =>
+      `      function ${fieldName}OfDocumentId(){
         return documentId.split('_')[${counter}];
       }`);
 }

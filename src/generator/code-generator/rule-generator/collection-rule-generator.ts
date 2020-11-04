@@ -1,16 +1,26 @@
+import { FlamestoreModule } from "../../module";
 import { Collection, FlamestoreSchema, RuleType, Rule, Field, FieldTypes } from "../../schema";
 
-export default function collectionRuleTemplate(collectionName: string, collection: Collection, schema: FlamestoreSchema) {
-  const extractDocId = getExtractDocumentId(collection);
+export default function collectionRuleTemplate(
+  collectionName: string,
+  collection: Collection,
+  schema: FlamestoreSchema,
+  modules: FlamestoreModule[],
+) {
+  const ruleFunction = modules
+    .map(module => module.ruleFunction ? module.ruleFunction(collection).filter(x => x !== '').join('\n') : '')
+    .filter(x => x !== '')
+    .map(x => `\n${x}`)
+    .join()
   const isOwnerFunction = getIsOwnerFunction(collectionName, collection, schema);
-  let fieldIsValidFunctions = '';
-  for (const [fieldName, field] of Object.entries(collection.fields)) {
-    fieldIsValidFunctions += getIsFieldsValidFunction(fieldName, field);
-  }
+  const fieldIsValidFunctions =
+    Object.entries(collection.fields)
+      .map(([fieldName, field]) => getIsFieldsValidFunction(fieldName, field, modules))
+      .join('');
   const isCreateValidFunction = collection.rules.create ? getIsCreateValidFunction(collection) : '';
   const isUpdateValidFunction = collection.rules.update ? getIsUpdateValidFunction(collection) : '';
-  return `    match /${collectionName}/{documentId} {
-${extractDocId}${isOwnerFunction}${fieldIsValidFunctions}${isCreateValidFunction}${isUpdateValidFunction}
+  return `    match /${collectionName}/{documentId} {${ruleFunction}
+${isOwnerFunction}${fieldIsValidFunctions}${isCreateValidFunction}${isUpdateValidFunction}
       allow get: if ${getRule(collection, RuleType.GET)};
       allow list: if ${getRule(collection, RuleType.LIST)};
       allow create: if ${getRule(collection, RuleType.CREATE)};
@@ -19,19 +29,6 @@ ${extractDocId}${isOwnerFunction}${fieldIsValidFunctions}${isCreateValidFunction
     }`;
 }
 
-function getExtractDocumentId(collection: Collection) {
-  let content = '';
-  let counter = 0;
-  for (const [fieldName, field] of Object.entries(collection.fields)) {
-    if (field.isKey) {
-      content += `      function ${fieldName}OfDocumentId(){
-        return documentId.split('_')[${counter}];
-      }\n`;
-      counter++;
-    }
-  }
-  return content;
-}
 
 function getRule(collection: Collection, ruleType: RuleType) {
   if (collection.rules[ruleType]) {
@@ -145,62 +142,30 @@ function getIsOwnerFunction(collectionName: string, collection: Collection, sche
 }
 
 function getIsFieldsValidFunction(
-  fieldName: string, field: Field
+  fieldName: string,
+  field: Field,
+  modules: FlamestoreModule[]
 ): string {
-  let additionalRule = '';
-  if (field.type) {
-    if (!field.type?.timestamp?.serverTimestamp) {
-      additionalRule += `${fieldName} is ${getRuleTypeStringOfField(field)}`;
-    }
-    if (field.type?.string) {
-      const maxLength = field.type.string?.maxLength;
-      if (maxLength || maxLength === 0) {
-        additionalRule += ` && ${fieldName}.size() <= ${maxLength}`;
-      }
-      const minLength = field.type.string?.minLength;
-      if (minLength || minLength === 0) {
-        additionalRule += ` && ${fieldName}.size() >= ${minLength}`;
-      }
-      // if (field.isKey) {
-      //   additionalRule += ` && ${fieldName} == ${fieldName}OfDocumentId()`;
-      // }
-    } else if (field.type?.int) {
-      const min = field.type.int?.min;
-      if (min || min === 0) {
-        additionalRule += ` && ${fieldName} >= ${min}`;
-      }
+  const additionalRule =
+    Object.values(modules)
+      .map(module =>
+        module.getRule
+          ? module
+            .getRule(fieldName, field)
+            .filter(x => x !== '')
+            .join(' && ')
+          : '')
+      .filter(x => x !== '')
+      .join(' && ');
 
-      const max = field.type.int?.max;
-      if (max || max === 0) {
-        additionalRule += ` && ${fieldName} <= ${field.type.int.max}`;
-      }
-
-      const deleteDocWhen = field.type.int?.deleteDocWhen;
-      if (deleteDocWhen || deleteDocWhen === 0) {
-        additionalRule += ` && ${fieldName} != ${deleteDocWhen}`;
-      }
-    } else if (field.type?.path) {
-      additionalRule += ` && exists(${fieldName})`;
-      // if (field.isKey) {
-      //   additionalRule += ` && get(${fieldName}).id == ${fieldName}OfDocumentId()`;
-      // }
-    }
+  if (additionalRule === '') {
+    return '';
   }
-  if (additionalRule !== '') {
-    return `
+  return `
       function ${fieldName}IsValid(){
         let ${fieldName} = reqData().${fieldName};
         return ${additionalRule};
       }`;
-  }
-  return '';
 }
 
 
-function getRuleTypeStringOfField(field: Field) {
-  for (const fieldType of Object.values(FieldTypes)) {
-    if (field?.type?.[fieldType]) {
-      return fieldType;
-    }
-  }
-}
