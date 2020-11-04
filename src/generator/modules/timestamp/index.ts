@@ -1,7 +1,10 @@
-import { Collection, Field } from "../../../types/schema";
-import { TriggerMap } from "../interface";
+import { TriggerMap, Collection, Field, FlamestoreModule } from "../../type";
 
-export function serverTimestampTrigger(
+export const module: FlamestoreModule = {
+  triggerGenerator,
+}
+
+function triggerGenerator(
   triggerMap: TriggerMap,
   collectionName: string,
   _: Collection,

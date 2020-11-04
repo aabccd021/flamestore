@@ -1,4 +1,4 @@
-import { FieldTypes, Rule } from "../../schema";
+import { FieldTypes, Rule } from "../../type";
 
 export function validateRaw(schema: any) {
   validateKeys({

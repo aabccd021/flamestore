@@ -1,6 +1,5 @@
 import * as fs from 'fs';
-import { FlamestoreModule } from './module';
-import { Collection, Field, FlamestoreSchema, Rule, RuleType } from './schema';
+import { Collection, Field, FlamestoreModule, FlamestoreSchema, Rule, RuleType } from './type';
 
 export default function generateRule(
   schema: FlamestoreSchema,

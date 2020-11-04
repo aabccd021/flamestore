@@ -1,5 +1,5 @@
 import pluralize from 'pluralize';
-import { FlamestoreSchema, FieldTypes, Field } from './schema';
+import { FlamestoreSchema, FieldTypes, Field } from './type';
 
 export function assertCollectionNameExists(collectionName: string, schema: FlamestoreSchema, stackTrace: string) {
   if (!Object.keys(schema.collections).includes(collectionName)) {

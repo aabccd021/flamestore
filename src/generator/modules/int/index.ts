@@ -1,10 +1,8 @@
-import { FlamestoreModule } from "../../module";
-import { Collection, Field } from "../../schema";
+import { Field, FlamestoreModule } from "../../type";
 
 export const module: FlamestoreModule = {
   getRule: rule
 }
-
 
 function rule(fieldName: string, field: Field): string[] {
   let content = [];

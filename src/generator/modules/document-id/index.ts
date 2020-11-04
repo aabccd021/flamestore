@@ -1,9 +1,8 @@
-import { FlamestoreModule } from "../../module";
-import { Collection, Field } from "../../schema";
+import { Collection, Field, FlamestoreModule } from "../../type";
 
 export const module: FlamestoreModule = {
   ruleFunction,
-  getRule: rule,
+  getRule,
 }
 
 function ruleFunction(collection: Collection): string[] {
@@ -15,7 +14,7 @@ function ruleFunction(collection: Collection): string[] {
       }`);
 }
 
-function rule(fieldName: string, field: Field): string[] {
+function getRule(fieldName: string, field: Field): string[] {
   if (field.isKey) {
     if (field?.type?.string) {
       return [`${fieldName} == ${fieldName}OfDocumentId()`];

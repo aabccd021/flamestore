@@ -1,8 +1,10 @@
-import { FlamestoreSchema, Collection, Field } from "../../../types/schema";
-import { getPascalCollectionName as pascalOf } from "../../generator-util";
-import { TriggerMap } from "../interface";
+import { TriggerMap, Collection, Field, FlamestoreModule } from "../../type";
 
-export function uniqueFieldTriggerGenerator(
+export const module: FlamestoreModule = {
+  triggerGenerator
+}
+
+function triggerGenerator(
   triggerMap: TriggerMap,
   collectionName: string,
   _: Collection,
