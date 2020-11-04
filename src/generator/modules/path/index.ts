@@ -2,6 +2,7 @@ import { Field, FlamestoreModule } from "../../type";
 
 export const module: FlamestoreModule = {
   getRule,
+  isUpdatable: (field: Field) => !field?.type?.path
 }
 
 

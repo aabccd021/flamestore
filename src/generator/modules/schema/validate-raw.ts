@@ -70,10 +70,11 @@ function validateCollectionField(field: any, stackTrace: string) {
   validateKeys({
     object: field,
     requiredKeys: [],
-    optionalKeys: ['type', 'isKey', 'isUnique', 'isOptional', 'sum', 'count', 'syncFrom'],
+    optionalKeys: ['type', 'isKey', 'isUnique', 'isOptional', 'sum', 'count', 'syncFrom', 'rules'],
     stackTrace
   });
   validateFieldNotExistTogether(field, "type", ["syncFrom", "count", "sum"], stackTrace);
+  validateFieldNotExistTogether(field, "rules", ["syncFrom", "count", "sum"], stackTrace);
   validateFieldNotExistTogether(field, "isKey", ["isUnique", "isOptional", "syncFrom", "count", "sum"], stackTrace);
   validateFieldNotExistTogether(field, "isUnique", ["syncFrom", "count", "sum"], stackTrace);
   validateFieldNotExistTogether(field, "isOptional", ["syncFrom", "count", "sum"], stackTrace);
@@ -100,8 +101,25 @@ function validateCollectionField(field: any, stackTrace: string) {
   if (field.syncFrom) {
     validateCollectionFieldSyncFrom(field.syncFrom, `${stackTrace}.syncFrom`);
   }
+  if (field.rules) {
+    validateCollectionFieldRules(field.rules, `${stackTrace}.rules`);
+  }
 }
 
+function validateCollectionFieldRules(rules: any, stackTrace: string) {
+  validateKeys({
+    object: rules,
+    requiredKeys: ['isCreatable', 'isUpdatable'],
+    optionalKeys: [],
+    stackTrace
+  });
+  if (rules.isCreatable) {
+    validateTypeOfPrimitive(rules.isCreatable, 'boolean', `${stackTrace}.isCreatable`);
+  }
+  if (rules.isUpdatable) {
+    validateTypeOfPrimitive(rules.isUpdatable, 'boolean', `${stackTrace}.isUpdatable`);
+  }
+}
 
 function validateCollectionFieldType(type: any, stackTrace: string) {
   validateLengthOfKey(type, 1, stackTrace);

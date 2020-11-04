@@ -74,15 +74,17 @@ service cloud.firestore {
         let tweetText = reqData().tweetText;
         return tweetText is string && tweetText.size() <= 280 && tweetText.size() >= 1;
       }
+      function hotnessIsValid(){
+        let hotness = reqData().hotness;
+        return hotness is int;
+      }
       function isCreateValid(){
         return reqData().keys().hasOnly(['user','tweetText'])
           && userIsValid()
           && tweetTextIsValid();
       }
       function isUpdateValid(){
-        return updatedKeys().hasOnly(['user','tweetText'])
-          && (!('user' in reqData()) || userIsValid())
-          && isNotDeleted('user')
+        return updatedKeys().hasOnly(['tweetText'])
           && (!('tweetText' in reqData()) || tweetTextIsValid())
           && isNotDeleted('tweetText');
       }

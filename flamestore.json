@@ -12,30 +12,30 @@
       },
       "fields": {
         "uid": {
+          "isKey": true,
           "type": {
             "string": {
               "isOwnerUid": true
             }
-          },
-          "isKey": true
+          }
         },
         "userName": {
+          "isUnique": true,
           "type": {
             "string": {
               "minLength": 1,
               "maxLength": 15
             }
-          },
-          "isUnique": true
+          }
         },
         "bio": {
+          "isOptional": true,
           "type": {
             "string": {
               "minLength": 1,
               "maxLength": 160
             }
-          },
-          "isOptional": true
+          }
         },
         "tweetsCount": {
           "count": {
@@ -88,6 +88,15 @@
             "timestamp": {
               "serverTimestamp": true
             }
+          }
+        },
+        "hotness": {
+          "type": {
+            "int": {}
+          },
+          "rules": {
+            "isCreatable": false,
+            "isUpdatable": false
           }
         }
       }

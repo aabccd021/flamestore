@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { validateKeys, validateTypeOfPrimitive } from "../../src/validators/utils";
+import { validateKeys, validateTypeOfPrimitive } from "../../src/utils";
 
 describe("validateKeys", () => {
   it("Throw error if given same key in requiredKeys and optionalKeys", () => {

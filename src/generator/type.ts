@@ -53,6 +53,12 @@ export interface Field {
   sum?: Sum;
   count?: Count;
   syncFrom?: SyncFrom;
+  rules: FieldRules;
+}
+
+interface FieldRules {
+  isCreatable?: boolean,
+  isUpdatable?: boolean,
 }
 
 interface Sum {

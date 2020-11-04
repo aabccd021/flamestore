@@ -4,6 +4,7 @@ import generateTrigger from './generate-triggers';
 import generateRule from './generate-rule';
 import { module as countModule } from './modules/count';
 import { module as documentIdModule } from './modules/document-id';
+import { module as fieldRulesModule } from './modules/field-rules';
 import { module as intModule } from './modules/int';
 import { module as keyModule } from './modules/key';
 import { module as ownerModule } from './modules/owner';
@@ -23,6 +24,7 @@ const modules: FlamestoreModule[] = [
   typeModule,
   pathModule,
   documentIdModule,
+  fieldRulesModule,
   intModule,
   keyModule,
   ownerModule,

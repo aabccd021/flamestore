@@ -14,6 +14,7 @@ export interface Tweet {
   tweetText: string;
   likesSum: number;
   creationTime: firestore.Timestamp;
+  hotness: number;
 }
 
 export interface Like {
