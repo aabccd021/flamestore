@@ -5,6 +5,7 @@ import generateRule from './generate-rule';
 import { module as countModule } from './modules/count';
 import { module as documentIdModule } from './modules/document-id';
 import { module as intModule } from './modules/int';
+import { module as keyModule } from './modules/key';
 import { module as ownerModule } from './modules/owner';
 import { module as pathModule } from './modules/path';
 import { module as schemaModule } from './modules/schema';
@@ -23,6 +24,7 @@ const modules: FlamestoreModule[] = [
   pathModule,
   documentIdModule,
   intModule,
+  keyModule,
   ownerModule,
   schemaModule,
   stringModule,

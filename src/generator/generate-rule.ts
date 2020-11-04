@@ -55,8 +55,8 @@ function collectionRuleTemplate(
     Object.entries(collection.fields)
       .map(([fieldName, field]) => getIsFieldsValidFunction(fieldName, field, modules))
       .join('');
-  const isCreateValidFunction = collection.rules.create ? getIsCreateValidFunction(collection) : '';
-  const isUpdateValidFunction = collection.rules.update ? getIsUpdateValidFunction(collection) : '';
+  const isCreateValidFunction = collection.rules.create ? getIsCreateValidFunction(collection, modules) : '';
+  const isUpdateValidFunction = collection.rules.update ? getIsUpdateValidFunction(collection, modules) : '';
   return `    match /${collectionName}/{documentId} {${ruleFunction}
 ${isOwnerFunction}${fieldIsValidFunctions}${isCreateValidFunction}${isUpdateValidFunction}
       allow get: if ${getRule(collection, RuleType.GET)};
@@ -110,9 +110,10 @@ function getRule(collection: Collection, ruleType: RuleType) {
   return 'false';
 }
 
-function getIsCreateValidFunction(collection: Collection) {
+function getIsCreateValidFunction(collection: Collection, modules: FlamestoreModule[]) {
   const creatableFields = Object.entries(collection.fields)
-    .filter(([_, field]) => field.type && !field.type?.timestamp?.serverTimestamp)
+    .filter(([_, field]) => modules
+      .every(module => module.isCreatable ? module.isCreatable(field) : true))
     .map(([fieldName, _]) => fieldName);
 
   const isValids = creatableFields
@@ -130,18 +131,24 @@ function getIsCreateValidFunction(collection: Collection) {
       }`
 }
 
-function getIsUpdateValidFunction(collection: Collection) {
-  const hasOnlies: string[] = [];
-  let isValids = '';
-  for (const [fieldName, field] of Object.entries(collection.fields)) {
-    if (field?.type && !field.type?.timestamp?.serverTimestamp && !field.isKey) {
-      hasOnlies.push(`'${fieldName}'`);
-      isValids += `\n          && (!('${fieldName}' in reqData()) || ${fieldName}IsValid())`;
-      if (!field.isOptional) {
-        isValids += `\n          && isNotDeleted('${fieldName}')`;
-      }
-    }
-  }
+function getIsUpdateValidFunction(collection: Collection, modules: FlamestoreModule[]) {
+
+  const updatableFields = Object.entries(collection.fields)
+    .filter(([_, field]) => modules
+      .every(module => module.isUpdatable ? module.isUpdatable(field) : true))
+    .map(([fieldName, _]) => fieldName);
+
+  const isValids = updatableFields
+    .map((fieldName) => {
+      const isNotDeleted = collection.fields[fieldName].isOptional ? [] : [`isNotDeleted('${fieldName}')`];
+      return [`(!('${fieldName}' in reqData()) || ${fieldName}IsValid())`, ...isNotDeleted];
+    })
+    .reduce((a, b) => a.concat(b), [])
+    .map(x => `\n          && ${x}`)
+    .join('');
+
+  const hasOnlies = updatableFields.map(x => `'${x}'`);
+
   return `
       function isUpdateValid(){
         return updatedKeys().hasOnly([${hasOnlies}])${isValids};

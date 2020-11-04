@@ -1,7 +1,9 @@
 import { Field, FieldTypes, FlamestoreModule } from "../../type";
 
 export const module: FlamestoreModule = {
-  getRule
+  getRule,
+  isCreatable: (field: Field) => field.type != null,
+  isUpdatable: (field: Field) => field.type != null,
 }
 
 
