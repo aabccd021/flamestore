@@ -1,7 +1,8 @@
 /* tslint:disable */
-import * as _functions from "firebase-functions";
+import { functions } from "../functions";
 import { firestore } from "firebase-admin";
 import {
+  serverTimestamp,
   foundDuplicate,
   allSettled,
   update,
@@ -9,8 +10,6 @@ import {
   syncField,
 } from "flamestore";
 import { User, Tweet, Like } from "../models";
-
-const functions = _functions.region("asia-southeast2");
 
 export const onCreate = functions.firestore
   .document("/tweets/{documentId}")
@@ -23,7 +22,7 @@ export const onCreate = functions.firestore
     const snapshotRefData: { [fieldName: string]: any } = {};
     snapshotRefData.likesSum = 0;
     snapshotRefData.userName = refusersData.userName;
-    snapshotRefData.creationTime = firestore.FieldValue.serverTimestamp();
+    snapshotRefData.creationTime = serverTimestamp();
 
     const userData: { [fieldName: string]: any } = {};
     userData.tweetsCount = increment(1);

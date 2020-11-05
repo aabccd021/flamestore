@@ -1,6 +1,7 @@
 import { firestore } from 'firebase-admin';
 import * as functions from 'firebase-functions';
 
+export const serverTimestamp = firestore.FieldValue.serverTimestamp;
 export const increment = firestore.FieldValue.increment;
 export const foundDuplicate = async (
   collectionName: string,

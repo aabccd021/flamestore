@@ -17,7 +17,7 @@ function triggerGenerator(
     triggerMap[collectionName].createTrigger.addData(
       'snapshotRef',
       fieldName,
-      'firestore.FieldValue.serverTimestamp()'
+      'serverTimestamp()'
     );
   }
   return triggerMap;

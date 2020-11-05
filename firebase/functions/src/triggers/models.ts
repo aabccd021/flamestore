@@ -22,3 +22,7 @@ export interface Like {
   user: firestore.DocumentReference;
   tweet: firestore.DocumentReference;
 }
+
+export interface ComputedTweet {
+  hotness: number;
+}

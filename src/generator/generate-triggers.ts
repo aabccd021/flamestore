@@ -15,12 +15,12 @@ export default function generate(
   const triggerMap = getCompleteTriggerMap(schema, triggerGenerators);
 
 
+  const triggerDir = path.join(outputFilePath, 'flamestore')
   Object.entries(triggerMap)
     .forEach(([colName, colTriggerMap]) => {
       const colString = stringOfCollectionTrigger(colName, colTriggerMap)
       const triggerContent = triggerContentOf(schema, colString);
       const triggerFileContent = prettier.format(triggerContent, { parser: "typescript" });
-      const triggerDir = path.join(outputFilePath, 'triggers')
       if (!fs.existsSync(triggerDir)) {
         fs.mkdirSync(triggerDir);
       }
@@ -28,27 +28,35 @@ export default function generate(
     });
 
 
+  const region = schema.configuration.region;
+  if (region) {
+    // const importFunction = region ? '_functions' : 'functions';
+    // const regionFunction = region ? `const functions = _functions.region('${region}');` : '';
+    const functionContent = `/* tslint:disable */
+import * as _functions from 'firebase-functions';
+export const functions = _functions.region('${region}');
+  `
+    fs.writeFileSync(path.join(outputFilePath, 'functions.ts'), functionContent);
+  }
+
   const indexFileContent = Object.keys(schema.collections)
-    .map(colName => `export * as ${colName} from "./triggers/${colName}";`)
+    .map(colName => `export * as ${colName} from "./${colName}";`)
     .join('\n');
-  fs.writeFileSync(path.join(outputFilePath, 'index.ts'), indexFileContent);
+  fs.writeFileSync(path.join(triggerDir, 'index.ts'), indexFileContent);
 }
 
 
 const triggerContentOf = (schema: FlamestoreSchema, colString: string) => {
+  const functionImport = schema.configuration.region ? '../functions' : 'firebase-admin';
   const modelNames = Object.keys(schema.collections)
     .map(collectionName => getPascalCollectionName(collectionName))
     .join(',');
-  const region = schema.configuration.region;
-  const importFunction = region ? '_functions' : 'functions';
-  const regionFunction = region ? `const functions = _functions.region('${region}');` : '';
   return `/* tslint:disable */
-import * as ${importFunction} from 'firebase-functions';
+import {functions} from '${functionImport}';
 import { firestore } from 'firebase-admin';
-import { foundDuplicate, allSettled, update, increment, syncField} from 'flamestore';
+import { serverTimestamp, foundDuplicate, allSettled, update, increment, syncField} from 'flamestore';
 import {${modelNames}} from "../models"
 
-${regionFunction}
 ${colString}
 `;
 };

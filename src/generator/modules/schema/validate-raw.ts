@@ -156,7 +156,7 @@ function validateCollectionFieldType(type: any, stackTrace: string) {
     validateCollectionDatetimeField(type.timestamp, `${stackTrace}.timestamp`)
   }
   if (type.float) {
-    validateCollectionDatetimeField(type.float, `${stackTrace}.float`)
+    validateCollectionFloatField(type.float, `${stackTrace}.float`)
   }
 }
 
