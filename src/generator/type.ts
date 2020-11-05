@@ -53,7 +53,8 @@ export interface Field {
   sum?: Sum;
   count?: Count;
   syncFrom?: SyncFrom;
-  rules: FieldRules;
+  rules?: FieldRules;
+  isComputed?: boolean,
 }
 
 interface FieldRules {
@@ -81,7 +82,8 @@ interface FieldType {
   [FieldTypes.STRING]?: StringField,
   [FieldTypes.DATETIME]?: DatetimeField,
   [FieldTypes.PATH]?: ReferenceField,
-  [FieldTypes.INT]?: IntField,
+  [FieldTypes.INT]?: NumberField,
+  [FieldTypes.FLOAT]?: NumberField,
 }
 
 interface StringField {
@@ -100,7 +102,7 @@ interface ReferenceField {
   isOwnerDocRef?: boolean,
 }
 
-interface IntField {
+interface NumberField {
   min?: number,
   max?: number,
   deleteDocWhen?: number,
@@ -108,6 +110,7 @@ interface IntField {
 
 export enum FieldTypes {
   INT = 'int',
+  FLOAT = 'float',
   STRING = 'string',
   PATH = 'path',
   DATETIME = 'timestamp'

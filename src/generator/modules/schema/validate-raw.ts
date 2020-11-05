@@ -70,16 +70,26 @@ function validateCollectionField(field: any, stackTrace: string) {
   validateKeys({
     object: field,
     requiredKeys: [],
-    optionalKeys: ['type', 'isKey', 'isUnique', 'isOptional', 'sum', 'count', 'syncFrom', 'rules'],
+    optionalKeys: [
+      'type',
+      'isKey',
+      'isUnique',
+      'isOptional',
+      'sum',
+      'count',
+      'syncFrom',
+      'rules',
+      'isComputed',
+    ],
     stackTrace
   });
   validateFieldNotExistTogether(field, "type", ["syncFrom", "count", "sum"], stackTrace);
-  validateFieldNotExistTogether(field, "rules", ["syncFrom", "count", "sum"], stackTrace);
-  validateFieldNotExistTogether(field, "isKey", ["isUnique", "isOptional", "syncFrom", "count", "sum"], stackTrace);
-  validateFieldNotExistTogether(field, "isUnique", ["syncFrom", "count", "sum"], stackTrace);
-  validateFieldNotExistTogether(field, "isOptional", ["syncFrom", "count", "sum"], stackTrace);
-  validateFieldNotExistTogether(field, "syncFrom", ["count", "sum"], stackTrace);
-  validateFieldNotExistTogether(field, "count", ["sum"], stackTrace);
+  validateFieldNotExistTogether(field, "rules", ["syncFrom", "count", "sum", "isComputed"], stackTrace);
+  validateFieldNotExistTogether(field, "isKey", ["isUnique", "isOptional", "syncFrom", "count", "sum", "isComputed"], stackTrace);
+  validateFieldNotExistTogether(field, "isUnique", ["syncFrom", "count", "sum", "isComputed"], stackTrace);
+  validateFieldNotExistTogether(field, "isOptional", ["syncFrom", "count", "sum", "isComputed"], stackTrace);
+  validateFieldNotExistTogether(field, "syncFrom", ["count", "sum", "isComputed"], stackTrace);
+  validateFieldNotExistTogether(field, "count", ["sum", "isComputed"], stackTrace);
   if (field.type) {
     validateCollectionFieldType(field.type, `${stackTrace}.type`);
   }
@@ -104,7 +114,11 @@ function validateCollectionField(field: any, stackTrace: string) {
   if (field.rules) {
     validateCollectionFieldRules(field.rules, `${stackTrace}.rules`);
   }
+  if (field.isComputed) {
+    validateTypeOfPrimitive(field.isComputed, 'boolean', `${stackTrace}.isComputed`);
+  }
 }
+
 
 function validateCollectionFieldRules(rules: any, stackTrace: string) {
   validateKeys({
@@ -140,6 +154,9 @@ function validateCollectionFieldType(type: any, stackTrace: string) {
   }
   if (type.timestamp) {
     validateCollectionDatetimeField(type.timestamp, `${stackTrace}.timestamp`)
+  }
+  if (type.float) {
+    validateCollectionDatetimeField(type.float, `${stackTrace}.float`)
   }
 }
 
@@ -206,6 +223,27 @@ function validateCollectionIntField(intField: any, stackTrace: string) {
     validateTypeOfPrimitive(intField.deleteDocWhen, 'int', `${stackTrace}.deleteDocWhen`);
   }
   if (intField.min && intField.max && intField.max < intField.min) {
+    throw Error(`Invalid Value: max on ${stackTrace}. max can't be smaller that min.`)
+  }
+}
+
+function validateCollectionFloatField(floatField: any, stackTrace: string) {
+  validateKeys({
+    object: floatField,
+    requiredKeys: [],
+    optionalKeys: ['min', 'max', 'deleteDocWhen'],
+    stackTrace
+  });
+  if (floatField.min) {
+    validateTypeOfPrimitive(floatField.min, 'float', `${stackTrace}.min`);
+  }
+  if (floatField.max) {
+    validateTypeOfPrimitive(floatField.max, 'float', `${stackTrace}.max`);
+  }
+  if (floatField.deleteDocWhen) {
+    validateTypeOfPrimitive(floatField.deleteDocWhen, 'float', `${stackTrace}.deleteDocWhen`);
+  }
+  if (floatField.min && floatField.max && floatField.max < floatField.min) {
     throw Error(`Invalid Value: max on ${stackTrace}. max can't be smaller that min.`)
   }
 }
@@ -283,6 +321,10 @@ export function validateTypeOfPrimitive(object: any, type: string, stackTrace: s
   if (type === 'int') {
     if (!Number.isInteger(object)) {
       throw Error(`Invalid Value: ${stackTrace} must have type of Integer.`);
+    }
+  } else if (type === 'float') {
+    if (!isNaN(object)) {
+      throw Error(`Invalid Value: ${stackTrace} must have type of Number.`);
     }
   } else if (typeof object !== type) {
     throw Error(`Invalid Value: ${stackTrace} must have type of ${type}.`);

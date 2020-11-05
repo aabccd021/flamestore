@@ -2,6 +2,7 @@
 
 import generateTrigger from './generate-triggers';
 import generateRule from './generate-rule';
+import { module as computedModule } from './modules/computed';
 import { module as countModule } from './modules/count';
 import { module as documentIdModule } from './modules/document-id';
 import { module as fieldRulesModule } from './modules/field-rules';
@@ -35,6 +36,7 @@ const modules: FlamestoreModule[] = [
   timestampModule,
   uniqueModule,
   countModule,
+  computedModule,
 ];
 
 // validate raw schema

@@ -43,6 +43,7 @@ function getDataTypeString(
     [FieldTypes.STRING]: 'string',
     [FieldTypes.DATETIME]: 'firestore.Timestamp',
     [FieldTypes.INT]: 'number',
+    [FieldTypes.FLOAT]: 'number',
     [FieldTypes.PATH]: 'firestore.DocumentReference',
   }
   return typeMap[getFieldType(field, fieldName, collectionName, schema)];
