@@ -1,12 +1,13 @@
 /* tslint:disable */
-import { functions } from "../functions";
-import { firestore } from "firebase-admin";
+import { functions } from "../utils";
 import {
+  serverTimestamp,
   foundDuplicate,
   allSettled,
   update,
+  increment,
   syncField,
-} from "flamestore";
+} from "../utils";
 import { User, Tweet, Like } from "../models";
 
 export const onCreate = functions.firestore
@@ -15,7 +16,7 @@ export const onCreate = functions.firestore
     const data = snapshot.data() as Like;
 
     const tweetData: { [fieldName: string]: any } = {};
-    tweetData.likesSum = firestore.FieldValue.increment(data.likeValue);
+    tweetData.likesSum = increment(data.likeValue);
 
     await update(data.tweet, tweetData);
   });
@@ -27,7 +28,7 @@ export const onUpdate = functions.firestore
     const after = change.after.data() as Like;
 
     const tweetData: { [fieldName: string]: any } = {};
-    tweetData.likesSum = firestore.FieldValue.increment(after.likeValue - before.likeValue);
+    tweetData.likesSum = increment(after.likeValue - before.likeValue);
 
     await update(after.tweet, tweetData);
   });
@@ -38,7 +39,7 @@ export const onDelete = functions.firestore
     const data = snapshot.data() as Like;
 
     const tweetData: { [fieldName: string]: any } = {};
-    tweetData.likesSum = firestore.FieldValue.increment(-data.likeValue);
+    tweetData.likesSum = increment(-data.likeValue);
 
     await update(data.tweet, tweetData);
   });

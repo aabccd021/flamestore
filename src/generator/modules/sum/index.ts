@@ -3,7 +3,7 @@ import { assertCollectionNameExists, assertFieldHasTypeOf } from "../../util";
 
 export const module: FlamestoreModule = {
   validate,
-  triggerGenerator
+  triggerGenerator,
 };
 
 function validate(schema: FlamestoreSchema) {

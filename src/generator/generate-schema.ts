@@ -1,17 +1,25 @@
-import { Field, FieldTypes, FlamestoreSchema } from "./type";
+import { Field, FieldTypes, FlamestoreModule, FlamestoreSchema } from "./type";
 import * as fs from 'fs';
 import * as path from 'path';
 import * as prettier from 'prettier';
 import { getPascalCollectionName, getFieldType } from "./util";
 
 
-export function generateSchema(outputFilePath: string, schema: FlamestoreSchema) {
+export function generateSchema(
+  outputFilePath: string,
+  schema: FlamestoreSchema,
+  modules: FlamestoreModule[],
+) {
 
   const schemaContent = Object.entries(schema.collections)
     .map(([colName, col]) => {
       const attributes =
         Object.entries(col.fields)
-          .map(([fieldName, field]) => `${fieldName}: ${getDataTypeString(field, fieldName, colName, schema)};`)
+          .map(([fieldName, field]) => {
+            const mustExists = modules.every(module => module.isCreatable ? module.isCreatable(field) && !field?.isOptional : true);
+            const question = mustExists ? '' : '?';
+            return `${fieldName}${question}: ${getDataTypeString(field, fieldName, colName, schema)};`
+          })
           .join('\n');
       return fieldString(colName, attributes);
     })
@@ -21,6 +29,8 @@ export function generateSchema(outputFilePath: string, schema: FlamestoreSchema)
     .map(([colName, col]) => {
       const computedFields = Object.entries(col.fields)
         .filter(([_, field]) => field.isComputed);
+      const nonComputedFields = Object.entries(col.fields)
+        .filter(([_, field]) => !field?.isComputed);
       const computedFieldDeclaration = computedFields
         .map(([fieldName, field]) => `${fieldName}?: ${getDataTypeString(field, fieldName, colName, schema)};`)
         .join('\n');
@@ -33,12 +43,24 @@ export function generateSchema(outputFilePath: string, schema: FlamestoreSchema)
       const computedFieldReturn = computedFields
         .map(([fieldName, _]) => `${fieldName}: this.${fieldName},`)
         .join('\n');
+      const isNonComputedSameVars = nonComputedFields
+        .map(([fieldName, field]) => {
+          const varName = `const ${fieldName}IsEqual =`;
+          if (modules.every(module => module.isPrimitive ? module.isPrimitive(field) : true)) {
+            return `${varName} before?.${fieldName} === after?.${fieldName};`
+          }
+          return `${varName} before?.${fieldName}?.isEqual  ? after?.${fieldName} ? before.${fieldName}.isEqual(after.${fieldName}):  false :after?.${fieldName} ?false: true;`
+        })
+        .join('\n');
+      const isNonComputedSame = nonComputedFields.map(([fieldName, _]) => `${fieldName}IsEqual`).join(' && ');
       return computedFieldString(
         colName,
         computedFieldDeclaration,
         computedFieldType,
         computedFieldAssignment,
         computedFieldReturn,
+        isNonComputedSameVars,
+        isNonComputedSame,
       );
     })
     .join('\n');
@@ -54,6 +76,8 @@ function computedFieldString(
   fieldType: string,
   fieldAssignment: string,
   fieldReturn: string,
+  isNonComputedSameVars: string,
+  isNonComputedSame: string,
 ): string {
   const pascal = getPascalCollectionName(colName);
   return `
@@ -74,6 +98,11 @@ export class Computed${pascal} extends Computed {
       ${fieldReturn}
     }
   }
+
+  isNonComputedSame(before: ${pascal}, after: ${pascal}) {
+    ${isNonComputedSameVars}
+    return ${isNonComputedSame};
+  }
   }
   `
 }
@@ -89,7 +118,7 @@ function fieldString(colName: string, attributes: string): string {
 function schemaString(schemaContent: string): string {
   return `
 import { firestore } from 'firebase-admin';
-import { Computed } from "flamestore";
+import { Computed } from "./utils";
 ${schemaContent}
 `
 }

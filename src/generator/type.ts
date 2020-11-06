@@ -124,6 +124,7 @@ export interface FlamestoreModule {
   triggerGenerator?: TriggerGenerator,
   isCreatable?: (field: Field) => boolean;
   isUpdatable?: (field: Field) => boolean;
+  isPrimitive?: (field: Field) => boolean;
 }
 
 export type TriggerGenerator = (

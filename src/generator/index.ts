@@ -8,6 +8,7 @@ import { module as documentIdModule } from './modules/document-id';
 import { module as fieldRulesModule } from './modules/field-rules';
 import { module as intModule } from './modules/int';
 import { module as keyModule } from './modules/key';
+import { module as optionalModule } from './modules/optional';
 import { module as ownerModule } from './modules/owner';
 import { module as pathModule } from './modules/path';
 import { module as schemaModule } from './modules/schema';
@@ -20,6 +21,7 @@ import { module as uniqueModule } from './modules/unique';
 import * as fs from 'fs';
 import { FlamestoreModule, FlamestoreSchema } from './type';
 import { generateSchema } from './generate-schema';
+import generateUtils from './generate-utils';
 
 const modules: FlamestoreModule[] = [
   typeModule,
@@ -37,6 +39,7 @@ const modules: FlamestoreModule[] = [
   uniqueModule,
   countModule,
   computedModule,
+  optionalModule,
 ];
 
 // validate raw schema
@@ -53,13 +56,15 @@ modules.forEach(module => module.validate && module.validate(schema));
 const rulePath = schema.configuration.ruleOutputPath || "firestore/firestore.rules";
 generateRule(schema, rulePath, modules);
 
-const flamestoreDir = schema.configuration.triggerOutputPath || "functions/src/triggers";
+const triggerDir = schema.configuration.triggerOutputPath || "functions/src/triggers";
 // generate schema
-if (!fs.existsSync(flamestoreDir)) {
-  fs.mkdirSync(flamestoreDir, { recursive: true });
+if (!fs.existsSync(triggerDir)) {
+  fs.mkdirSync(triggerDir, { recursive: true });
 }
-generateSchema(flamestoreDir, schema);
+generateSchema(triggerDir, schema, modules);
 
 // generate triggers
-generateTrigger(schema, flamestoreDir, modules);
+generateTrigger(schema, triggerDir, modules);
 
+// generate utils
+generateUtils(triggerDir, schema);

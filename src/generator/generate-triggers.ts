@@ -28,16 +28,7 @@ export default function generate(
     });
 
 
-  const region = schema.configuration.region;
-  if (region) {
-    // const importFunction = region ? '_functions' : 'functions';
-    // const regionFunction = region ? `const functions = _functions.region('${region}');` : '';
-    const functionContent = `/* tslint:disable */
-import * as _functions from 'firebase-functions';
-export const functions = _functions.region('${region}');
-  `
-    fs.writeFileSync(path.join(outputFilePath, 'functions.ts'), functionContent);
-  }
+
 
   const indexFileContent = Object.keys(schema.collections)
     .map(colName => `export * as ${colName} from "./${colName}";`)
@@ -47,14 +38,13 @@ export const functions = _functions.region('${region}');
 
 
 const triggerContentOf = (schema: FlamestoreSchema, colString: string) => {
-  const functionImport = schema.configuration.region ? '../functions' : 'firebase-admin';
+  const functionImport = schema.configuration.region ? '../utils' : 'firebase-admin';
   const modelNames = Object.keys(schema.collections)
     .map(collectionName => getPascalCollectionName(collectionName))
     .join(',');
   return `/* tslint:disable */
 import {functions} from '${functionImport}';
-import { firestore } from 'firebase-admin';
-import { serverTimestamp, foundDuplicate, allSettled, update, increment, syncField} from 'flamestore';
+import { serverTimestamp, foundDuplicate, allSettled, update, increment, syncField} from '../utils';
 import {${modelNames}} from "../models"
 
 ${colString}

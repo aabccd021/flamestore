@@ -3,7 +3,7 @@
   "scripts": {
     "lint": "tslint --project tsconfig.json",
     "build": "tsc",
-    "dev": "npm run build && firebase emulators:start --only functions,firestore --import=./seed",
+    "dev": "npm run build && firebase emulators:start --only functions,firestore --import=../firestore/seed",
     "serve": "npm run build && firebase emulators:start --only functions",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
@@ -18,8 +18,7 @@
   "main": "lib/index.js",
   "dependencies": {
     "firebase-admin": "^9.3.0",
-    "firebase-functions": "^3.6.1",
-    "flamestore": "../.."
+    "firebase-functions": "^3.6.1"
   },
   "devDependencies": {
     "@firebase/testing": "^0.20.11",

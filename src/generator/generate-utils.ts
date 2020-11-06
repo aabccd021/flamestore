@@ -1,20 +1,41 @@
-const utilString = `
-import { firestore } from 'firebase-admin';
-import * as functions from 'firebase-functions';
-import { EventContext, FunctionBuilder } from 'firebase-functions';
+import * as prettier from 'prettier';
+import * as fs from 'fs';
+import * as path from 'path';
+import { FlamestoreSchema } from './type';
 
+export default function generateUtils(dir: string, schema: FlamestoreSchema) {
+  const region = schema?.configuration?.region;
+  const functionImport = region ? functionContent(region) : '';
+  const content = imports + functionImport + utilString;
+  const triggerFileContent = prettier.format(content, { parser: "typescript" });
+  fs.writeFileSync(path.join(dir, `utils.ts`), triggerFileContent);
+}
+
+function functionContent(region: String): String {
+  return `
+export const functions = _functions.region('${region}');
+  `;
+}
+
+const imports = `
+import { firestore } from 'firebase-admin';
+import { Change, EventContext } from "firebase-functions";
+import { QueryDocumentSnapshot } from "firebase-functions/lib/providers/firestore";
+import * as _functions from 'firebase-functions';
+`
+const utilString = `
 export const serverTimestamp = firestore.FieldValue.serverTimestamp;
 export const increment = firestore.FieldValue.increment;
 export const foundDuplicate = async (
   collectionName: string,
   fieldName: string,
-  snapshotOrChange: functions.firestore.QueryDocumentSnapshot
-    | functions.Change<functions.firestore.QueryDocumentSnapshot>,
-  context: functions.EventContext,
+  snapshotOrChange: QueryDocumentSnapshot
+    | Change<QueryDocumentSnapshot>,
+  context: EventContext,
 ): Promise<boolean> => {
-  function isSnapshot(value: functions.firestore.QueryDocumentSnapshot
-    | functions.Change<functions.firestore.QueryDocumentSnapshot>):
-    value is functions.firestore.QueryDocumentSnapshot {
+  function isSnapshot(value: QueryDocumentSnapshot
+    | Change<QueryDocumentSnapshot>):
+    value is QueryDocumentSnapshot {
     return !value.hasOwnProperty('after');
   }
   const snapshot = isSnapshot(snapshotOrChange) ? snapshotOrChange : snapshotOrChange.after;
@@ -23,7 +44,7 @@ export const foundDuplicate = async (
     .where(fieldName, "==", snapshot.data()[fieldName])
     .get();
   if (duplicates.docs.length > 1) {
-    functions.logger.warn(
+    _functions.logger.warn(
       \`Duplicate \${fieldName} created on \${collectionName}\`,
       { snapshot, context }
     );
@@ -43,7 +64,7 @@ export const update = async (
   ref: firestore.DocumentReference,
   data: { [fieldName: string]: any }
 ) => {
-  functions.logger.log(\`Update \${ref.id}\`, { data: data });
+  _functions.logger.log(\`Update \${ref.id}\`, { data: data });
   if (Object.keys(data).length > 0) {
     await ref.update(data);
   }
@@ -70,12 +91,12 @@ export const syncField = async (
     )
   );
   const filteredResult = results.filter((result) => result !== "");
-  functions.logger.log(
+  _functions.logger.log(
     \`Update where \${collection}.\${refField}.id == \${ref.id} success on \${results.length - filteredResult.length} documents\`,
     { updateData: data }
   );
   if (filteredResult.length > 0) {
-    functions.logger.warn(
+    _functions.logger.warn(
       \`Update where \${collection}.\${refField}== \${ref.id} fail on \${filteredResult.length} documents\`,
       { documentIds: filteredResult }
     );
@@ -85,36 +106,33 @@ export abstract class Computed {
   abstract collection: string;
   abstract toMap(): { [fieldName: string]: any };
   abstract document: any;
+  abstract isNonComputedSame(before: any, after: any): boolean;
 }
 
 type onCreateFn<T, V> = (document: T, context: EventContext) => V;
 type onUpdateFn<T, V> = (before: T, after: T, context: EventContext) => V;
 
 export class ComputeDocument<V extends Computed, T = V['document']> {
-  functions: FunctionBuilder;
   computedDocument: V;
   computeOnCreate: onCreateFn<T, V>;
   computeOnUpdate: onUpdateFn<T, V>;
 
   constructor({
-    functions,
     computedDocument,
     computeOnCreate,
     computeOnUpdate,
   }: {
-    functions: FunctionBuilder;
     computedDocument: new () => V,
     computeOnCreate: onCreateFn<T, V>;
     computeOnUpdate: onUpdateFn<T, V>;
   }) {
-    this.functions = functions;
     this.computedDocument = new computedDocument();
     this.computeOnCreate = computeOnCreate;
     this.computeOnUpdate = computeOnUpdate;
   }
 
   private get document() {
-    return this.functions.firestore
+    return functions.firestore
       .document(\`/\${this.computedDocument.collection}/{documentId}\`);
   }
 
@@ -132,6 +150,9 @@ export class ComputeDocument<V extends Computed, T = V['document']> {
       .onUpdate(async (change, context) => {
         const before = change.before.data() as T;
         const after = change.after.data() as T;
+        if (this.computedDocument.isNonComputedSame(before, after)) {
+          return;
+        }
         const result = this.computeOnUpdate(before, after, context);
         await change.after.ref.update(result.toMap());
       });

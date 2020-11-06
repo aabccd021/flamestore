@@ -2,8 +2,9 @@ import { TriggerMap, Collection, Field, FlamestoreModule } from "../../type";
 
 export const module: FlamestoreModule = {
   triggerGenerator,
-  isCreatable: (field: Field) => field?.type?.timestamp?.serverTimestamp == null,
-  isUpdatable: (field: Field) => field?.type?.timestamp?.serverTimestamp == null,
+  isCreatable: (field: Field) => field?.type?.timestamp?.serverTimestamp == null || field?.type?.timestamp?.serverTimestamp === false,
+  isUpdatable: (field: Field) => field?.type?.timestamp?.serverTimestamp == null || field?.type?.timestamp?.serverTimestamp === false,
+  isPrimitive: (field: Field) => field?.type?.timestamp == null,
 }
 
 function triggerGenerator(
