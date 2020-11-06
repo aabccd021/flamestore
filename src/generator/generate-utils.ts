@@ -1,9 +1,11 @@
+const utilString = `
 import { firestore } from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import { EventContext, FunctionBuilder } from 'firebase-functions';
 
+export const serverTimestamp = firestore.FieldValue.serverTimestamp;
+export const increment = firestore.FieldValue.increment;
 export const foundDuplicate = async (
-  firestore: firestore.Firestore,
   collectionName: string,
   fieldName: string,
   snapshotOrChange: functions.firestore.QueryDocumentSnapshot
@@ -16,13 +18,13 @@ export const foundDuplicate = async (
     return !value.hasOwnProperty('after');
   }
   const snapshot = isSnapshot(snapshotOrChange) ? snapshotOrChange : snapshotOrChange.after;
-  const duplicates = await firestore
+  const duplicates = await firestore()
     .collection(collectionName)
     .where(fieldName, "==", snapshot.data()[fieldName])
     .get();
   if (duplicates.docs.length > 1) {
     functions.logger.warn(
-      `Duplicate ${fieldName} created on ${collectionName}`,
+      \`Duplicate \${fieldName} created on \${collectionName}\`,
       { snapshot, context }
     );
     if (isSnapshot(snapshotOrChange)) {
@@ -41,13 +43,12 @@ export const update = async (
   ref: firestore.DocumentReference,
   data: { [fieldName: string]: any }
 ) => {
-  functions.logger.log(`Update ${ref.id}`, { data: data });
+  functions.logger.log(\`Update \${ref.id}\`, { data: data });
   if (Object.keys(data).length > 0) {
     await ref.update(data);
   }
 };
 export const syncField = async (
-  firestore: firestore.Firestore,
   collection: string,
   refField: string,
   ref: firestore.DocumentReference,
@@ -56,7 +57,7 @@ export const syncField = async (
   if (Object.keys(data).length === 0) {
     return;
   }
-  const querySnapshot = await firestore
+  const querySnapshot = await firestore()
     .collection(collection)
     .where(refField, "==", ref)
     .get();
@@ -65,17 +66,17 @@ export const syncField = async (
       (doc) => doc.ref
         .update(data)
         .then((_) => "")
-        .catch((__) => `${doc.ref.id}`)
+        .catch((__) => \`\${doc.ref.id}\`)
     )
   );
   const filteredResult = results.filter((result) => result !== "");
   functions.logger.log(
-    `Update where ${collection}.${refField}.id == ${ref.id} success on ${results.length - filteredResult.length} documents`,
+    \`Update where \${collection}.\${refField}.id == \${ref.id} success on \${results.length - filteredResult.length} documents\`,
     { updateData: data }
   );
   if (filteredResult.length > 0) {
     functions.logger.warn(
-      `Update where ${collection}.${refField}== ${ref.id} fail on ${filteredResult.length} documents`,
+      \`Update where \${collection}.\${refField}== \${ref.id} fail on \${filteredResult.length} documents\`,
       { documentIds: filteredResult }
     );
   }
@@ -114,7 +115,7 @@ export class ComputeDocument<V extends Computed, T = V['document']> {
 
   private get document() {
     return this.functions.firestore
-      .document(`/${this.computedDocument.collection}/{documentId}`);
+      .document(\`/\${this.computedDocument.collection}/{documentId}\`);
   }
 
   public get onCreate() {
@@ -137,3 +138,4 @@ export class ComputeDocument<V extends Computed, T = V['document']> {
   }
 
 }
+`

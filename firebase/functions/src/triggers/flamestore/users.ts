@@ -1,22 +1,23 @@
 /* tslint:disable */
-import { functions } from "../functions";
+// import { functions } from "../functions";
+import * as _functions from 'firebase-functions';
 import { firestore } from "firebase-admin";
 import {
-  serverTimestamp,
   foundDuplicate,
   allSettled,
   update,
-  increment,
   syncField,
 } from "flamestore";
 import { User, Tweet, Like } from "../models";
+
+const functions = _functions.region('asia-southeast2');
 
 export const onCreate = functions.firestore
   .document("/users/{documentId}")
   .onCreate(async (snapshot, context) => {
     const data = snapshot.data() as User;
 
-    if (await foundDuplicate("users", "userName", snapshot, context)) return;
+    if (await foundDuplicate(firestore(), "users", "userName", snapshot, context)) return;
 
     const snapshotRefData: { [fieldName: string]: any } = {};
     snapshotRefData.tweetsCount = 0;
@@ -30,12 +31,12 @@ export const onUpdate = functions.firestore
     const before = change.before.data() as User;
     const after = change.after.data() as User;
 
-    if (await foundDuplicate("users", "userName", change, context)) return;
+    if (await foundDuplicate(firestore(), "users", "userName", change, context)) return;
 
     const tweetsUserData: { [fieldName: string]: any } = {};
     if (after.userName !== before.userName) {
       tweetsUserData.userName = after.userName;
     }
 
-    await syncField("tweets", "user", change.after.ref, tweetsUserData);
+    await syncField(firestore(), "tweets", "user", change.after.ref, tweetsUserData);
   });

@@ -1250,8 +1250,8 @@ firebase@7.18.0:
     "@firebase/storage" "0.3.42"
     "@firebase/util" "0.3.1"
 
-"flamestore@file:../..":
-  version "1.0.55"
+flamestore@../..:
+  version "1.0.57"
   dependencies:
     pluralize "^8.0.0"
     prettier "^2.1.1"

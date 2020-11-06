@@ -19,12 +19,27 @@ export function generateSchema(outputFilePath: string, schema: FlamestoreSchema)
   const computedSchemaContent = Object.entries(schema.collections)
     .filter(([_, col]) => Object.values(col.fields).some(f => f?.isComputed))
     .map(([colName, col]) => {
-      const attributes =
-        Object.entries(col.fields)
-          .filter(([_, field]) => field.isComputed)
-          .map(([fieldName, field]) => `${fieldName}: ${getDataTypeString(field, fieldName, colName, schema)};`)
-          .join('\n');
-      return computedFieldString(colName, attributes);
+      const computedFields = Object.entries(col.fields)
+        .filter(([_, field]) => field.isComputed);
+      const computedFieldDeclaration = computedFields
+        .map(([fieldName, field]) => `${fieldName}?: ${getDataTypeString(field, fieldName, colName, schema)};`)
+        .join('\n');
+      const computedFieldType = computedFields
+        .map(([fieldName, field]) => `${fieldName}?: ${getDataTypeString(field, fieldName, colName, schema)},`)
+        .join('\n');
+      const computedFieldAssignment = computedFields
+        .map(([fieldName, _]) => `this.${fieldName} = arg?.${fieldName};`)
+        .join('\n');
+      const computedFieldReturn = computedFields
+        .map(([fieldName, _]) => `${fieldName}: this.${fieldName},`)
+        .join('\n');
+      return computedFieldString(
+        colName,
+        computedFieldDeclaration,
+        computedFieldType,
+        computedFieldAssignment,
+        computedFieldReturn,
+      );
     })
     .join('\n');
   const finalContent = schemaContent + computedSchemaContent;
@@ -33,10 +48,32 @@ export function generateSchema(outputFilePath: string, schema: FlamestoreSchema)
 
 }
 
-function computedFieldString(colName: string, attributes: string): string {
+function computedFieldString(
+  colName: string,
+  fieldDeclaration: string,
+  fieldType: string,
+  fieldAssignment: string,
+  fieldReturn: string,
+): string {
+  const pascal = getPascalCollectionName(colName);
   return `
-    export interface Computed${getPascalCollectionName(colName)} {
-    ${attributes}
+export class Computed${pascal} extends Computed {
+  collection: string;
+  document!: ${pascal};
+  ${fieldDeclaration}
+  constructor(arg?: {
+    ${fieldType}
+  }) {
+    super();
+    this.collection = '${colName}';
+    ${fieldAssignment}
+  }
+
+  toMap() {
+    return {
+      ${fieldReturn}
+    }
+  }
   }
   `
 }
@@ -50,8 +87,9 @@ function fieldString(colName: string, attributes: string): string {
 }
 
 function schemaString(schemaContent: string): string {
-  return `/* tslint:disable */
+  return `
 import { firestore } from 'firebase-admin';
+import { Computed } from "flamestore";
 ${schemaContent}
 `
 }

@@ -13,13 +13,13 @@
     "test-watch": "mocha --watch -r ts-node/register tests/**/*.ts"
   },
   "engines": {
-    "node": "8"
+    "node": "10"
   },
   "main": "lib/index.js",
   "dependencies": {
     "firebase-admin": "^9.3.0",
     "firebase-functions": "^3.6.1",
-    "flamestore": "file:../.."
+    "flamestore": "../.."
   },
   "devDependencies": {
     "@firebase/testing": "^0.20.11",

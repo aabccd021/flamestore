@@ -1,5 +1,5 @@
-/* tslint:disable */
 import { firestore } from "firebase-admin";
+import { Computed } from "flamestore";
 
 export interface User {
   uid: string;
@@ -23,6 +23,4 @@ export interface Like {
   tweet: firestore.DocumentReference;
 }
 
-export interface ComputedTweet {
-  hotness: number;
-}
+
