@@ -1,6 +1,6 @@
 {
   "name": "flamestore",
-  "version": "1.0.59",
+  "version": "1.0.60",
   "description": "firestore trigger generator",
   "bin": {
     "generate": "lib/generator/index.js"
