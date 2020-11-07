@@ -45,7 +45,11 @@ function triggerGenerator(
     triggerMap[field.sum.collection].updateTrigger.addData(
       targetRef,
       fieldName,
-      `increment(after.${incrementField} - before.${incrementField})`
+      `
+      if (after.${incrementField} !== before.${incrementField}){
+        increment(after.${incrementField} - before.${incrementField})
+      }
+      `
     );
 
     triggerMap[field.sum.collection].deleteTrigger.addData(
