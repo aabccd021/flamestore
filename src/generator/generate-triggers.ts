@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as prettier from 'prettier';
-import { CollectionTriggerMap, FlamestoreModule, FlamestoreSchema, TriggerGenerator, TriggerMap } from './type';
+import { FlamestoreSchema, FlamestoreModule, TriggerGenerator, TriggerMap, CollectionTriggerMap, TriggerData, UpdateFieldData } from './type';
 import { getPascalCollectionName } from './util';
 
 export default function generate(
@@ -220,51 +220,6 @@ function refTriggerDataToBatchCommitString(triggerData: TriggerData, triggerType
   ]);`;
 }
 
-class TriggerData {
-  _header = '';
-  dependencyPromises: { [dependencyName: string]: { collection: string, promise: string } } = {};
-  _resultPromises: string[] = [];
-  _data: UpdateData = {};
-  _nonUpdateData: UpdateData = {};
-
-  addData(dataName: string, fieldName: string, fieldValue: string, fieldCondition?: string) {
-    if (!Object.keys(this._data).includes(dataName)) {
-      this._data[dataName] = {};
-    }
-    this._data[dataName][fieldName] = { fieldValue, fieldCondition };
-  }
-  addNonUpdateData(dataName: string, fieldName: string, fieldValue: string, fieldCondition?: string) {
-    if (!Object.keys(this._nonUpdateData).includes(dataName)) {
-      this._nonUpdateData[dataName] = {};
-    }
-    this._nonUpdateData[dataName][fieldName] = { fieldValue, fieldCondition };
-  }
-  addHeader(content: string) {
-    if (!this._header.includes(content)) {
-      this._header += content;
-    }
-  }
-  addResultPromise(content: string) {
-    if (!this._resultPromises.join('').includes(content)) {
-      this._resultPromises.push(content);
-    }
-  }
-  isEmpty(): boolean {
-    return this._header === ''
-      && Object.keys(this.dependencyPromises).length === 0
-      && this._resultPromises.join('') === ''
-      && Object.keys(this._data).length === 0
-      && Object.keys(this._nonUpdateData).length === 0;
-  }
-}
-
-interface UpdateData {
-  [dataName: string]: UpdateFieldData;
-}
-
-interface UpdateFieldData {
-  [fieldName: string]: { fieldValue: string, fieldCondition?: string }
-}
 
 enum TriggerType {
   Create = 'Create',

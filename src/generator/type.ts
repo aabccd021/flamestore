@@ -1,29 +1,21 @@
 export interface FlamestoreSchema {
-  collections: Collections;
-  configuration: FlamestoreConfig;
-}
-
-interface FlamestoreConfig {
-  ruleOutputPath: string;
-  triggerOutputPath: string;
-  region: string;
-}
-
-interface Collections {
-  [name: string]: Collection;
+  collections: { [name: string]: Collection };
+  configuration: {
+    ruleOutputPath: string;
+    triggerOutputPath: string;
+    region: string;
+  };
 }
 
 export interface Collection {
-  fields: Fields;
-  rules: Rules;
-}
-
-interface Rules {
-  [RuleType.GET]?: Rule;
-  [RuleType.LIST]?: Rule;
-  [RuleType.CREATE]?: Rule;
-  [RuleType.UPDATE]?: Rule;
-  [RuleType.DELETE]?: Rule;
+  fields: { [name: string]: Field };
+  rules: {
+    [RuleType.GET]?: Rule;
+    [RuleType.LIST]?: Rule;
+    [RuleType.CREATE]?: Rule;
+    [RuleType.UPDATE]?: Rule;
+    [RuleType.DELETE]?: Rule;
+  };
 }
 
 export enum RuleType {
@@ -41,50 +33,38 @@ export enum Rule {
   NONE = "none"
 }
 
-interface Fields {
-  [name: string]: Field;
-}
-
 export interface Field {
-  type?: FieldType;
   isKey?: boolean;
   isUnique?: boolean;
   isOptional?: boolean;
-  sum?: Sum;
-  count?: Count;
-  syncFrom?: SyncFrom;
-  rules?: FieldRules;
   isComputed?: boolean,
+  type?: {
+    [FieldTypes.STRING]?: StringField,
+    [FieldTypes.DATETIME]?: DatetimeField,
+    [FieldTypes.PATH]?: ReferenceField,
+    [FieldTypes.INT]?: NumberField,
+    [FieldTypes.FLOAT]?: NumberField,
+  };
+  sum?: {
+    collection: string,
+    field: string,
+    reference: string,
+  };
+  count?: {
+    collection: string,
+    reference: string,
+  };
+  syncFrom?: {
+    field: string,
+    reference: string,
+  };
+  rules?: {
+    isCreatable?: boolean,
+    isUpdatable?: boolean,
+  };
 }
 
-interface FieldRules {
-  isCreatable?: boolean,
-  isUpdatable?: boolean,
-}
 
-interface Sum {
-  collection: string,
-  field: string,
-  reference: string,
-}
-
-interface Count {
-  collection: string,
-  reference: string,
-}
-
-interface SyncFrom {
-  field: string,
-  reference: string,
-}
-
-interface FieldType {
-  [FieldTypes.STRING]?: StringField,
-  [FieldTypes.DATETIME]?: DatetimeField,
-  [FieldTypes.PATH]?: ReferenceField,
-  [FieldTypes.INT]?: NumberField,
-  [FieldTypes.FLOAT]?: NumberField,
-}
 
 interface StringField {
   isOwnerUid?: boolean,
@@ -152,10 +132,7 @@ export class CollectionTriggerMap {
   }
 }
 
-
-
-
-class TriggerData {
+export class TriggerData {
   _header = '';
   dependencyPromises: { [dependencyName: string]: { collection: string, promise: string } } = {};
   _resultPromises: string[] = [];
@@ -197,6 +174,6 @@ interface UpdateData {
   [dataName: string]: UpdateFieldData;
 }
 
-interface UpdateFieldData {
+export interface UpdateFieldData {
   [fieldName: string]: { fieldValue: string, fieldCondition?: string }
 }

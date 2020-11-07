@@ -28,7 +28,9 @@ export const onUpdate = functions.firestore
     const after = change.after.data() as Like;
 
     const tweetData: { [fieldName: string]: any } = {};
-    tweetData.likesSum = increment(after.likeValue - before.likeValue);
+    if (after.likeValue !== before.likeValue) {
+      tweetData.likesSum = increment(after.likeValue - before.likeValue);
+    }
 
     await update(after.tweet, tweetData);
   });
