@@ -41,7 +41,7 @@ export function generateSchema(
         .map(([fieldName, _]) => `this.${fieldName} = arg?.${fieldName};`)
         .join('\n');
       const computedFieldReturn = computedFields
-        .map(([fieldName, _]) => `${fieldName}: this.${fieldName},`)
+        .map(([fieldName, _]) => `if(this.${fieldName}){data.${fieldName}= this.${fieldName};}`)
         .join('\n');
       const isNonComputedSameVars = nonComputedFields
         .map(([fieldName, field]) => {
@@ -94,9 +94,9 @@ export class Computed${pascal} extends Computed {
   }
 
   toMap() {
-    return {
-      ${fieldReturn}
-    }
+    const data: { [fieldName: string]: any } = {};
+    ${fieldReturn}
+    return data;
   }
 
   isNonComputedSame(before: ${pascal}, after: ${pascal}) {

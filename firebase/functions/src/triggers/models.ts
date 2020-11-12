@@ -34,9 +34,11 @@ export class ComputedTweet extends Computed {
   }
 
   toMap() {
-    return {
-      hotness: this.hotness,
-    };
+    const data: { [fieldName: string]: any } = {};
+    if (this.hotness) {
+      data.hotness = this.hotness;
+    }
+    return data;
   }
 
   isNonComputedSame(before: Tweet, after: Tweet) {

@@ -126,8 +126,8 @@ export class ComputeDocument<V extends Computed, T = V["document"]> {
   public get onCreate() {
     return this.document.onCreate(async (snapshot, context) => {
       const newDoc = snapshot.data() as T;
-      const result = this.computeOnCreate(newDoc, context);
-      await snapshot.ref.update(result.toMap());
+      const result = this.computeOnCreate(newDoc, context).toMap();
+      await snapshot.ref.update(result);
     });
   }
 
@@ -138,8 +138,11 @@ export class ComputeDocument<V extends Computed, T = V["document"]> {
       if (this.computedDocument.isNonComputedSame(before, after)) {
         return;
       }
-      const result = this.computeOnUpdate(before, after, context);
-      await change.after.ref.update(result.toMap());
+      const result = this.computeOnUpdate(before, after, context).toMap();
+      if (Object.keys(result).length === 0) {
+        return;
+      }
+      await change.after.ref.update(result);
     });
   }
 }
