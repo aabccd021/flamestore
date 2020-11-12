@@ -41,30 +41,31 @@ export class ComputedTweet extends Computed {
     return data;
   }
 
-  isNonComputedSame(before: Tweet, after: Tweet) {
-    const userIsEqual = before?.user?.isEqual
-      ? after?.user
-        ? before.user.isEqual(after.user)
-        : false
-      : after?.user
-      ? false
-      : true;
-    const userNameIsEqual = before?.userName === after?.userName;
-    const tweetTextIsEqual = before?.tweetText === after?.tweetText;
-    const likesSumIsEqual = before?.likesSum === after?.likesSum;
-    const creationTimeIsEqual = before?.creationTime?.isEqual
-      ? after?.creationTime
-        ? before.creationTime.isEqual(after.creationTime)
-        : false
-      : after?.creationTime
-      ? false
-      : true;
-    return (
-      userIsEqual &&
-      userNameIsEqual &&
-      tweetTextIsEqual &&
-      likesSumIsEqual &&
-      creationTimeIsEqual
-    );
+  isNonComputedSame<K extends keyof Tweet>(
+    before: Tweet,
+    after: Tweet,
+    keys: K[]
+  ) {
+    const isValueSame = {
+      user: before?.user
+        ? after?.user
+          ? before.user.isEqual(after.user)
+          : false
+        : after?.user
+        ? false
+        : true,
+      userName: before?.userName === after?.userName,
+      tweetText: before?.tweetText === after?.tweetText,
+      likesSum: before?.likesSum === after?.likesSum,
+      creationTime: before?.creationTime
+        ? after?.creationTime
+          ? before.creationTime.isEqual(after.creationTime)
+          : false
+        : after?.creationTime
+        ? false
+        : true,
+      hotness: true,
+    };
+    return keys.some((key) => !isValueSame[key]);
   }
 }

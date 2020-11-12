@@ -92,28 +92,37 @@ export abstract class Computed {
   abstract collection: string;
   abstract toMap(): { [fieldName: string]: any };
   abstract document: any;
-  abstract isNonComputedSame(before: any, after: any): boolean;
+  abstract isNonComputedSame(before: any, after: any, keys: any[]): boolean;
 }
 
 type onCreateFn<T, V> = (document: T, context: EventContext) => V;
 type onUpdateFn<T, V> = (before: T, after: T, context: EventContext) => V;
+declare function pick<T, K extends keyof T>(obj: T, keys: K[]): Pick<T, K>;
 
-export class ComputeDocument<V extends Computed, T = V["document"]> {
+export class ComputeDocument<
+  V extends Computed,
+  K extends keyof T,
+  T = V["document"]
+> {
   computedDocument: V;
-  computeOnCreate: onCreateFn<T, V>;
-  computeOnUpdate: onUpdateFn<T, V>;
+  computeOnCreate: onCreateFn<Pick<T, K>, V>;
+  dependenciesOnUpdate: K[];
+  computeOnUpdate: onUpdateFn<Pick<T, K>, V>;
 
   constructor({
     computedDocument,
     computeOnCreate,
+    dependenciesOnUpdate,
     computeOnUpdate,
   }: {
     computedDocument: new () => V;
-    computeOnCreate: onCreateFn<T, V>;
-    computeOnUpdate: onUpdateFn<T, V>;
+    computeOnCreate: onCreateFn<Pick<T, K>, V>;
+    dependenciesOnUpdate: K[];
+    computeOnUpdate: onUpdateFn<Pick<T, K>, V>;
   }) {
     this.computedDocument = new computedDocument();
     this.computeOnCreate = computeOnCreate;
+    this.dependenciesOnUpdate = dependenciesOnUpdate;
     this.computeOnUpdate = computeOnUpdate;
   }
 
@@ -135,10 +144,22 @@ export class ComputeDocument<V extends Computed, T = V["document"]> {
     return this.document.onUpdate(async (change, context) => {
       const before = change.before.data() as T;
       const after = change.after.data() as T;
-      if (this.computedDocument.isNonComputedSame(before, after)) {
+      const pickedBefore = pick(before, this.dependenciesOnUpdate);
+      const pickedAfter = pick(after, this.dependenciesOnUpdate);
+      if (
+        this.computedDocument.isNonComputedSame(
+          before,
+          after,
+          this.dependenciesOnUpdate
+        )
+      ) {
         return;
       }
-      const result = this.computeOnUpdate(before, after, context).toMap();
+      const result = this.computeOnUpdate(
+        pickedBefore,
+        pickedAfter,
+        context
+      ).toMap();
       if (Object.keys(result).length === 0) {
         return;
       }

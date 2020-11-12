@@ -29,8 +29,6 @@ export function generateSchema(
     .map(([colName, col]) => {
       const computedFields = Object.entries(col.fields)
         .filter(([_, field]) => field.isComputed);
-      const nonComputedFields = Object.entries(col.fields)
-        .filter(([_, field]) => !field?.isComputed);
       const computedFieldDeclaration = computedFields
         .map(([fieldName, field]) => `${fieldName}?: ${getDataTypeString(field, fieldName, colName, schema)};`)
         .join('\n');
@@ -43,16 +41,18 @@ export function generateSchema(
       const computedFieldReturn = computedFields
         .map(([fieldName, _]) => `if(this.${fieldName}){data.${fieldName}= this.${fieldName};}`)
         .join('\n');
-      const isNonComputedSameVars = nonComputedFields
+      const isNonComputedSameVars = Object.entries(col.fields)
         .map(([fieldName, field]) => {
-          const varName = `const ${fieldName}IsEqual =`;
-          if (modules.every(module => module.isPrimitive ? module.isPrimitive(field) : true)) {
-            return `${varName} before?.${fieldName} === after?.${fieldName};`
+          const varName = `${fieldName}:`;
+          if (computedFields.map(([fieldName, _]) => fieldName).includes(fieldName)) {
+            return `${varName} true`;
           }
-          return `${varName} before?.${fieldName}?.isEqual  ? after?.${fieldName} ? before.${fieldName}.isEqual(after.${fieldName}):  false :after?.${fieldName} ?false: true;`
+          if (modules.every(module => module.isPrimitive ? module.isPrimitive(field) : true)) {
+            return `${varName} before?.${fieldName} === after?.${fieldName}`
+          }
+          return `${varName} before?.${fieldName}  ? after?.${fieldName} ? before.${fieldName}.isEqual(after.${fieldName}):  false :after?.${fieldName} ?false: true`
         })
-        .join('\n');
-      const isNonComputedSame = nonComputedFields.map(([fieldName, _]) => `${fieldName}IsEqual`).join(' && ');
+        .join(',\n');
       return computedFieldString(
         colName,
         computedFieldDeclaration,
@@ -60,7 +60,6 @@ export function generateSchema(
         computedFieldAssignment,
         computedFieldReturn,
         isNonComputedSameVars,
-        isNonComputedSame,
       );
     })
     .join('\n');
@@ -77,7 +76,6 @@ function computedFieldString(
   fieldAssignment: string,
   fieldReturn: string,
   isNonComputedSameVars: string,
-  isNonComputedSame: string,
 ): string {
   const pascal = getPascalCollectionName(colName);
   return `
@@ -99,9 +97,11 @@ export class Computed${pascal} extends Computed {
     return data;
   }
 
-  isNonComputedSame(before: ${pascal}, after: ${pascal}) {
+  isNonComputedSame<K extends keyof ${pascal}>(before: ${pascal}, after: ${pascal}, keys: K[]) {
+    const isValueSame = {
     ${isNonComputedSameVars}
-    return ${isNonComputedSame};
+    };
+    return keys.some(key => !isValueSame[key])
   }
   }
   `
