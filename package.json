@@ -8,6 +8,7 @@
   "scripts": {
     "test": "mocha --exit -r ts-node/register tests/**/*.ts",
     "build": "tsc",
+    "publish": "npm run build && npm version patch && npm publish",
     "build:check": "tsc --noEmit",
     "flamestore2": "npm run build && node lib/index.js -i sample/sample.json --ro firebase/functions/firestore.rules --to firebase/functions/src/flamestore/triggers.ts"
   },
