@@ -1,8 +1,9 @@
 export interface FlamestoreSchema {
+  '$schema': string;
   collections: { [name: string]: Collection };
   configuration: {
-    ruleOutputPath: string;
-    triggerOutputPath: string;
+    ruleOutputPath?: string;
+    triggerOutputPath?: string;
     region: string;
   };
 }
@@ -10,11 +11,7 @@ export interface FlamestoreSchema {
 export interface Collection {
   fields: { [name: string]: Field };
   rules: {
-    [RuleType.GET]?: Rule;
-    [RuleType.LIST]?: Rule;
-    [RuleType.CREATE]?: Rule;
-    [RuleType.UPDATE]?: Rule;
-    [RuleType.DELETE]?: Rule;
+    [key in RuleType]?: Rule
   };
 }
 
@@ -33,18 +30,20 @@ export enum Rule {
   NONE = "none"
 }
 
+export interface TypeField {
+  int?: NumberField,
+  float?: NumberField,
+  string?: StringField,
+  path?: ReferenceField,
+  timestamp?: DatetimeField,
+}
+
 export interface Field {
   isKey?: boolean;
   isUnique?: boolean;
   isOptional?: boolean;
   isComputed?: boolean,
-  type?: {
-    [FieldTypes.STRING]?: StringField,
-    [FieldTypes.DATETIME]?: DatetimeField,
-    [FieldTypes.PATH]?: ReferenceField,
-    [FieldTypes.INT]?: NumberField,
-    [FieldTypes.FLOAT]?: NumberField,
-  };
+  type?: TypeField;
   sum?: {
     collection: string,
     field: string,
@@ -88,13 +87,7 @@ interface NumberField {
   deleteDocWhen?: number,
 }
 
-export enum FieldTypes {
-  INT = 'int',
-  FLOAT = 'float',
-  STRING = 'string',
-  PATH = 'path',
-  DATETIME = 'timestamp'
-}
+
 
 export interface FlamestoreModule {
   validateRaw?: (rawSchema: any) => void,
