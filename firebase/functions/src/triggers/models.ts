@@ -41,7 +41,7 @@ export class ComputedTweet extends Computed {
     return data;
   }
 
-  isNonComputedSame<K extends keyof Tweet>(
+  isDependencyChanged<K extends keyof Tweet>(
     before: Tweet,
     after: Tweet,
     keys: K[]

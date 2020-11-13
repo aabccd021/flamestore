@@ -106,12 +106,14 @@ export abstract class Computed {
   abstract collection: string;
   abstract toMap(): { [fieldName: string]: any };
   abstract document: any;
-  abstract isNonComputedSame(before: any, after: any, keys: any[]): boolean;
+  abstract isDependencyChanged(before: any, after: any, keys: any[]): boolean;
 }
 
 type onCreateFn<T, V> = (document: T, context: EventContext) => V;
 type onUpdateFn<T, V> = (before: T, after: T, context: EventContext) => V;
-declare function pick<T, K extends keyof T>(obj: T, keys: K[]): Pick<T, K>;
+function pick<T, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> {
+  return obj as Pick<T, K>;
+}
 
 export class ComputeDocument<V extends Computed, K extends keyof T, T = V["document"]> {
   computedDocument: V;
@@ -155,7 +157,7 @@ export class ComputeDocument<V extends Computed, K extends keyof T, T = V["docum
       const after = change.after.data() as T;
       const pickedBefore = pick(before, this.dependenciesOnUpdate);
       const pickedAfter = pick(after, this.dependenciesOnUpdate);
-      if (this.computedDocument.isNonComputedSame(before, after, this.dependenciesOnUpdate)) {
+      if (!this.computedDocument.isDependencyChanged(before, after, this.dependenciesOnUpdate)) {
         return;
       }
       const result = this.computeOnUpdate(pickedBefore, pickedAfter, context).toMap();

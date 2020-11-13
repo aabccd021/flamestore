@@ -97,7 +97,7 @@ export class Computed${pascal} extends Computed {
     return data;
   }
 
-  isNonComputedSame<K extends keyof ${pascal}>(before: ${pascal}, after: ${pascal}, keys: K[]) {
+  isDependencyChanged<K extends keyof ${pascal}>(before: ${pascal}, after: ${pascal}, keys: K[]) {
     const isValueSame = {
     ${isNonComputedSameVars}
     };
