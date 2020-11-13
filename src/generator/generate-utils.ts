@@ -147,7 +147,7 @@ export class ComputeDocument<V extends Computed, K extends keyof T, T = V["docum
     return this.document.onCreate(async (snapshot, context) => {
       const newDoc = snapshot.data() as T;
       const result = this.computeOnCreate(newDoc, context).toMap();
-      await snapshot.ref.update(result);
+      await update(snapshot.ref, result);
     });
   }
 
@@ -157,14 +157,12 @@ export class ComputeDocument<V extends Computed, K extends keyof T, T = V["docum
       const after = change.after.data() as T;
       const pickedBefore = pick(before, this.dependenciesOnUpdate);
       const pickedAfter = pick(after, this.dependenciesOnUpdate);
-      if (!this.computedDocument.isDependencyChanged(before, after, this.dependenciesOnUpdate)) {
+      const dependencyChanged = this.computedDocument.isDependencyChanged(before, after, this.dependenciesOnUpdate);
+      if (!dependencyChanged) {
         return;
       }
       const result = this.computeOnUpdate(pickedBefore, pickedAfter, context).toMap();
-      if (Object.keys(result).length === 0) {
-        return;
-      }
-      await change.after.ref.update(result);
+      await update(change.after.ref, result);
     });
   }
 
