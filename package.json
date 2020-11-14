@@ -10,7 +10,8 @@
     "build": "tsc",
     "patch-publish": "npm run build && npm version patch && npm publish",
     "build:check": "tsc --noEmit",
-    "flamestore2": "npm run build && node lib/index.js -i sample/sample.json --ro firebase/functions/firestore.rules --to firebase/functions/src/flamestore/triggers.ts"
+    "flamestore2": "npm run build && node lib/index.js -i sample/sample.json --ro firebase/functions/firestore.rules --to firebase/functions/src/flamestore/triggers.ts",
+    "generate-schema": "./node_modules/.bin/ts-json-schema-generator --path src/generator/type.ts --type FlamestoreSchema --out flamestore-schema/v1.json"
   },
   "dependencies": {
     "pluralize": "^8.0.0",
