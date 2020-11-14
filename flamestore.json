@@ -1,5 +1,5 @@
 {
-  "$schema": "./flamestore-schema/1.0.76.json",
+  "$schema": "./flamestore-schema/v1.json",
   "configuration": {
     "region": "asia-southeast2"
   },
