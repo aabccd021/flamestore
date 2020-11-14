@@ -1,6 +1,9 @@
 import { FlamestoreModule, Field } from "../../type";
+import { isCreatable, isUpdatable } from "../../util";
 
 export const module: FlamestoreModule = {
-  isCreatable: (field: Field) => field?.rules?.isCreatable == null || field.rules.isCreatable === true,
-  isUpdatable: (field: Field) => field?.rules?.isUpdatable == null || field.rules.isUpdatable === true,
+  isCreatableOverride: (field: Field) => {
+    return isCreatable(field);
+  },
+  isUpdatableOverride: (field: Field) => isUpdatable(field),
 }

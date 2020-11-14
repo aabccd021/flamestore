@@ -1,8 +1,8 @@
-import { Field, FieldTypes, FlamestoreModule, FlamestoreSchema } from "./type";
+import { FieldType, FieldTypes, FlamestoreModule, FlamestoreSchema } from "./type";
 import * as fs from 'fs';
 import * as path from 'path';
 import * as prettier from 'prettier';
-import { getPascalCollectionName, getFieldType } from "./util";
+import { getPascalCollectionName, getFieldType, isComputed, isOptional } from "./util";
 
 
 export function generateSchema(
@@ -16,24 +16,42 @@ export function generateSchema(
       const attributes =
         Object.entries(col.fields)
           .map(([fieldName, field]) => {
-            const mustExists = modules.every(module => module.isCreatable ? module.isCreatable(field) && !field?.isOptional : true);
-            const question = mustExists ? '' : '?';
-            return `${fieldName}${question}: ${getDataTypeString(field, fieldName, colName, schema)};`
+            const mustExists = modules.some(module => {
+              if (isOptional(field)) {
+                return false;
+              }
+              if (module.isCreatable) {
+                return module.isCreatable(field);
+              }
+              return false;
+            });
+            let override = undefined;
+            for (const module of modules) {
+              if (module.isCreatableOverride) {
+                const creatableOverride = module.isCreatableOverride(field);
+                if (creatableOverride !== undefined) {
+                  override = creatableOverride;
+                }
+              }
+            }
+            const finalMustExists = override !== undefined ? override : mustExists;
+            const question = finalMustExists ? '' : '?';
+            return `${fieldName}${question}: ${getDataTypeString(field.type, fieldName, colName, schema)};`
           })
           .join('\n');
       return fieldString(colName, attributes);
     })
     .join('\n');
   const computedSchemaContent = Object.entries(schema.collections)
-    .filter(([_, col]) => Object.values(col.fields).some(f => f?.isComputed))
+    .filter(([_, col]) => Object.values(col.fields).some(f => isComputed(f)))
     .map(([colName, col]) => {
       const computedFields = Object.entries(col.fields)
-        .filter(([_, field]) => field.isComputed);
+        .filter(([_, field]) => isComputed(field));
       const computedFieldDeclaration = computedFields
-        .map(([fieldName, field]) => `${fieldName}?: ${getDataTypeString(field, fieldName, colName, schema)};`)
+        .map(([fieldName, field]) => `${fieldName}?: ${getDataTypeString(field.type, fieldName, colName, schema)};`)
         .join('\n');
       const computedFieldType = computedFields
-        .map(([fieldName, field]) => `${fieldName}?: ${getDataTypeString(field, fieldName, colName, schema)},`)
+        .map(([fieldName, field]) => `${fieldName}?: ${getDataTypeString(field.type, fieldName, colName, schema)},`)
         .join('\n');
       const computedFieldAssignment = computedFields
         .map(([fieldName, _]) => `this.${fieldName} = arg?.${fieldName};`)
@@ -125,7 +143,7 @@ ${schemaContent}
 
 
 function getDataTypeString(
-  field: Field, fieldName: string, collectionName: string, schema: FlamestoreSchema): string {
+  type: FieldType, fieldName: string, collectionName: string, schema: FlamestoreSchema): string {
   const typeMap: Record<FieldTypes, string> = {
     [FieldTypes.STRING]: 'string',
     [FieldTypes.DATETIME]: 'firestore.Timestamp',
@@ -133,5 +151,5 @@ function getDataTypeString(
     [FieldTypes.FLOAT]: 'number',
     [FieldTypes.PATH]: 'firestore.DocumentReference',
   }
-  return typeMap[getFieldType(field, fieldName, collectionName, schema)];
+  return typeMap[getFieldType(type, fieldName, collectionName, schema)];
 }

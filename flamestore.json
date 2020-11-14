@@ -1,5 +1,5 @@
 {
-  "$schema": "./flamestore-schema/1.0.75.json",
+  "$schema": "./flamestore-schema/1.0.76.json",
   "configuration": {
     "region": "asia-southeast2"
   },
@@ -13,15 +13,17 @@
       },
       "fields": {
         "uid": {
-          "isKey": true,
           "type": {
             "string": {
+              "isKey": true,
               "isOwnerUid": true
             }
           }
         },
         "userName": {
-          "isUnique": true,
+          "property": {
+            "isUnique": true
+          },
           "type": {
             "string": {
               "minLength": 1,
@@ -30,7 +32,9 @@
           }
         },
         "bio": {
-          "isOptional": true,
+          "property": {
+            "isOptional": true
+          },
           "type": {
             "string": {
               "minLength": 1,
@@ -39,9 +43,11 @@
           }
         },
         "tweetsCount": {
-          "count": {
-            "collection": "tweets",
-            "reference": "user"
+          "type": {
+            "count": {
+              "collection": "tweets",
+              "reference": "user"
+            }
           }
         }
       }
@@ -64,9 +70,11 @@
           }
         },
         "userName": {
-          "syncFrom": {
-            "field": "userName",
-            "reference": "user"
+          "type": {
+            "syncFrom": {
+              "field": "userName",
+              "reference": "user"
+            }
           }
         },
         "tweetText": {
@@ -78,10 +86,12 @@
           }
         },
         "likesSum": {
-          "sum": {
-            "collection": "likes",
-            "field": "likeValue",
-            "reference": "tweet"
+          "type": {
+            "sum": {
+              "collection": "likes",
+              "field": "likeValue",
+              "reference": "tweet"
+            }
           }
         },
         "creationTime": {
@@ -92,7 +102,9 @@
           }
         },
         "hotness": {
-          "isComputed": true,
+          "property": {
+            "isComputed": true
+          },
           "type": {
             "float": {}
           }
@@ -117,18 +129,18 @@
           }
         },
         "user": {
-          "isKey": true,
           "type": {
             "path": {
+              "isKey": true,
               "collection": "users",
               "isOwnerDocRef": true
             }
           }
         },
         "tweet": {
-          "isKey": true,
           "type": {
             "path": {
+              "isKey": true,
               "collection": "tweets"
             }
           }

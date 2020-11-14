@@ -15,6 +15,15 @@ export interface Collection {
   };
 }
 
+
+export enum FieldTypes {
+  INT = 'int',
+  FLOAT = 'float',
+  STRING = 'string',
+  PATH = 'path',
+  DATETIME = 'timestamp'
+}
+
 export enum RuleType {
   GET = "get",
   LIST = "list",
@@ -30,63 +39,98 @@ export enum Rule {
   NONE = "none"
 }
 
-export interface TypeField {
-  int?: NumberField,
-  float?: NumberField,
-  string?: StringField,
-  path?: ReferenceField,
-  timestamp?: DatetimeField,
+export interface Field {
+  property?: FieldProperty,
+  type: FieldType,
 }
 
-export interface Field {
-  isKey?: boolean;
+export type FieldType = StringField
+  | FloatField
+  | ReferenceField
+  | IntField
+  | DatetimeField
+  | SumField
+  | CountField
+  | SyncFromField;
+
+export type FieldProperty = Computed | NonComputed;
+
+export interface Computed {
+  isComputed?: boolean;
+}
+
+export interface NonComputed {
   isUnique?: boolean;
   isOptional?: boolean;
-  isComputed?: boolean,
-  type?: TypeField;
-  sum?: {
-    collection: string,
-    field: string,
-    reference: string,
-  };
-  count?: {
-    collection: string,
-    reference: string,
-  };
-  syncFrom?: {
-    field: string,
-    reference: string,
-  };
   rules?: {
     isCreatable?: boolean,
     isUpdatable?: boolean,
   };
 }
 
-
-
-interface StringField {
-  isOwnerUid?: boolean,
-  minLength?: number,
-  maxLength?: number,
+export interface SumField {
+  sum: {
+    collection: string,
+    field: string,
+    reference: string,
+  };
 }
 
-interface DatetimeField {
-  serverTimestamp?: boolean,
+export interface CountField {
+  count: {
+    collection: string,
+    reference: string,
+  };
+}
+
+export interface SyncFromField {
+  syncFrom: {
+    field: string,
+    reference: string,
+  };
+}
+
+export const SYNC_FROM = 'syncFrom';
+
+export interface StringField {
+  string: {
+    isKey?: boolean;
+    isOwnerUid?: boolean,
+    minLength?: number,
+    maxLength?: number,
+  }
+}
+
+export interface DatetimeField {
+  timestamp: {
+    serverTimestamp?: boolean,
+  }
 }
 
 
-interface ReferenceField {
-  collection: string,
-  isOwnerDocRef?: boolean,
+export interface ReferenceField {
+  path: {
+    isKey?: boolean;
+    collection: string,
+    isOwnerDocRef?: boolean,
+  }
 }
 
-interface NumberField {
-  min?: number,
-  max?: number,
-  deleteDocWhen?: number,
+export interface IntField {
+  int: {
+    min?: number,
+    max?: number,
+    deleteDocWhen?: number,
+  }
 }
 
+export interface FloatField {
+  float: {
+    min?: number,
+    max?: number,
+    deleteDocWhen?: number,
+  }
+}
 
 
 export interface FlamestoreModule {
@@ -97,6 +141,8 @@ export interface FlamestoreModule {
   triggerGenerator?: TriggerGenerator,
   isCreatable?: (field: Field) => boolean;
   isUpdatable?: (field: Field) => boolean;
+  isCreatableOverride?: (field: Field) => boolean | undefined;
+  isUpdatableOverride?: (field: Field) => boolean | undefined;
   isPrimitive?: (field: Field) => boolean;
 }
 

@@ -1,26 +1,26 @@
 import { Field, FieldTypes, FlamestoreModule } from "../../type";
-import { isTypeInt } from "../../util";
+import { isTypeFloat } from "../../util";
 
 export const module: FlamestoreModule = {
-  isCreatable: (field) => isTypeInt(field.type),
-  isUpdatable: (field) => isTypeInt(field.type),
+  isCreatable: (field) => isTypeFloat(field.type),
+  isUpdatable: (field) => isTypeFloat(field.type),
   getRule
 }
 
 function getRule(fieldName: string, field: Field): string[] {
   let content = [];
   const fieldType = field.type;
-  if (isTypeInt(fieldType)) {
-    content.push(`${fieldName} is ${FieldTypes.INT}`)
-    const min = fieldType.int?.min;
+  if (isTypeFloat(fieldType)) {
+    content.push(`${fieldName} is ${FieldTypes.FLOAT}`)
+    const min = fieldType.float?.min;
     if (min || min === 0) {
       content.push(`${fieldName} >= ${min}`);
     }
-    const max = fieldType.int?.max;
+    const max = fieldType.float?.max;
     if (max || max === 0) {
-      content.push(`${fieldName} <= ${fieldType.int.max}`);
+      content.push(`${fieldName} <= ${fieldType.float.max}`);
     }
-    const deleteDocWhen = fieldType.int?.deleteDocWhen;
+    const deleteDocWhen = fieldType.float?.deleteDocWhen;
     if (deleteDocWhen || deleteDocWhen === 0) {
       content.push(`${fieldName} != ${deleteDocWhen}`);
     }

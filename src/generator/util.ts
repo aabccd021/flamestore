@@ -1,5 +1,5 @@
 import pluralize from 'pluralize';
-import { FlamestoreSchema, FieldTypes, Field } from './type';
+import { FlamestoreSchema, FieldTypes, Field, FieldProperty, Computed, StringField, ReferenceField, FieldType, FloatField, SumField, CountField, SyncFromField, DatetimeField, IntField } from './type';
 
 export function assertCollectionNameExists(collectionName: string, schema: FlamestoreSchema, stackTrace: string) {
   if (!Object.keys(schema.collections).includes(collectionName)) {
@@ -34,16 +34,16 @@ export function assertFieldHasTypeOf(
   }
 
   const type = schema.collections[collectionName].fields[fieldName].type;
-  if (fieldType === FieldTypes.INT && !type?.int) {
+  if (fieldType === FieldTypes.INT && !isTypeInt(type)) {
     throwFieldTypeError(FieldTypes.INT, collectionName, fieldName, schema, stackTrace);
   }
-  if (fieldType === FieldTypes.STRING && !type?.string) {
+  if (fieldType === FieldTypes.STRING && !isTypeString(type)) {
     throwFieldTypeError(FieldTypes.STRING, collectionName, fieldName, schema, stackTrace);
   }
-  if (fieldType === FieldTypes.PATH && !type?.path) {
+  if (fieldType === FieldTypes.PATH && !isTypeReference(type)) {
     throwFieldTypeError(FieldTypes.PATH, collectionName, fieldName, schema, stackTrace);
   }
-  if (fieldType === FieldTypes.DATETIME && !type?.timestamp) {
+  if (fieldType === FieldTypes.DATETIME && !isTypeDatetime(type)) {
     throwFieldTypeError(FieldTypes.DATETIME, collectionName, fieldName, schema, stackTrace);
   }
 }
@@ -52,43 +52,127 @@ export function getColNameToSyncFrom(collectionName: string, fieldName: string, 
   const collection = schema.collections[collectionName];
   const field = collection.fields[fieldName];
   const stackTrace = `collections.${collectionName}.${fieldName}.syncFrom`;
-  if (field.syncFrom) {
-    const referenceFieldName = field.syncFrom.reference;
+  const fieldType = field.type;
+  if (isTypeSyncFrom(fieldType)) {
+    const referenceFieldName = fieldType.syncFrom.reference;
     assertFieldHasTypeOf(
       collectionName, referenceFieldName, FieldTypes.PATH, schema, `${stackTrace}.reference`
     )
-    const collectionNameToSyncFrom = collection.fields[referenceFieldName].type!.path!.collection;
-    assertFieldExists(collectionNameToSyncFrom, field.syncFrom.field, schema, `${stackTrace}.field`)
-    return collectionNameToSyncFrom;
+    const referenceType = collection.fields[referenceFieldName].type;
+    if (isTypeReference(referenceType)) {
+      const collectionNameToSyncFrom = referenceType.path.collection;
+      assertFieldExists(collectionNameToSyncFrom, fieldType.syncFrom.field, schema, `${stackTrace}.field`)
+      return collectionNameToSyncFrom;
+    }
   }
   throw Error('Not an syncFrom field');
 }
 
+export function isTypeString(value: FieldType): value is StringField {
+  return value.hasOwnProperty('string');
+}
+export function isTypeFloat(value: FieldType): value is FloatField {
+  return value.hasOwnProperty('float');
+}
+export function isTypeReference(value: FieldType): value is ReferenceField {
+  return value.hasOwnProperty('path');
+}
+export function isTypeInt(value: FieldType): value is IntField {
+  return value.hasOwnProperty('int');
+}
+export function isTypeDatetime(value: FieldType): value is DatetimeField {
+  return value.hasOwnProperty('timestamp');
+}
+export function isTypeSum(value: FieldType): value is SumField {
+  return value.hasOwnProperty('sum');
+}
+export function isTypeCount(value: FieldType): value is CountField {
+  return value.hasOwnProperty('count');
+}
+export function isTypeSyncFrom(value: FieldType): value is SyncFromField {
+  return value.hasOwnProperty('syncFrom');
+}
+
 export function getFieldType(
-  field: Field, fieldName: string, collectionName: string, schema: FlamestoreSchema): FieldTypes {
-  if (field.type) {
-    for (const fieldType of Object.values(FieldTypes)) {
-      if (field.type[fieldType]) {
-        return fieldType;
-      }
-    }
-  } else {
-    if (field.count || field.sum) {
-      return FieldTypes.INT;
-    } else if (field.syncFrom) {
-      const colNameToSyncFrom = getColNameToSyncFrom(collectionName, fieldName, schema);
-      const type = schema.collections[colNameToSyncFrom].fields[field.syncFrom.field].type!;
-      for (const fieldType of Object.values(FieldTypes)) {
-        if (type[fieldType]) {
-          return fieldType;
-        }
-      }
-    }
+  type: FieldType,
+  fieldName: string,
+  collectionName: string,
+  schema: FlamestoreSchema
+): FieldTypes {
+  if (isTypeString(type)) {
+    return FieldTypes.STRING;
   }
-  throw Error(`Field type ${field.type} is invalid`)
+  if (isTypeFloat(type)) {
+    return FieldTypes.FLOAT;
+  }
+  if (isTypeReference(type)) {
+    return FieldTypes.PATH;
+  }
+  if (isTypeInt(type)) {
+    return FieldTypes.INT;
+  }
+  if (isTypeDatetime(type)) {
+    return FieldTypes.DATETIME;
+  }
+  if (isTypeSum(type)) {
+    return FieldTypes.FLOAT;
+  }
+  if (isTypeCount(type)) {
+    return FieldTypes.INT;
+  }
+  if (isTypeSyncFrom(type)) {
+    const colNameToSyncFrom = getColNameToSyncFrom(collectionName, fieldName, schema);
+    const atype = schema.collections[colNameToSyncFrom].fields[type.syncFrom.field].type;
+    return getFieldType(atype, fieldName, collectionName, schema);
+  }
+  throw Error();
 }
 
 export function getPascalCollectionName(collectionName: string): string {
   const singularized = pluralize.singular(collectionName);
   return singularized[0].toUpperCase() + singularized.substring(1);
+}
+
+function isComputedProperty(value: FieldProperty): value is Computed {
+  return value.hasOwnProperty('isComputed');
+}
+
+export function isComputed(field?: Field): boolean | undefined {
+  const property = field?.property;
+  if (!property || !isComputedProperty(property)) {
+    return undefined;
+  }
+  return property.isComputed;
+}
+
+export function isOptional(field?: Field): boolean | undefined {
+  const property = field?.property;
+  if (!property || isComputedProperty(property)) {
+    return undefined;
+  }
+  return property?.isOptional;
+}
+
+export function isUpdatable(field?: Field): boolean | undefined {
+  const property = field?.property;
+  if (!property || isComputedProperty(property)) {
+    return undefined;
+  }
+  return property?.rules?.isUpdatable;
+}
+
+export function isCreatable(field?: Field): boolean | undefined {
+  const property = field?.property;
+  if (!property || isComputedProperty(property)) {
+    return undefined;
+  }
+  return property?.rules?.isCreatable;
+}
+
+export function isUnique(field?: Field): boolean | undefined {
+  const property = field?.property;
+  if (!property || isComputedProperty(property)) {
+    return false;
+  }
+  return property?.isUnique
 }

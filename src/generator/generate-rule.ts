@@ -1,5 +1,6 @@
 import * as fs from 'fs';
-import { Collection, Field, FlamestoreModule, FlamestoreSchema, Rule, RuleType } from './type';
+import { Collection, Field, FlamestoreModule, FlamestoreSchema, ReferenceField, Rule, RuleType, StringField } from './type';
+import { isOptional, isTypeReference, isTypeString } from './util';
 
 export default function generateRule(
   schema: FlamestoreSchema,
@@ -126,14 +127,26 @@ function getRule(collection: Collection, ruleType: RuleType) {
 
 function getIsCreateValidFunction(collection: Collection, modules: FlamestoreModule[]): ValidationFunction {
   const creatableFields = Object.entries(collection.fields)
-    .filter(([_, field]) => modules
-      .every(module => module.isCreatable ? module.isCreatable(field) : true))
+    .filter(([f, field]) => {
+      for (const module of modules) {
+        if (module.isCreatableOverride) {
+          const override = module.isCreatableOverride(field);
+          if (override !== undefined) {
+            return override;
+          }
+        }
+      };
+      return modules
+        .some(module => module.isCreatable ? module.isCreatable(field) : false);
+    })
     .map(([fieldName, _]) => fieldName);
 
   const isValids = creatableFields
-    .map((fieldName) => collection.fields[fieldName]?.isOptional
-      ? `(!('${fieldName}' in reqData()) || ${fieldName}IsValid())`
-      : `${fieldName}IsValid()`)
+    .map((fieldName) => {
+      return isOptional(collection.fields[fieldName])
+        ? `(!('${fieldName}' in reqData()) || ${fieldName}IsValid())`
+        : `${fieldName}IsValid()`;
+    })
     .map(x => `\n          && ${x}`)
     .join('');
 
@@ -151,13 +164,23 @@ function getIsCreateValidFunction(collection: Collection, modules: FlamestoreMod
 function getIsUpdateValidFunction(collection: Collection, modules: FlamestoreModule[]): ValidationFunction {
 
   const updatableFields = Object.entries(collection.fields)
-    .filter(([_, field]) => modules
-      .every(module => module.isUpdatable ? module.isUpdatable(field) : true))
+    .filter(([_, field]) => {
+      for (const module of modules) {
+        if (module.isUpdatableOverride) {
+          const override = module.isUpdatableOverride(field);
+          if (override !== undefined) {
+            return override;
+          }
+        }
+      }
+      return modules
+        .some(module => module.isUpdatable ? module.isUpdatable(field) : false);
+    })
     .map(([fieldName, _]) => fieldName);
 
   const isValids = updatableFields
     .map((fieldName) => {
-      const isNotDeleted = collection.fields[fieldName].isOptional ? [] : [`isNotDeleted('${fieldName}')`];
+      const isNotDeleted = isOptional(collection.fields[fieldName]) ? [] : [`isNotDeleted('${fieldName}')`];
       return [`(!('${fieldName}' in reqData()) || ${fieldName}IsValid())`, ...isNotDeleted];
     })
     .reduce((a, b) => a.concat(b), [])
@@ -178,7 +201,8 @@ function getIsUpdateValidFunction(collection: Collection, modules: FlamestoreMod
 function getIsOwnerFunction(collectionName: string, collection: Collection, schema: FlamestoreSchema) {
   for (const [fieldName, field] of Object.entries(collection.fields)) {
     const isDocExists = `!(exists(/databases/$(database)/documents/${collectionName}/$(documentId)))`;
-    if (field.type?.string?.isOwnerUid) {
+    const fieldType = field.type;
+    if (isTypeString(fieldType) && fieldType.string.isOwnerUid) {
       return `      function isReqOwner(){
         return request.auth.uid == reqData().${fieldName};
       }
@@ -187,11 +211,11 @@ function getIsOwnerFunction(collectionName: string, collection: Collection, sche
           || request.auth.uid == resData().${fieldName};
       }`
     }
-    if (field.type?.path?.isOwnerDocRef) {
-      const userUidCol = field.type.path.collection;
+    if (isTypeReference(fieldType) && fieldType.path.isOwnerDocRef) {
+      const userUidCol = (field.type as ReferenceField).path.collection;
       const userUidFields = schema.collections[userUidCol].fields;
       for (const [userUidFieldName, userUidField] of Object.entries(userUidFields)) {
-        if (userUidField.type?.string?.isOwnerUid) {
+        if ((userUidField.type as StringField).string?.isOwnerUid) {
           return `      function isReqOwner(){
         return request.auth.uid == get(reqData().${fieldName}).data.${userUidFieldName};
       }

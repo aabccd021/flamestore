@@ -1,5 +1,5 @@
 import { Collection, Field, FlamestoreModule, FlamestoreSchema, TriggerMap } from "../../type";
-import { getColNameToSyncFrom, getPascalCollectionName } from "../../util";
+import { getColNameToSyncFrom, getPascalCollectionName, isTypeSyncFrom } from "../../util";
 
 export const module: FlamestoreModule = {
   validate,
@@ -9,7 +9,7 @@ export const module: FlamestoreModule = {
 function validate(schema: FlamestoreSchema) {
   for (const [collectionName, collection] of Object.entries(schema.collections)) {
     for (const [fieldName, field] of Object.entries(collection.fields)) {
-      if (field.syncFrom) {
+      if (isTypeSyncFrom(field.type)) {
         getColNameToSyncFrom(collectionName, fieldName, schema);
       }
     }
@@ -24,8 +24,8 @@ function triggerGenerator(
   field: Field,
   schema: FlamestoreSchema,
 ): TriggerMap {
-  if (field.syncFrom) {
-    const syncFrom = field.syncFrom;
+  if (isTypeSyncFrom(field.type)) {
+    const syncFrom = field.type.syncFrom;
     const colNameToSyncFrom = getColNameToSyncFrom(collectionName, fieldName, schema);
 
     triggerMap[collectionName].createTrigger.dependencyPromises[`ref${colNameToSyncFrom}Data`] =
