@@ -89,7 +89,8 @@
           "type": {
             "string": {
               "minLength": 1,
-              "maxLength": 280
+              "maxLength": 280,
+              "type": "dynamicLinkTitle"
             }
           }
         },
@@ -120,7 +121,7 @@
         "dynamicLinkURL": {
           "type": {
             "string": {
-              "type": "dynamicLinkDescription"
+              "type": "dynamicLinkURL"
             }
           }
         }
