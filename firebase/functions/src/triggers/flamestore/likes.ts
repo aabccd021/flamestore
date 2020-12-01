@@ -1,16 +1,12 @@
 /* tslint:disable */
 import { functions } from "../utils";
-import { firestore } from "firebase-admin";
-import {
-  foundDuplicate,
-  syncField,
-} from "../utils";
 import {
   serverTimestamp,
-  allSettled,
-  update,
+  foundDuplicate,
   increment,
-} from "flamestore";
+  syncField,
+} from "../utils";
+import { allSettled, update } from "flamestore";
 import { User, Tweet, Like } from "../models";
 
 export const onCreate = functions.firestore
@@ -32,7 +28,7 @@ export const onUpdate = functions.firestore
 
     const tweetData: { [fieldName: string]: any } = {};
     if (after.likeValue !== before.likeValue) {
-      tweetData.likesSum = firestore.FieldValue.increment(after.likeValue - before.likeValue);
+      tweetData.likesSum = increment(after.likeValue - before.likeValue);
     }
 
     await update(after.tweet, tweetData);

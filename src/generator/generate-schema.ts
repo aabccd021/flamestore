@@ -136,7 +136,7 @@ function fieldString(colName: string, attributes: string): string {
 function schemaString(schemaContent: string): string {
   return `
 import { firestore } from 'firebase-admin';
-import { Computed } from "./utils";
+import { Computed } from "flamestore";
 ${schemaContent}
 `
 }

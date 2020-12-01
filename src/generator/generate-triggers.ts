@@ -44,7 +44,8 @@ const triggerContentOf = (schema: FlamestoreSchema, colString: string) => {
     .join(',');
   return `/* tslint:disable */
 import {functions} from '${functionImport}';
-import { serverTimestamp, foundDuplicate, allSettled, update, increment, syncField} from '../utils';
+import { serverTimestamp, foundDuplicate, increment, syncField} from '../utils';
+import { allSettled, update } from 'flamestore';
 import {${modelNames}} from "../models"
 
 ${colString}
