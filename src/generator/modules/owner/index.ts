@@ -1,4 +1,4 @@
-import { Field, FlamestoreModule, FlamestoreSchema } from "../../type";
+import { Field, FlamestoreModule, FlamestoreSchema } from "../../../type";
 import { isTypeReference, isTypeString } from "../../util";
 
 export const module: FlamestoreModule = {

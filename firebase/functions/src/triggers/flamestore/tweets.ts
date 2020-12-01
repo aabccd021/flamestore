@@ -1,13 +1,15 @@
 /* tslint:disable */
 import { functions } from "../utils";
 import {
-  serverTimestamp,
   foundDuplicate,
+  syncField,
+} from "../utils";
+import {
+  serverTimestamp,
   allSettled,
   update,
   increment,
-  syncField,
-} from "../utils";
+} from "flamestore";
 import { User, Tweet, Like } from "../models";
 
 export const onCreate = functions.firestore

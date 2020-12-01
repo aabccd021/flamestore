@@ -1,5 +1,5 @@
 import { firestore } from "firebase-admin";
-import { Computed } from "./utils";
+import { Computed } from "flamestore";
 
 export interface User {
   uid: string;
@@ -15,6 +15,7 @@ export interface Tweet {
   likesSum?: number;
   creationTime?: firestore.Timestamp;
   hotness?: number;
+  dynamicLinkURL: string;
 }
 
 export interface Like {
@@ -65,6 +66,7 @@ export class ComputedTweet extends Computed {
         ? false
         : true,
       hotness: true,
+      dynamicLinkURL: before?.dynamicLinkURL === after?.dynamicLinkURL,
     };
     return keys.some((key) => !isValueSame[key]);
   }

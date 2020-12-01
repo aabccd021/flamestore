@@ -1,4 +1,4 @@
-import { FlamestoreSchema, FieldTypes, Collection, Field, TriggerMap, FlamestoreModule } from "../../type";
+import { FlamestoreSchema, FieldTypes, Collection, Field, TriggerMap, FlamestoreModule } from "../../../type";
 import { assertCollectionNameExists, assertFieldHasTypeOf, isTypeSum } from "../../util";
 
 export const module: FlamestoreModule = {

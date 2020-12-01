@@ -1,4 +1,4 @@
-import { Field, FieldTypes, FlamestoreModule } from "../../type";
+import { Field, FieldTypes, FlamestoreModule } from "../../../type";
 import { isTypeFloat } from "../../util";
 
 export const module: FlamestoreModule = {

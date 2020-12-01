@@ -1,4 +1,4 @@
-import { Collection, Field, FlamestoreModule, FlamestoreSchema, TriggerMap } from "../../type";
+import { Collection, Field, FlamestoreModule, FlamestoreSchema, TriggerMap } from "../../../type";
 import { getColNameToSyncFrom, getPascalCollectionName, isTypeSyncFrom } from "../../util";
 
 export const module: FlamestoreModule = {

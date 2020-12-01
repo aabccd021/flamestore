@@ -1,4 +1,4 @@
-import { FlamestoreModule, Field } from "../../type";
+import { FlamestoreModule, Field } from "../../../type";
 import { isComputed } from "../../util";
 
 export const module: FlamestoreModule = {

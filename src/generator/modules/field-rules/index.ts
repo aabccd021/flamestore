@@ -1,4 +1,4 @@
-import { FlamestoreModule, Field } from "../../type";
+import { FlamestoreModule, Field } from "../../../type";
 import { isCreatable, isUpdatable } from "../../util";
 
 export const module: FlamestoreModule = {

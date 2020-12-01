@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as prettier from 'prettier';
-import { FlamestoreSchema, FlamestoreModule, TriggerGenerator, TriggerMap, CollectionTriggerMap, TriggerData, UpdateFieldData } from './type';
+import { FlamestoreSchema, FlamestoreModule, TriggerGenerator, TriggerMap, CollectionTriggerMap, TriggerData, UpdateFieldData } from '../type';
 import { getPascalCollectionName } from './util';
 
 export default function generate(

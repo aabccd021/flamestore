@@ -2,6 +2,8 @@
   "name": "flamestore",
   "version": "1.0.75",
   "description": "firestore trigger generator",
+  "main": "lib/index.js",
+  "types": "lib/index.d.js",
   "bin": {
     "generate": "lib/generator/index.js"
   },

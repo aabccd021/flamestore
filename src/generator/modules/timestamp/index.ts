@@ -1,4 +1,4 @@
-import { TriggerMap, Collection, Field, FlamestoreModule, FieldTypes } from "../../type";
+import { TriggerMap, Collection, Field, FlamestoreModule, FieldTypes } from "../../../type";
 import { isTypeDatetime } from "../../util";
 
 export const module: FlamestoreModule = {

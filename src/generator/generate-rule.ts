@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { Collection, Field, FlamestoreModule, FlamestoreSchema, ReferenceField, Rule, RuleType, StringField } from './type';
+import { Collection, Field, FlamestoreModule, FlamestoreSchema, ReferenceField, Rule, RuleType, StringField } from '../type';
 import { isOptional, isTypeReference, isTypeString } from './util';
 
 export default function generateRule(

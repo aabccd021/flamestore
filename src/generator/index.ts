@@ -17,7 +17,7 @@ import { module as syncFromModule } from './modules/sync-from';
 import { module as timestampModule } from './modules/timestamp';
 import { module as uniqueModule } from './modules/unique';
 import * as fs from 'fs';
-import { FlamestoreModule, FlamestoreSchema } from './type';
+import { FlamestoreModule, FlamestoreSchema } from '../type';
 import { generateSchema } from './generate-schema';
 import generateUtils from './generate-utils';
 

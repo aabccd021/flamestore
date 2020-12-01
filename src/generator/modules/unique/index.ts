@@ -1,4 +1,4 @@
-import { TriggerMap, Collection, Field, FlamestoreModule } from "../../type";
+import { TriggerMap, Collection, Field, FlamestoreModule } from "../../../type";
 import { isUnique } from "../../util";
 
 export const module: FlamestoreModule = {

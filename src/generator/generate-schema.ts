@@ -1,4 +1,4 @@
-import { FieldType, FieldTypes, FlamestoreModule, FlamestoreSchema } from "./type";
+import { FieldType, FieldTypes, FlamestoreModule, FlamestoreSchema } from "../type";
 import * as fs from 'fs';
 import * as path from 'path';
 import * as prettier from 'prettier';
