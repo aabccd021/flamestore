@@ -1,29 +1,103 @@
 import * as prettier from 'prettier';
 import * as fs from 'fs';
 import * as path from 'path';
-import { FlamestoreSchema } from './type';
+import { FlamestoreSchema, ProjectConfiguration } from './type';
 
 export default function generateUtils(dir: string, schema: FlamestoreSchema) {
-  const region = schema?.configuration?.region;
-  const functionImport = region ? functionContent(region) : '';
-  const content = imports + functionImport + utilString;
+  const content = utilStringOfSchema(schema.configuration.region, schema.);
   const triggerFileContent = prettier.format(content, { parser: "typescript" });
   fs.writeFileSync(path.join(dir, `utils.ts`), triggerFileContent);
 }
 
-function functionContent(region: String): String {
-  return `
-export const functions = _functions.region('${region}');
-  `;
-}
 
-const imports = `
+function utilStringOfSchema(region: string, project: ProjectConfiguration): string {
+  return `
 import { firestore } from 'firebase-admin';
 import { Change, EventContext } from "firebase-functions";
 import { QueryDocumentSnapshot } from "firebase-functions/lib/providers/firestore";
 import * as _functions from 'firebase-functions';
-`
-const utilString = `
+export const functions = _functions.region('${region}');
+export async function createDynamicLink(
+  collectionName: string,
+  id: string,
+  socialTitle?: string,
+  socialDescription?: string,
+  socialImageLink?: string
+) {
+  const dynamicLinkInfo: DynamicLinkInfo = {
+    dynamicLinkInfo: {
+      domainUriPrefix: 'https://${project.dynamicLinkDomain}',
+      link: \`https://${project.domain}/\${collectionName}/\${id}\`,
+      androidInfo: {
+        androidPackageName: project.androidPackageName,
+      },
+      socialMetaTagInfo: {
+        socialTitle,
+        socialDescription,
+        socialImageLink,
+      }
+    }
+  }
+  removeEmpty(dynamicLinkInfo);
+  const url = 'https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key=${project.apiKey}'
+  const headers: HeadersInit = { 'Content-Type': 'application/json' }
+  const opts: RequestInit = {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(dynamicLinkInfo),
+  }
+  await fetch(url, opts)
+}
+const removeEmpty = (obj: any) => {
+  Object.keys(obj).forEach(key => {
+    if (obj[key] && typeof obj[key] === "object") removeEmpty(obj[key]); // recurse
+    else if (obj[key] == null) delete obj[key]; // delete
+  });
+};
+interface DynamicLinkInfo {
+  dynamicLinkInfo: {
+    domainUriPrefix: string,
+    link: string,
+    androidInfo?: {
+      androidPackageName: string,
+      androidFallbackLink?: string,
+      androidMinPackageVersionCode?: string
+    },
+    iosInfo?: {
+      iosBundleId?: string,
+      iosFallbackLink?: string,
+      iosCustomScheme?: string,
+      iosIpadFallbackLink?: string,
+      iosIpadBundleId?: string,
+      iosAppStoreId?: string
+    },
+    navigationInfo?: {
+      enableForcedRedirect: boolean,
+    },
+    analyticsInfo?: {
+      googlePlayAnalytics?: {
+        utmSource?: string,
+        utmMedium?: string,
+        utmCampaign?: string,
+        utmTerm?: string,
+        utmContent?: string,
+        gclid?: string
+      },
+      itunesConnectAnalytics?: {
+        at?: string,
+        ct?: string,
+        mt?: string,
+        pt?: string
+      }
+    },
+    socialMetaTagInfo?: {
+      socialTitle?: string,
+      socialDescription?: string,
+      socialImageLink?: string
+    }
+  },
+  suffix?: { option: "SHORT" | "UNGUESSABLE" }
+}
 export const serverTimestamp = firestore.FieldValue.serverTimestamp;
 export const increment = firestore.FieldValue.increment;
 export const foundDuplicate = async (
@@ -168,3 +242,4 @@ export class ComputeDocument<V extends Computed, K extends keyof T, T = V["docum
 
 }
 `
+}

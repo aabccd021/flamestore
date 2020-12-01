@@ -5,7 +5,15 @@ export interface FlamestoreSchema {
     ruleOutputPath?: string;
     triggerOutputPath?: string;
     region: string;
+    project: { [name: string]: ProjectConfiguration };
   };
+}
+
+export interface ProjectConfiguration {
+  apiKey: string,
+  domain: string,
+  dynamicLinkDomain: string,
+  androidPackageName: string,
 }
 
 export interface Collection {
@@ -14,7 +22,6 @@ export interface Collection {
     [key in RuleType]?: Rule
   };
 }
-
 
 export enum FieldTypes {
   INT = 'int',
@@ -90,28 +97,30 @@ export interface SyncFromField {
   };
 }
 
-export const SYNC_FROM = 'syncFrom';
-
 export interface StringField {
   string: {
     isKey?: boolean;
     isOwnerUid?: boolean,
     minLength?: number,
     maxLength?: number,
+    type?: "dynamicLinkURL"
+    | "dynamicLinkImageURL"
+    | "dynamicLinkTitle"
+    | "dynamicLinkDescription"
   }
 }
 
 export interface DatetimeField {
   timestamp: {
-    serverTimestamp?: boolean,
+    isServerTimestamp?: boolean,
   }
 }
 
 
 export interface ReferenceField {
   path: {
-    isKey?: boolean;
     collection: string,
+    isKey?: boolean;
     isOwnerDocRef?: boolean,
   }
 }
@@ -164,7 +173,7 @@ export class CollectionTriggerMap {
   updateTrigger: TriggerData;
   deleteTrigger: TriggerData;
 
-  constructor(collection: Collection) {
+  constructor() {
     this.createTrigger = new TriggerData();
     this.updateTrigger = new TriggerData();
     this.deleteTrigger = new TriggerData();

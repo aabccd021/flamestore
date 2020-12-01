@@ -1,7 +1,15 @@
 {
-  "$schema": "./flamestore-schema/v1.json",
+  "$schema": "./flamestore-schema/v2.json",
   "configuration": {
-    "region": "asia-southeast2"
+    "region": "asia-southeast2",
+    "project": {
+      "flamestore": {
+        "apiKey": "AIzaSyB5fXsc7xYmMA2_qH7jnVgF9OYEaBSjUBU",
+        "domain": "flamestore.web.app",
+        "dynamicLinkDomain": "flamestore.page.link",
+        "androidPackageName": "com.example.flamestore_example"
+      }
+    }
   },
   "collections": {
     "users": {
@@ -97,7 +105,7 @@
         "creationTime": {
           "type": {
             "timestamp": {
-              "serverTimestamp": true
+              "isServerTimestamp": true
             }
           }
         },
@@ -107,6 +115,13 @@
           },
           "type": {
             "float": {}
+          }
+        },
+        "dynamicLinkURL": {
+          "type": {
+            "string": {
+              "type": "dynamicLinkDescription"
+            }
           }
         }
       }

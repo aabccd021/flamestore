@@ -1,0 +1,411 @@
+{
+  "$ref": "#/definitions/FlamestoreSchema",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "Collection": {
+      "additionalProperties": false,
+      "properties": {
+        "fields": {
+          "additionalProperties": {
+            "$ref": "#/definitions/Field"
+          },
+          "type": "object"
+        },
+        "rules": {
+          "additionalProperties": false,
+          "properties": {
+            "create": {
+              "$ref": "#/definitions/Rule"
+            },
+            "delete": {
+              "$ref": "#/definitions/Rule"
+            },
+            "get": {
+              "$ref": "#/definitions/Rule"
+            },
+            "list": {
+              "$ref": "#/definitions/Rule"
+            },
+            "update": {
+              "$ref": "#/definitions/Rule"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "fields",
+        "rules"
+      ],
+      "type": "object"
+    },
+    "Computed": {
+      "additionalProperties": false,
+      "properties": {
+        "isComputed": {
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "CountField": {
+      "additionalProperties": false,
+      "properties": {
+        "count": {
+          "additionalProperties": false,
+          "properties": {
+            "collection": {
+              "type": "string"
+            },
+            "reference": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "collection",
+            "reference"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "count"
+      ],
+      "type": "object"
+    },
+    "DatetimeField": {
+      "additionalProperties": false,
+      "properties": {
+        "timestamp": {
+          "additionalProperties": false,
+          "properties": {
+            "isServerTimestamp": {
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "timestamp"
+      ],
+      "type": "object"
+    },
+    "Field": {
+      "additionalProperties": false,
+      "properties": {
+        "property": {
+          "$ref": "#/definitions/FieldProperty"
+        },
+        "type": {
+          "$ref": "#/definitions/FieldType"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "type": "object"
+    },
+    "FieldProperty": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/Computed"
+        },
+        {
+          "$ref": "#/definitions/NonComputed"
+        }
+      ]
+    },
+    "FieldType": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/StringField"
+        },
+        {
+          "$ref": "#/definitions/FloatField"
+        },
+        {
+          "$ref": "#/definitions/ReferenceField"
+        },
+        {
+          "$ref": "#/definitions/IntField"
+        },
+        {
+          "$ref": "#/definitions/DatetimeField"
+        },
+        {
+          "$ref": "#/definitions/SumField"
+        },
+        {
+          "$ref": "#/definitions/CountField"
+        },
+        {
+          "$ref": "#/definitions/SyncFromField"
+        }
+      ]
+    },
+    "FlamestoreSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "collections": {
+          "additionalProperties": {
+            "$ref": "#/definitions/Collection"
+          },
+          "type": "object"
+        },
+        "configuration": {
+          "additionalProperties": false,
+          "properties": {
+            "project": {
+              "additionalProperties": {
+                "additionalProperties": false,
+                "properties": {
+                  "androidPackageName": {
+                    "type": "string"
+                  },
+                  "apiKey": {
+                    "type": "string"
+                  },
+                  "domain": {
+                    "type": "string"
+                  },
+                  "dynamicLinkDomain": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "apiKey",
+                  "domain",
+                  "dynamicLinkDomain",
+                  "androidPackageName"
+                ],
+                "type": "object"
+              },
+              "type": "object"
+            },
+            "region": {
+              "type": "string"
+            },
+            "ruleOutputPath": {
+              "type": "string"
+            },
+            "triggerOutputPath": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "project"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "$schema",
+        "collections",
+        "configuration"
+      ],
+      "type": "object"
+    },
+    "FloatField": {
+      "additionalProperties": false,
+      "properties": {
+        "float": {
+          "additionalProperties": false,
+          "properties": {
+            "deleteDocWhen": {
+              "type": "number"
+            },
+            "max": {
+              "type": "number"
+            },
+            "min": {
+              "type": "number"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "float"
+      ],
+      "type": "object"
+    },
+    "IntField": {
+      "additionalProperties": false,
+      "properties": {
+        "int": {
+          "additionalProperties": false,
+          "properties": {
+            "deleteDocWhen": {
+              "type": "number"
+            },
+            "max": {
+              "type": "number"
+            },
+            "min": {
+              "type": "number"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "int"
+      ],
+      "type": "object"
+    },
+    "NonComputed": {
+      "additionalProperties": false,
+      "properties": {
+        "isOptional": {
+          "type": "boolean"
+        },
+        "isUnique": {
+          "type": "boolean"
+        },
+        "rules": {
+          "additionalProperties": false,
+          "properties": {
+            "isCreatable": {
+              "type": "boolean"
+            },
+            "isUpdatable": {
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "ReferenceField": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "additionalProperties": false,
+          "properties": {
+            "collection": {
+              "type": "string"
+            },
+            "isKey": {
+              "type": "boolean"
+            },
+            "isOwnerDocRef": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "collection"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "type": "object"
+    },
+    "Rule": {
+      "enum": [
+        "all",
+        "owner",
+        "authenticated",
+        "none"
+      ],
+      "type": "string"
+    },
+    "StringField": {
+      "additionalProperties": false,
+      "properties": {
+        "string": {
+          "additionalProperties": false,
+          "properties": {
+            "isKey": {
+              "type": "boolean"
+            },
+            "isOwnerUid": {
+              "type": "boolean"
+            },
+            "maxLength": {
+              "type": "number"
+            },
+            "minLength": {
+              "type": "number"
+            },
+            "type": {
+              "enum": [
+                "dynamicLinkURL",
+                "dynamicLinkImageURL",
+                "dynamicLinkTitle",
+                "dynamicLinkDescription"
+              ],
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "string"
+      ],
+      "type": "object"
+    },
+    "SumField": {
+      "additionalProperties": false,
+      "properties": {
+        "sum": {
+          "additionalProperties": false,
+          "properties": {
+            "collection": {
+              "type": "string"
+            },
+            "field": {
+              "type": "string"
+            },
+            "reference": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "collection",
+            "field",
+            "reference"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "sum"
+      ],
+      "type": "object"
+    },
+    "SyncFromField": {
+      "additionalProperties": false,
+      "properties": {
+        "syncFrom": {
+          "additionalProperties": false,
+          "properties": {
+            "field": {
+              "type": "string"
+            },
+            "reference": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "field",
+            "reference"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "syncFrom"
+      ],
+      "type": "object"
+    }
+  }
+}

@@ -53,8 +53,8 @@ ${colString}
 
 function getCompleteTriggerMap(schema: FlamestoreSchema, triggerGenerators: TriggerGenerator[]): TriggerMap {
   let triggerMap: TriggerMap = {};
-  for (const [collectionName, collection] of Object.entries(schema.collections)) {
-    triggerMap[collectionName] = new CollectionTriggerMap(collection);
+  for (const [collectionName, _] of Object.entries(schema.collections)) {
+    triggerMap[collectionName] = new CollectionTriggerMap();
   }
   for (const triggerGenerator of triggerGenerators) {
     for (const [collectionName, collection] of Object.entries(schema.collections)) {
