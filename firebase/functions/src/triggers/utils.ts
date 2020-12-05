@@ -12,5 +12,5 @@ const projects: { [name: string]: ProjectConfiguration } = {
   },
 };
 const flamestore = flamestoreUtils(projects[projectId], firestore(), functions);
-export const { foundDuplicate, syncField, createDynamicLink } = flamestore;
+export const { foundDuplicate, syncField } = flamestore;
 export const ComputeDocument = flamestore.computeDocumentFactory();

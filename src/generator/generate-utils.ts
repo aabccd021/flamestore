@@ -20,7 +20,7 @@ export const functions = _functions.region("${schema.configuration.region}");
 const projectId:string = JSON.parse(process.env.FIREBASE_CONFIG!).projectId;
 const projects: { [name: string]: ProjectConfiguration } = ${JSON.stringify(schema.configuration.project)};
 const flamestore = flamestoreUtils(projects[projectId], firestore(), functions);
-export const { foundDuplicate, syncField, createDynamicLink } = flamestore;
+export const { foundDuplicate, syncField  } = flamestore;
 export const ComputeDocument = flamestore.computeDocumentFactory();
 `
 }

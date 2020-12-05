@@ -64,6 +64,7 @@ export interface DynamicLinkField {
     title?: DynamicLinkAttribute,
     description?: DynamicLinkAttribute,
     imageURL?: DynamicLinkAttribute,
+    isSuffixShort?: boolean,
   }
 }
 

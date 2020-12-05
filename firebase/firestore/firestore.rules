@@ -76,7 +76,7 @@ service cloud.firestore {
       }
       function dynamicLinkIsValid(){
         let dynamicLink = reqData().dynamicLink;
-        return dynamicLink is string && dynamicLink[0:28] == 'https://flamestore.page.link/';
+        return dynamicLink is string && dynamicLink[0:29] == 'https://flamestore.page.link/';
       }
       function isCreateValid(){
         return reqData().keys().hasOnly(['user','tweetText','dynamicLink'])

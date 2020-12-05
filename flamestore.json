@@ -118,6 +118,7 @@
         "dynamicLink": {
           "type": {
             "dynamicLink": {
+              "isSuffixShort": true,
               "title": {
                 "field": "tweetText"
               },

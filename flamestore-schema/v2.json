@@ -135,6 +135,9 @@
                 }
               ]
             },
+            "isSuffixShort": {
+              "type": "boolean"
+            },
             "title": {
               "anyOf": [
                 {
