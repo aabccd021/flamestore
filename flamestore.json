@@ -4,7 +4,6 @@
     "region": "asia-southeast2",
     "project": {
       "flamestore": {
-        "domain": "flamestore.web.app",
         "dynamicLinkDomain": "flamestore.page.link",
         "androidPackageName": "com.example.flamestore_example"
       }

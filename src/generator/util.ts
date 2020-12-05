@@ -183,9 +183,10 @@ export function isUnique(field?: Field): boolean | undefined {
   return property?.isUnique
 }
 
-export function getDynamicLinkDomain(project: ProjectConfiguration): string {
+export function getDynamicLinkDomain(projectName: string, project: ProjectConfiguration): string {
   if (project.dynamicLinkDomain) {
     return `${project.dynamicLinkDomain}`;
   }
-  return `${project.domain}/links`
+  const projectDomain = project.domain ?? `${projectName}.web.app`;
+  return `${projectDomain}/links`
 }

@@ -20,8 +20,8 @@ function getRule(
   if (isTypeDynamicLink(fieldType)) {
     content.push(`${fieldName} is ${FieldTypes.STRING}`)
     const projects = schema.configuration.project;
-    const prefixIsValidArray = Object.values(projects)
-      .map(project => `https://${getDynamicLinkDomain(project)}/`)
+    const prefixIsValidArray = Object.entries(projects)
+      .map(([projectName, project]) => `https://${getDynamicLinkDomain(projectName, project)}/`)
       .map(domain => `${fieldName}[0:${domain.length - 1}] == '${domain}'`)
     const prefixIsValid = prefixIsValidArray.length == 1 ? prefixIsValidArray[0] : `(${prefixIsValidArray.join('||')})`
     content.push(prefixIsValid);

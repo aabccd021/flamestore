@@ -350,7 +350,6 @@
         }
       },
       "required": [
-        "domain",
         "androidPackageName"
       ],
       "type": "object"

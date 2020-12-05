@@ -7,7 +7,6 @@ export const functions = _functions.region("asia-southeast2");
 const projectId: string = JSON.parse(process.env.FIREBASE_CONFIG!).projectId;
 const projects: { [name: string]: ProjectConfiguration } = {
   flamestore: {
-    domain: "flamestore.web.app",
     dynamicLinkDomain: "flamestore.page.link",
     androidPackageName: "com.example.flamestore_example",
   },

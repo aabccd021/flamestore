@@ -10,7 +10,7 @@ export interface FlamestoreSchema {
 }
 
 export interface ProjectConfiguration {
-  domain: string,
+  domain?: string,
   dynamicLinkDomain?: string,
   androidPackageName: string,
 }
