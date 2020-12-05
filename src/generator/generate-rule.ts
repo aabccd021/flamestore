@@ -66,7 +66,14 @@ function collectionRuleTemplate(
       .filter(([fieldName, _]) =>
         isUpdateValidFunction.usedFields.includes(fieldName)
         || isCreateValidFunction.usedFields.includes(fieldName))
-      .map(([fieldName, field]) => getIsFieldsValidFunction(fieldName, field, modules))
+      .map(([fieldName, field]) => getIsFieldsValidFunction(
+        schema,
+        collectionName,
+        collection,
+        fieldName,
+        field,
+        modules,
+      ))
       .join('');
   return `    match /${collectionName}/{documentId} {${ruleFunction}
 ${isOwnerFunction}${fieldIsValidFunctions}${isCreateValidFunction.content}${isUpdateValidFunction.content}
@@ -232,13 +239,16 @@ function getIsOwnerFunction(collectionName: string, collection: Collection, sche
 }
 
 function getIsFieldsValidFunction(
+  schema: FlamestoreSchema,
+  collectionName: string,
+  collection: Collection,
   fieldName: string,
   field: Field,
   modules: FlamestoreModule[]
 ): string {
   const additionalRule =
     Object.values(modules)
-      .map(module => module.getRule ? module.getRule(fieldName, field) : [])
+      .map(module => module.getRule ? module.getRule(fieldName, field, collectionName, collection, schema) : [])
       .reduce((a, b) => a.concat(b), [])
       .join(' && ');
 

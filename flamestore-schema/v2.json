@@ -91,6 +91,78 @@
       ],
       "type": "object"
     },
+    "DynamicLinkField": {
+      "additionalProperties": false,
+      "properties": {
+        "dynamicLink": {
+          "additionalProperties": false,
+          "properties": {
+            "description": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "field": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "field"
+                  ],
+                  "type": "object"
+                }
+              ]
+            },
+            "imageURL": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "field": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "field"
+                  ],
+                  "type": "object"
+                }
+              ]
+            },
+            "title": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "field": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "field"
+                  ],
+                  "type": "object"
+                }
+              ]
+            }
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "dynamicLink"
+      ],
+      "type": "object"
+    },
     "Field": {
       "additionalProperties": false,
       "properties": {
@@ -141,6 +213,9 @@
         },
         {
           "$ref": "#/definitions/SyncFromField"
+        },
+        {
+          "$ref": "#/definitions/DynamicLinkField"
         }
       ]
     },
@@ -161,28 +236,7 @@
           "properties": {
             "project": {
               "additionalProperties": {
-                "additionalProperties": false,
-                "properties": {
-                  "androidPackageName": {
-                    "type": "string"
-                  },
-                  "apiKey": {
-                    "type": "string"
-                  },
-                  "domain": {
-                    "type": "string"
-                  },
-                  "dynamicLinkDomain": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "apiKey",
-                  "domain",
-                  "dynamicLinkDomain",
-                  "androidPackageName"
-                ],
-                "type": "object"
+                "$ref": "#/definitions/ProjectConfiguration"
               },
               "type": "object"
             },
@@ -197,6 +251,7 @@
             }
           },
           "required": [
+            "region",
             "project"
           ],
           "type": "object"
@@ -281,6 +336,25 @@
       },
       "type": "object"
     },
+    "ProjectConfiguration": {
+      "additionalProperties": false,
+      "properties": {
+        "androidPackageName": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string"
+        },
+        "dynamicLinkDomain": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "domain",
+        "androidPackageName"
+      ],
+      "type": "object"
+    },
     "ReferenceField": {
       "additionalProperties": false,
       "properties": {
@@ -334,15 +408,6 @@
             },
             "minLength": {
               "type": "number"
-            },
-            "type": {
-              "enum": [
-                "dynamicLinkURL",
-                "dynamicLinkImageURL",
-                "dynamicLinkTitle",
-                "dynamicLinkDescription"
-              ],
-              "type": "string"
             }
           },
           "type": "object"

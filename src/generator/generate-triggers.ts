@@ -198,6 +198,9 @@ function refTriggerDataToString(triggerData: TriggerData) {
       content += `const ${refName}Data: {[fieldName:string]:any} = {};${refTriggerToString(refName, refTrigger)};\n\n`;
     }
   }
+  for (const xcontent of Object.values(triggerData._content)) {
+    content += `${xcontent}\n\n`;
+  }
   return content;
 }
 

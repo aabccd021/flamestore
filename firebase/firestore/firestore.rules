@@ -74,22 +74,20 @@ service cloud.firestore {
         let tweetText = reqData().tweetText;
         return tweetText is string && tweetText.size() <= 280 && tweetText.size() >= 1;
       }
-      function dynamicLinkURLIsValid(){
-        let dynamicLinkURL = reqData().dynamicLinkURL;
-        return dynamicLinkURL is string;
+      function dynamicLinkIsValid(){
+        let dynamicLink = reqData().dynamicLink;
+        return dynamicLink is string && dynamicLink[0:28] == 'https://flamestore.page.link/';
       }
       function isCreateValid(){
-        return reqData().keys().hasOnly(['user','tweetText','dynamicLinkURL'])
+        return reqData().keys().hasOnly(['user','tweetText','dynamicLink'])
           && userIsValid()
           && tweetTextIsValid()
-          && dynamicLinkURLIsValid();
+          && dynamicLinkIsValid();
       }
       function isUpdateValid(){
-        return updatedKeys().hasOnly(['tweetText','dynamicLinkURL'])
+        return updatedKeys().hasOnly(['tweetText'])
           && (!('tweetText' in reqData()) || tweetTextIsValid())
-          && isNotDeleted('tweetText')
-          && (!('dynamicLinkURL' in reqData()) || dynamicLinkURLIsValid())
-          && isNotDeleted('dynamicLinkURL');
+          && isNotDeleted('tweetText');
       }
       allow get: if true;
       allow list: if true;

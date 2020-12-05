@@ -15,7 +15,7 @@ export interface Tweet {
   likesSum?: number;
   creationTime?: firestore.Timestamp;
   hotness?: number;
-  dynamicLinkURL: string;
+  dynamicLink: string;
 }
 
 export interface Like {
@@ -66,7 +66,7 @@ export class ComputedTweet extends Computed {
         ? false
         : true,
       hotness: true,
-      dynamicLinkURL: before?.dynamicLinkURL === after?.dynamicLinkURL,
+      dynamicLink: before?.dynamicLink === after?.dynamicLink,
     };
     return keys.some((key) => !isValueSame[key]);
   }

@@ -27,37 +27,37 @@ export function flamestoreUtils(
   firestore: firestore.Firestore,
   functions: _functions.FunctionBuilder,
 ) {
-  const createDynamicLink = async (
-    collectionName: string,
-    id: string,
-    socialTitle?: string,
-    socialDescription?: string,
-    socialImageLink?: string
-  ) => {
-    const dynamicLinkInfo: DynamicLinkInfo = {
-      dynamicLinkInfo: {
-        domainUriPrefix: `https://${project.dynamicLinkDomain}`,
-        link: `https://${project.domain}/${collectionName}/${id}`,
-        androidInfo: {
-          androidPackageName: project.androidPackageName,
-        },
-        socialMetaTagInfo: {
-          socialTitle,
-          socialDescription,
-          socialImageLink,
-        }
-      }
-    };
-    removeEmpty(dynamicLinkInfo);
-    const url = `https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key=${project.apiKey}`;
-    const headers: HeadersInit = { 'Content-Type': 'application/json' };
-    const opts: RequestInit = {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(dynamicLinkInfo),
-    };
-    await fetch(url, opts);
-  };
+  // const createDynamicLink = async (
+  //   collectionName: string,
+  //   id: string,
+  //   socialTitle?: string,
+  //   socialDescription?: string,
+  //   socialImageLink?: string
+  // ) => {
+  //   const dynamicLinkInfo: DynamicLinkInfo = {
+  //     dynamicLinkInfo: {
+  //       domainUriPrefix: `https://${project.dynamicLinkDomain}`,
+  //       link: `https://${project.domain}/${collectionName}/${id}`,
+  //       androidInfo: {
+  //         androidPackageName: project.androidPackageName,
+  //       },
+  //       socialMetaTagInfo: {
+  //         socialTitle,
+  //         socialDescription,
+  //         socialImageLink,
+  //       }
+  //     }
+  //   };
+  //   removeEmpty(dynamicLinkInfo);
+  //   const url = `https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key=${project.apiKey}`;
+  //   const opts: RequestInit = {
+  //     method: 'POST',
+  //     headers: { 'Content-Type': 'application/json' },
+  //     body: JSON.stringify(dynamicLinkInfo),
+  //   };
+  //   const res = await fetch(url, opts);
+  //   _functions.logger.log('Created dynamic link', res);
+  // };
   const foundDuplicate = async (
     collectionName: string,
     fieldName: string,
@@ -123,8 +123,7 @@ export function flamestoreUtils(
     }
   };
 
-
-  const factory = () => {
+  const computeDocumentFactory = () => {
     return class ComputeDocument<V extends Computed, K extends keyof T, T = V["document"]> {
       computedDocument: V;
       computeOnCreate: onCreateFn<Pick<T, K>, V>;
@@ -178,7 +177,7 @@ export function flamestoreUtils(
     }
 
   }
-  return { createDynamicLink, foundDuplicate, syncField, factory };
+  return { foundDuplicate, syncField, computeDocumentFactory };
 }
 
 interface DynamicLinkInfo {

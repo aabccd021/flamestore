@@ -4,7 +4,6 @@
     "region": "asia-southeast2",
     "project": {
       "flamestore": {
-        "apiKey": "AIzaSyB5fXsc7xYmMA2_qH7jnVgF9OYEaBSjUBU",
         "domain": "flamestore.web.app",
         "dynamicLinkDomain": "flamestore.page.link",
         "androidPackageName": "com.example.flamestore_example"
@@ -89,8 +88,7 @@
           "type": {
             "string": {
               "minLength": 1,
-              "maxLength": 280,
-              "type": "dynamicLinkTitle"
+              "maxLength": 280
             }
           }
         },
@@ -118,10 +116,13 @@
             "float": {}
           }
         },
-        "dynamicLinkURL": {
+        "dynamicLink": {
           "type": {
-            "string": {
-              "type": "dynamicLinkURL"
+            "dynamicLink": {
+              "title": {
+                "field": "tweetText"
+              },
+              "description": "tweet description"
             }
           }
         }

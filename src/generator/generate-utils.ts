@@ -21,6 +21,6 @@ const projectId:string = JSON.parse(process.env.FIREBASE_CONFIG!).projectId;
 const projects: { [name: string]: ProjectConfiguration } = ${JSON.stringify(schema.configuration.project)};
 const flamestore = flamestoreUtils(projects[projectId], firestore(), functions);
 export const { foundDuplicate, syncField, createDynamicLink } = flamestore;
-export const ComputeDocument = flamestore.factory();
+export const ComputeDocument = flamestore.computeDocumentFactory();
 `
 }

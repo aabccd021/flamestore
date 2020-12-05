@@ -4,6 +4,7 @@ import generateTrigger from './generate-triggers';
 import generateRule from './generate-rule';
 import { module as computedModule } from './modules/computed';
 import { module as countModule } from './modules/count';
+import { module as dynamicLinkModule } from './modules/dynamic-link';
 import { module as fieldRulesModule } from './modules/field-rules';
 import { module as floatModule } from './modules/float';
 import { module as intModule } from './modules/int';
@@ -36,6 +37,7 @@ const modules: FlamestoreModule[] = [
   countModule,
   computedModule,
   optionalModule,
+  dynamicLinkModule,
 ];
 
 // validate raw schema
@@ -49,10 +51,10 @@ const schema: FlamestoreSchema = rawSchema;
 modules.forEach(module => module.validate && module.validate(schema));
 
 // generate rule
-const rulePath = schema.configuration.ruleOutputPath || "firestore/firestore.rules";
+const rulePath = schema.configuration.ruleOutputPath ?? "firestore/firestore.rules";
 generateRule(schema, rulePath, modules);
 
-const triggerDir = schema.configuration.triggerOutputPath || "functions/src/triggers";
+const triggerDir = schema.configuration.triggerOutputPath ?? "functions/src/triggers";
 // generate schema
 if (!fs.existsSync(triggerDir)) {
   fs.mkdirSync(triggerDir, { recursive: true });

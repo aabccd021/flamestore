@@ -10,17 +10,15 @@ export interface FlamestoreSchema {
 }
 
 export interface ProjectConfiguration {
-  apiKey: string,
   domain: string,
-  dynamicLinkDomain: string,
+  dynamicLinkDomain?: string,
   androidPackageName: string,
 }
 
 export interface Collection {
   fields: { [name: string]: Field };
-  rules: {
-    [key in RuleType]?: Rule
-  };
+  rules: { [key in RuleType]?: Rule };
+
 }
 
 export enum FieldTypes {
@@ -58,7 +56,18 @@ export type FieldType = StringField
   | DatetimeField
   | SumField
   | CountField
-  | SyncFromField;
+  | SyncFromField
+  | DynamicLinkField;
+
+export interface DynamicLinkField {
+  dynamicLink: {
+    title?: DynamicLinkAttribute,
+    description?: DynamicLinkAttribute,
+    imageURL?: DynamicLinkAttribute,
+  }
+}
+
+type DynamicLinkAttribute = string | { field: string };
 
 export type FieldProperty = Computed | NonComputed;
 
@@ -103,10 +112,6 @@ export interface StringField {
     isOwnerUid?: boolean,
     minLength?: number,
     maxLength?: number,
-    type?: "dynamicLinkURL"
-    | "dynamicLinkImageURL"
-    | "dynamicLinkTitle"
-    | "dynamicLinkDescription"
   }
 }
 
@@ -146,7 +151,13 @@ export interface FlamestoreModule {
   validateRaw?: (rawSchema: any) => void,
   validate?: (schema: FlamestoreSchema) => void,
   ruleFunction?: (collection: Collection) => string[],
-  getRule?: (fieldName: string, field: Field) => string[],
+  getRule?: (
+    fieldName: string,
+    field: Field,
+    collectionName: string,
+    collection: Collection,
+    schema: FlamestoreSchema,
+  ) => string[],
   triggerGenerator?: TriggerGenerator,
   isCreatable?: (field: Field) => boolean;
   isUpdatable?: (field: Field) => boolean;
@@ -181,11 +192,12 @@ export class CollectionTriggerMap {
 }
 
 export class TriggerData {
-  _header = '';
+  _header: string[] = [];
   dependencyPromises: { [dependencyName: string]: { collection: string, promise: string } } = {};
   _resultPromises: string[] = [];
   _data: UpdateData = {};
   _nonUpdateData: UpdateData = {};
+  _content: string[] = [];
 
   addData(dataName: string, fieldName: string, fieldValue: string, fieldCondition?: string) {
     if (!Object.keys(this._data).includes(dataName)) {
@@ -200,8 +212,13 @@ export class TriggerData {
     this._nonUpdateData[dataName][fieldName] = { fieldValue, fieldCondition };
   }
   addHeader(content: string) {
-    if (!this._header.includes(content)) {
-      this._header += content;
+    if (!this._header.join('').includes(content)) {
+      this._header.push(content);
+    }
+  }
+  addContent(content: string) {
+    if (!this._content.join('').includes(content)) {
+      this._content.push(content);
     }
   }
   addResultPromise(content: string) {
@@ -210,7 +227,7 @@ export class TriggerData {
     }
   }
   isEmpty(): boolean {
-    return this._header === ''
+    return this._header.length == 0
       && Object.keys(this.dependencyPromises).length === 0
       && this._resultPromises.join('') === ''
       && Object.keys(this._data).length === 0

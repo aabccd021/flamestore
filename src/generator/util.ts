@@ -1,5 +1,5 @@
 import pluralize from 'pluralize';
-import { FlamestoreSchema, FieldTypes, Field, FieldProperty, Computed, StringField, ReferenceField, FieldType, FloatField, SumField, CountField, SyncFromField, DatetimeField, IntField } from '../type';
+import { FlamestoreSchema, FieldTypes, Field, FieldProperty, Computed, StringField, ReferenceField, FieldType, FloatField, SumField, CountField, SyncFromField, DatetimeField, IntField, DynamicLinkField, ProjectConfiguration } from '../type';
 
 export function assertCollectionNameExists(collectionName: string, schema: FlamestoreSchema, stackTrace: string) {
   if (!Object.keys(schema.collections).includes(collectionName)) {
@@ -68,6 +68,9 @@ export function getColNameToSyncFrom(collectionName: string, fieldName: string, 
   throw Error('Not an syncFrom field');
 }
 
+export function isTypeDynamicLink(value: FieldType): value is DynamicLinkField {
+  return value.hasOwnProperty('dynamicLink');
+}
 export function isTypeString(value: FieldType): value is StringField {
   return value.hasOwnProperty('string');
 }
@@ -119,6 +122,9 @@ export function getFieldType(
   }
   if (isTypeCount(type)) {
     return FieldTypes.INT;
+  }
+  if (isTypeDynamicLink(type)) {
+    return FieldTypes.STRING;
   }
   if (isTypeSyncFrom(type)) {
     const colNameToSyncFrom = getColNameToSyncFrom(collectionName, fieldName, schema);
@@ -175,4 +181,11 @@ export function isUnique(field?: Field): boolean | undefined {
     return false;
   }
   return property?.isUnique
+}
+
+export function getDynamicLinkDomain(project: ProjectConfiguration): string {
+  if (project.dynamicLinkDomain) {
+    return `${project.dynamicLinkDomain}`;
+  }
+  return `${project.domain}/links`
 }
