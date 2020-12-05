@@ -1,5 +1,5 @@
-import { Collection, Field, FieldTypes, FlamestoreModule, FlamestoreSchema, TriggerMap } from "../../../type";
-import { getDynamicLinkDomain, isTypeDynamicLink, isTypeString } from "../../util";
+import { Collection, Field, FieldTypes, FlamestoreModule, FlamestoreSchema } from "../../../type";
+import { getDynamicLinkDomain, isTypeDynamicLink } from "../../util";
 
 export const module: FlamestoreModule = {
   isCreatable: (field: Field) => isTypeDynamicLink(field.type),

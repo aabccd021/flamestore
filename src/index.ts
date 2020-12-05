@@ -180,51 +180,6 @@ export function flamestoreUtils(
   return { foundDuplicate, syncField, computeDocumentFactory };
 }
 
-interface DynamicLinkInfo {
-  dynamicLinkInfo: {
-    domainUriPrefix: string,
-    link: string,
-    androidInfo?: {
-      androidPackageName: string,
-      androidFallbackLink?: string,
-      androidMinPackageVersionCode?: string
-    },
-    iosInfo?: {
-      iosBundleId?: string,
-      iosFallbackLink?: string,
-      iosCustomScheme?: string,
-      iosIpadFallbackLink?: string,
-      iosIpadBundleId?: string,
-      iosAppStoreId?: string
-    },
-    navigationInfo?: {
-      enableForcedRedirect: boolean,
-    },
-    analyticsInfo?: {
-      googlePlayAnalytics?: {
-        utmSource?: string,
-        utmMedium?: string,
-        utmCampaign?: string,
-        utmTerm?: string,
-        utmContent?: string,
-        gclid?: string
-      },
-      itunesConnectAnalytics?: {
-        at?: string,
-        ct?: string,
-        mt?: string,
-        pt?: string
-      }
-    },
-    socialMetaTagInfo?: {
-      socialTitle?: string,
-      socialDescription?: string,
-      socialImageLink?: string
-    }
-  },
-  suffix?: { option: "SHORT" | "UNGUESSABLE" }
-}
-
 const removeEmpty = (obj: any) => {
   Object.keys(obj).forEach(key => {
     if (obj[key] && typeof obj[key] === "object") removeEmpty(obj[key]);
