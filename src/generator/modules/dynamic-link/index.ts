@@ -1,11 +1,38 @@
 import { Collection, Field, FieldTypes, FlamestoreModule, FlamestoreSchema } from "../../../type";
-import { getDynamicLinkDomain, isTypeDynamicLink } from "../../util";
+import { getDynamicLinkDomain, isDynamicLinkAttributeFromField, isTypeDynamicLink } from "../../util";
 
 export const module: FlamestoreModule = {
   isCreatable: (field: Field) => isTypeDynamicLink(field.type),
   // isUpdatableOverride: (field: Field) => (isTypeString(field.type) && field.type.string.type === "dynamicLinkURL") ? false : undefined,
   // triggerGenerator
   getRule,
+  validate,
+}
+
+function validate(schema: FlamestoreSchema) {
+  Object.entries(schema.collections).forEach(([collectionName, collection]) => {
+    Object.entries(collection.fields).forEach(([fieldName, field]) => {
+      const type = field.type;
+      if (isTypeDynamicLink(type)) {
+        const dl = type.dynamicLink;
+        Object.values([
+          ['title', dl.title],
+          ['description', dl.description],
+          ['imageURL', dl.imageURL],
+        ]).forEach(([attrName, attr]) => {
+          if (isDynamicLinkAttributeFromField(attr)) {
+            if (!Object.keys(collection.fields).includes(attr.field)) {
+              throw Error(
+                `Error on schema.collections.${collectionName}.fields.${fieldName}` +
+                `.type.dynamicLink.${attrName}.field: Field ${attr.field} does not` +
+                ` exists on collection ${collectionName}`
+              );
+            }
+          }
+        });
+      }
+    });
+  });
 }
 
 function getRule(

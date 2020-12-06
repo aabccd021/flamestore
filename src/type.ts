@@ -68,7 +68,8 @@ export interface DynamicLinkField {
   }
 }
 
-type DynamicLinkAttribute = string | { field: string };
+export type DynamicLinkAttribute = string | DynamicLinkAttributeFromField;
+export type DynamicLinkAttributeFromField = { field: string }
 
 export type FieldProperty = Computed | NonComputed;
 

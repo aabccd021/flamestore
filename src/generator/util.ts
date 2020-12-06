@@ -1,5 +1,5 @@
 import pluralize from 'pluralize';
-import { FlamestoreSchema, FieldTypes, Field, FieldProperty, Computed, StringField, ReferenceField, FieldType, FloatField, SumField, CountField, SyncFromField, DatetimeField, IntField, DynamicLinkField, ProjectConfiguration } from '../type';
+import { FlamestoreSchema, FieldTypes, Field, FieldProperty, Computed, StringField, ReferenceField, FieldType, FloatField, SumField, CountField, SyncFromField, DatetimeField, IntField, DynamicLinkField, ProjectConfiguration, DynamicLinkAttribute, DynamicLinkAttributeFromField } from '../type';
 
 export function assertCollectionNameExists(collectionName: string, schema: FlamestoreSchema, stackTrace: string) {
   if (!Object.keys(schema.collections).includes(collectionName)) {
@@ -189,4 +189,8 @@ export function getDynamicLinkDomain(projectName: string, project: ProjectConfig
   }
   const projectDomain = project.domain ?? `${projectName}.web.app`;
   return `${projectDomain}/links`
+}
+
+export function isDynamicLinkAttributeFromField(value?: DynamicLinkAttribute): value is DynamicLinkAttributeFromField {
+  return value != null && value.hasOwnProperty('field');
 }
