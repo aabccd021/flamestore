@@ -1,4 +1,5 @@
 import { firestore } from "firebase-admin";
+import { logger } from "firebase-functions";
 import { Computed } from "flamestore";
 
 export interface IUser {
@@ -54,20 +55,28 @@ export class ComputedTweet extends Computed {
     keys: K[]
   ) {
     const isValueSame = {
-      creationTime: before?.creationTime === after?.creationTime,
+      creationTime:
+        before?.creationTime
+          ? after?.creationTime
+            ? before.creationTime.isEqual(after.creationTime)
+            : false
+          : after?.creationTime
+            ? false
+            : true,
       dynamicLink: before?.dynamicLink === after?.dynamicLink,
-      hotness: true,
       likesSum: before?.likesSum === after?.likesSum,
       tweetText: before?.tweetText === after?.tweetText,
+      hotness: true,
       user:
         (before?.user?.reference
           ? after?.user?.reference
             ? before.user.reference.isEqual(after.user.reference)
             : false
           : after?.user?.reference
-          ? false
-          : true) || before?.user?.userName === after?.user?.userName,
+            ? false
+            : true) && before?.user?.userName === after?.user?.userName,
     };
+    logger.log(isValueSame);
     return keys.some((key) => !isValueSame[key]);
   }
 }

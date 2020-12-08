@@ -161,7 +161,7 @@ function isFieldEqual(
       )) ?? [];
     const isEqual = [referenceIsEqueal, ...otherFieldsIsEqual]
       .map(e => `(${e})`)
-      .join(' || ');
+      .join(' && ');
     return `${isEqual}`;
   }
   const aprefix = prefix === '' ? prefix : `?${prefix}`;
