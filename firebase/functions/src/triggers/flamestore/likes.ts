@@ -1,46 +1,42 @@
-/* tslint:disable */
-import { functions } from "../utils";
+import { update } from "flamestore";
+import { ILike } from "../models";
 import {
-  serverTimestamp,
-  foundDuplicate,
+  functions,
   increment,
-  syncField,
 } from "../utils";
-import { allSettled, update } from "flamestore";
-import { User, Tweet, Like } from "../models";
 
 export const onCreate = functions.firestore
   .document("/likes/{documentId}")
   .onCreate(async (snapshot, context) => {
-    const data = snapshot.data() as Like;
+    const data = snapshot.data() as ILike;
 
     const tweetData: { [fieldName: string]: any } = {};
     tweetData.likesSum = increment(data.likeValue);
 
-    await update(data.tweet, tweetData);
+    await update(data.tweet.reference, tweetData);
   });
 
 export const onUpdate = functions.firestore
   .document("/likes/{documentId}")
   .onUpdate(async (change, context) => {
-    const before = change.before.data() as Like;
-    const after = change.after.data() as Like;
+    const before = change.before.data() as ILike;
+    const after = change.after.data() as ILike;
 
     const tweetData: { [fieldName: string]: any } = {};
     if (after.likeValue !== before.likeValue) {
       tweetData.likesSum = increment(after.likeValue - before.likeValue);
     }
 
-    await update(after.tweet, tweetData);
+    await update(after.tweet.reference, tweetData);
   });
 
 export const onDelete = functions.firestore
   .document("/likes/{documentId}")
   .onDelete(async (snapshot, context) => {
-    const data = snapshot.data() as Like;
+    const data = snapshot.data() as ILike;
 
     const tweetData: { [fieldName: string]: any } = {};
     tweetData.likesSum = increment(-data.likeValue);
 
-    await update(data.tweet, tweetData);
+    await update(data.tweet.reference, tweetData);
   });

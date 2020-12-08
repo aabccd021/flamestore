@@ -1,8 +1,7 @@
 import { firestore } from 'firebase-admin';
-import { Change, EventContext } from "firebase-functions";
-import { QueryDocumentSnapshot } from "firebase-functions/lib/providers/firestore";
-import * as _functions from 'firebase-functions';
+import { logger, Change, EventContext, FunctionBuilder } from "firebase-functions";
 import { ProjectConfiguration } from './type';
+import { QueryDocumentSnapshot } from 'firebase-functions/lib/providers/firestore';
 export { ProjectConfiguration } from './type';
 export async function allSettled(promises: Promise<any>[]): Promise<any> {
   return Promise.all(promises.map((p) => p.catch((_) => null)));
@@ -11,9 +10,9 @@ export async function update(
   ref: firestore.DocumentReference,
   data: { [fieldName: string]: any; }
 ) {
-  _functions.logger.log(`Update ${ref.id}`, { data: data });
+  logger.log(`Update ${ref.id}`, { data });
   if (Object.keys(data).length > 0) {
-    await ref.update(data);
+    await ref.set(data, { merge: true });
   }
 }
 export abstract class Computed {
@@ -24,8 +23,8 @@ export abstract class Computed {
 }
 export function flamestoreUtils(
   project: ProjectConfiguration,
-  firestore: firestore.Firestore,
-  functions: _functions.FunctionBuilder,
+  _firestore: firestore.Firestore,
+  functions: FunctionBuilder,
 ) {
   // const createDynamicLink = async (
   //   collectionName: string,
@@ -70,19 +69,21 @@ export function flamestoreUtils(
       return !value.hasOwnProperty('after');
     }
     const snapshot = isSnapshot(snapshotOrChange) ? snapshotOrChange : snapshotOrChange.after;
-    const duplicates = await firestore
+    const duplicates = await _firestore
       .collection(collectionName)
       .where(fieldName, "==", snapshot.data()[fieldName])
       .get();
     if (duplicates.docs.length > 1) {
-      _functions.logger.warn(
+      logger.warn(
         `Duplicate ${fieldName} created on ${collectionName}`,
         { snapshot, context }
       );
       if (isSnapshot(snapshotOrChange)) {
         await snapshotOrChange.ref.delete();
       } else {
-        await snapshotOrChange.before.ref.update({ [fieldName]: snapshotOrChange.before.data()[fieldName] });
+        await snapshotOrChange.before.ref.set({
+          [fieldName]: snapshotOrChange.before.data()[fieldName]
+        }, { merge: true });
       }
       return true;
     }
@@ -98,26 +99,26 @@ export function flamestoreUtils(
     if (Object.keys(data).length === 0) {
       return;
     }
-    const querySnapshot = await firestore
+    const querySnapshot = await _firestore
       .collection(collection)
-      .where(refField, "==", ref)
+      .where(`${refField}.reference`, "==", ref)
       .get();
     const results = await Promise.all(
       querySnapshot.docs.map(
         (doc) => doc.ref
-          .update(data)
+          .set(data, { merge: true })
           .then((_) => "")
           .catch((__) => `${doc.ref.id}`)
       )
     );
     const filteredResult = results.filter((result) => result !== "");
-    _functions.logger.log(
-      `Update where ${collection}.${refField}.id == ${ref.id} success on ${results.length - filteredResult.length} documents`,
+    logger.log(
+      `Update where ${collection}.${refField}.reference.id == ${ref.id} success on ${results.length - filteredResult.length} documents`,
       { updateData: data }
     );
     if (filteredResult.length > 0) {
-      _functions.logger.warn(
-        `Update where ${collection}.${refField}== ${ref.id} fail on ${filteredResult.length} documents`,
+      logger.warn(
+        `Update where ${collection}.${refField}.reference.id == ${ref.id} fail on ${filteredResult.length} documents`,
         { documentIds: filteredResult }
       );
     }
@@ -174,16 +175,15 @@ export function flamestoreUtils(
           await update(change.after.ref, result);
         });
       }
-    }
-
-  }
+    };
+  };
   return { foundDuplicate, syncField, computeDocumentFactory };
 }
 
 const removeEmpty = (obj: any) => {
   Object.keys(obj).forEach(key => {
     if (obj[key] && typeof obj[key] === "object") removeEmpty(obj[key]);
-    else if (obj[key] == null) delete obj[key];
+    else if (!obj[key]) delete obj[key];
   });
 };
 

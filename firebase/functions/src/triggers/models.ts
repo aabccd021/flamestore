@@ -1,16 +1,18 @@
 import { firestore } from "firebase-admin";
 import { Computed } from "flamestore";
 
-export interface User {
-  uid: string;
+export interface IUser {
   userName: string;
   bio?: string;
   tweetsCount?: number;
+  uid: string;
 }
 
-export interface Tweet {
-  user: firestore.DocumentReference;
-  userName?: string;
+export interface ITweet {
+  user: {
+    reference: firestore.DocumentReference;
+    userName?: string;
+  };
   tweetText: string;
   likesSum?: number;
   creationTime?: firestore.Timestamp;
@@ -18,23 +20,27 @@ export interface Tweet {
   dynamicLink: string;
 }
 
-export interface Like {
+export interface ILike {
   likeValue: number;
-  user: firestore.DocumentReference;
-  tweet: firestore.DocumentReference;
+  tweet: {
+    reference: firestore.DocumentReference;
+  };
+  user: {
+    reference: firestore.DocumentReference;
+  };
 }
 
 export class ComputedTweet extends Computed {
-  collection: string;
-  document!: Tweet;
-  hotness?: number;
+  public collection: string;
+  public document!: ITweet;
+  private hotness?: number;
   constructor(arg?: { hotness?: number }) {
     super();
     this.collection = "tweets";
     this.hotness = arg?.hotness;
   }
 
-  toMap() {
+  public toMap() {
     const data: { [fieldName: string]: any } = {};
     if (this.hotness) {
       data.hotness = this.hotness;
@@ -42,31 +48,25 @@ export class ComputedTweet extends Computed {
     return data;
   }
 
-  isDependencyChanged<K extends keyof Tweet>(
-    before: Tweet,
-    after: Tweet,
+  public isDependencyChanged<K extends keyof ITweet>(
+    before: ITweet,
+    after: ITweet,
     keys: K[]
   ) {
     const isValueSame = {
-      user: before?.user
-        ? after?.user
-          ? before.user.isEqual(after.user)
-          : false
-        : after?.user
-        ? false
-        : true,
-      userName: before?.userName === after?.userName,
-      tweetText: before?.tweetText === after?.tweetText,
-      likesSum: before?.likesSum === after?.likesSum,
-      creationTime: before?.creationTime
-        ? after?.creationTime
-          ? before.creationTime.isEqual(after.creationTime)
-          : false
-        : after?.creationTime
-        ? false
-        : true,
-      hotness: true,
+      creationTime: before?.creationTime === after?.creationTime,
       dynamicLink: before?.dynamicLink === after?.dynamicLink,
+      hotness: true,
+      likesSum: before?.likesSum === after?.likesSum,
+      tweetText: before?.tweetText === after?.tweetText,
+      user:
+        (before?.user?.reference
+          ? after?.user?.reference
+            ? before.user.reference.isEqual(after.user.reference)
+            : false
+          : after?.user?.reference
+          ? false
+          : true) || before?.user?.userName === after?.user?.userName,
     };
     return keys.some((key) => !isValueSame[key]);
   }

@@ -2,7 +2,9 @@
   "name": "functions",
   "scripts": {
     "lint": "tslint --project tsconfig.json",
+    "lint-autofix": "tslint --config tslint.json --fix --project .",
     "build": "tsc",
+    "dev:no-seed": "npm run build && firebase emulators:start --only functions,firestore",
     "dev": "npm run build && firebase emulators:start --only functions,firestore --import=../firestore/seed",
     "serve": "npm run build && firebase emulators:start --only functions",
     "shell": "npm run build && firebase functions:shell",
@@ -29,6 +31,7 @@
     "mocha": "^8.1.3",
     "ts-node": "^9.0.0",
     "tslint": "^5.12.0",
+    "tslint-etc": "^1.13.9",
     "typescript": "^3.9.7"
   },
   "private": true

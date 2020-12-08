@@ -1,9 +1,17 @@
 {
+  "extends": [
+    "tslint:recommended",
+    "tslint-etc"
+  ],
+  "defaultSeverity": "error",
+  "jsRules": {},
   "rules": {
     "max-line-length": [
       true,
       120
     ],
+    "no-unused-declaration": true,
+    "object-literal-sort-keys": false,
     // -- Strict errors --
     // These lint rules are likely always a good idea.
     // Force function overloads to be declared together. This ensures readers understand APIs.
@@ -106,7 +114,18 @@
     // Multi-line object literals and function calls should have a trailing comma. This helps avoid merge conflicts.
     "trailing-comma": {
       "severity": "warning"
-    }
+    },
+    "semicolon": [
+      true,
+      "always"
+    ],
+    "no-consecutive-blank-lines": true,
+    "max-classes-per-file": false
   },
-  "defaultSeverity": "error"
+  "rulesDirectory": [],
+  "linterOptions": {
+    "exclude": [
+      "node_modules"
+    ]
+  }
 }

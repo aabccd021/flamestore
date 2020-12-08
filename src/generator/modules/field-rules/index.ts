@@ -5,5 +5,5 @@ export const module: FlamestoreModule = {
   isCreatableOverride: (field: Field) => {
     return isCreatable(field);
   },
-  isUpdatableOverride: (field: Field) => isUpdatable(field),
-}
+  isUpdatableOverride: (_, field: Field) => isUpdatable(field),
+};

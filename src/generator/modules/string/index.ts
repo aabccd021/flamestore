@@ -1,22 +1,24 @@
-import { Field, FieldTypes, FlamestoreModule } from "../../../type";
+import { Collection, Field, FieldTypes, FlamestoreModule } from "../../../type";
 import { isTypeString } from "../../util";
 
 export const module: FlamestoreModule = {
-  isCreatable: (field) => isTypeString(field.type),
-  isUpdatable,
+  isCreatable: (field) => isTypeString(field),
+  isUpdatable: (field) => isTypeString(field),
   getRule,
-}
-function isUpdatable(field: Field) {
-  return isTypeString(field.type) && !field.type.string.isKey;
-}
+};
 
-function getRule(fieldName: string, field: Field): string[] {
-  let content = [];
-  const fieldType = field.type;
+function getRule(
+  fieldName: string,
+  field: Field,
+  _: string,
+  collection: Collection,
+): string[] {
+  const content = [];
+  const fieldType = field;
   if (isTypeString(fieldType)) {
-    content.push(`${fieldName} is ${FieldTypes.STRING}`)
-    if (fieldType.string.isKey) {
-      content.push(`${fieldName} == ${fieldName}OfDocumentId()`)
+    content.push(`${fieldName} is ${FieldTypes.STRING}`);
+    if (collection.keyFields?.includes(fieldName) ?? false) {
+      content.push(`${fieldName} == ${fieldName}OfDocumentId()`);
     }
     const maxLength = fieldType.string?.maxLength;
     if (maxLength || maxLength === 0) {
@@ -29,4 +31,3 @@ function getRule(fieldName: string, field: Field): string[] {
   }
   return content;
 }
-

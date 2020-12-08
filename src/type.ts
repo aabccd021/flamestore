@@ -1,40 +1,40 @@
 export interface FlamestoreSchema {
   '$schema': string;
+  authentication?: { userCollection: string, uidField: string };
   collections: { [name: string]: Collection };
-  configuration: {
-    ruleOutputPath?: string;
-    triggerOutputPath?: string;
-    region: string;
-    project: { [name: string]: ProjectConfiguration };
-  };
+  ruleOutputPath?: string;
+  triggerOutputPath?: string;
+  region: string;
+  project: { [name: string]: ProjectConfiguration };
 }
 
 export interface ProjectConfiguration {
-  domain?: string,
-  dynamicLinkDomain?: string,
-  androidPackageName: string,
+  domain?: string;
+  dynamicLinkDomain?: string;
+  androidPackageName: string;
 }
 
-export interface Collection {
-  fields: { [name: string]: Field };
-  rules: { [key in RuleType]?: Rule };
-
-}
+export type Collection = {
+  fields: { [name: string]: Field }
+  ownerField?: string
+  keyFields?: string[]
+} & { [key in RuleType]?: Rule };
 
 export enum FieldTypes {
   INT = 'int',
   FLOAT = 'float',
   STRING = 'string',
   PATH = 'path',
-  DATETIME = 'timestamp'
+  DATETIME = 'timestamp',
+  MAP = 'map'
 }
 
 export enum RuleType {
-  GET = "get",
-  LIST = "list",
-  CREATE = "create",
-  UPDATE = "update",
-  DELETE = "delete"
+  GET = "rule:get",
+  LIST = "rule:list",
+  CREATE = "rule:create",
+  UPDATE = "rule:update",
+  DELETE = "rule:delete"
 }
 
 export enum Rule {
@@ -44,10 +44,7 @@ export enum Rule {
   NONE = "none"
 }
 
-export interface Field {
-  property?: FieldProperty,
-  type: FieldType,
-}
+export type Field = (FieldType & (Computed | NonComputed)) | "serverTimestamp";
 
 export type FieldType = StringField
   | FloatField
@@ -56,22 +53,20 @@ export type FieldType = StringField
   | DatetimeField
   | SumField
   | CountField
-  | SyncFromField
-  | DynamicLinkField;
+  | DynamicLinkField
+  | {};
 
 export interface DynamicLinkField {
   dynamicLink: {
-    title?: DynamicLinkAttribute,
-    description?: DynamicLinkAttribute,
-    imageURL?: DynamicLinkAttribute,
-    isSuffixShort?: boolean,
-  }
+    title?: DynamicLinkAttribute
+    description?: DynamicLinkAttribute
+    imageURL?: DynamicLinkAttribute
+    isSuffixShort?: boolean
+  };
 }
 
 export type DynamicLinkAttribute = string | DynamicLinkAttributeFromField;
-export type DynamicLinkAttributeFromField = { field: string }
-
-export type FieldProperty = Computed | NonComputed;
+export type DynamicLinkAttributeFromField = { field: string };
 
 export interface Computed {
   isComputed?: boolean;
@@ -80,92 +75,88 @@ export interface Computed {
 export interface NonComputed {
   isUnique?: boolean;
   isOptional?: boolean;
-  rules?: {
-    isCreatable?: boolean,
-    isUpdatable?: boolean,
-  };
+  isCreatable?: boolean;
+  isUpdatable?: boolean;
 }
 
 export interface SumField {
   sum: {
-    collection: string,
-    field: string,
-    reference: string,
+    collection: string
+    field: string
+    reference: string
   };
 }
 
 export interface CountField {
   count: {
-    collection: string,
-    reference: string,
-  };
-}
-
-export interface SyncFromField {
-  syncFrom: {
-    field: string,
-    reference: string,
+    collection: string
+    reference: string
   };
 }
 
 export interface StringField {
   string: {
-    isKey?: boolean;
-    isOwnerUid?: boolean,
-    minLength?: number,
-    maxLength?: number,
-  }
+    minLength?: number
+    maxLength?: number
+  };
 }
 
 export interface DatetimeField {
-  timestamp: {
-    isServerTimestamp?: boolean,
-  }
+  timestamp: {};
 }
-
 
 export interface ReferenceField {
   path: {
-    collection: string,
-    isKey?: boolean;
-    isOwnerDocRef?: boolean,
-  }
+    collection: string
+    syncFields?: string[]
+  };
 }
 
 export interface IntField {
   int: {
-    min?: number,
-    max?: number,
-    deleteDocWhen?: number,
-  }
+    min?: number
+    max?: number
+    deleteDocWhen?: number
+  };
 }
 
 export interface FloatField {
   float: {
-    min?: number,
-    max?: number,
-    deleteDocWhen?: number,
-  }
+    min?: number
+    max?: number
+    deleteDocWhen?: number
+  };
 }
 
-
 export interface FlamestoreModule {
-  validateRaw?: (rawSchema: any) => void,
-  validate?: (schema: FlamestoreSchema) => void,
-  ruleFunction?: (collection: Collection) => string[],
+  validateRaw?: (rawSchema: any) => void;
+  validate?: (schema: FlamestoreSchema) => void;
+  ruleFunction?: (
+    collectionName: string,
+    collection: Collection,
+    schema: FlamestoreSchema
+  ) => string[];
   getRule?: (
     fieldName: string,
     field: Field,
     collectionName: string,
     collection: Collection,
-    schema: FlamestoreSchema,
-  ) => string[],
-  triggerGenerator?: TriggerGenerator,
+    schema: FlamestoreSchema
+  ) => string[];
+  triggerGenerator?: TriggerGenerator;
   isCreatable?: (field: Field) => boolean;
   isUpdatable?: (field: Field) => boolean;
   isCreatableOverride?: (field: Field) => boolean | undefined;
-  isUpdatableOverride?: (field: Field) => boolean | undefined;
+  isUpdatableOverride?: (
+    fieldName: string,
+    field: Field,
+    collectionName: string,
+    collection: Collection,
+    schema: FlamestoreSchema
+    ) => boolean | undefined;
   isPrimitive?: (field: Field) => boolean;
+  isObject?: (field: Field) => boolean;
+  preprocessSchema?: (schema: FlamestoreSchema) => FlamestoreSchema;
 }
 
 export type TriggerGenerator = (
@@ -174,7 +165,7 @@ export type TriggerGenerator = (
   collection: Collection,
   fieldName: string,
   field: Field,
-  schema: FlamestoreSchema,
+  schema: FlamestoreSchema
 ) => TriggerMap;
 
 export interface TriggerMap {
@@ -229,7 +220,7 @@ export class TriggerData {
     }
   }
   isEmpty(): boolean {
-    return this._header.length == 0
+    return this._header.length === 0
       && Object.keys(this.dependencyPromises).length === 0
       && this._resultPromises.join('') === ''
       && Object.keys(this._data).length === 0
@@ -242,5 +233,5 @@ interface UpdateData {
 }
 
 export interface UpdateFieldData {
-  [fieldName: string]: { fieldValue: string, fieldCondition?: string }
+  [fieldName: string]: { fieldValue: string, fieldCondition?: string };
 }

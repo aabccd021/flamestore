@@ -2,16 +2,16 @@ import { Field, FieldTypes, FlamestoreModule } from "../../../type";
 import { isTypeInt } from "../../util";
 
 export const module: FlamestoreModule = {
-  isCreatable: (field) => isTypeInt(field.type),
-  isUpdatable: (field) => isTypeInt(field.type),
+  isCreatable: (field) => isTypeInt(field),
+  isUpdatable: (field) => isTypeInt(field),
   getRule
-}
+};
 
 function getRule(fieldName: string, field: Field): string[] {
-  let content = [];
-  const fieldType = field.type;
+  const content = [];
+  const fieldType = field;
   if (isTypeInt(fieldType)) {
-    content.push(`${fieldName} is ${FieldTypes.INT}`)
+    content.push(`${fieldName} is ${FieldTypes.INT}`);
     const min = fieldType.int?.min;
     if (min || min === 0) {
       content.push(`${fieldName} >= ${min}`);

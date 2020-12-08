@@ -1,24 +1,55 @@
-import { FlamestoreModule, Collection } from "../../../type";
-import { isTypeReference, isTypeString } from "../../util";
+import { FlamestoreModule, Collection, FlamestoreSchema, Field } from "../../../type";
 
 export const module: FlamestoreModule = {
-  ruleFunction,
-}
-
-function ruleFunction(collection: Collection): string[] {
-  return Object.entries(collection.fields)
-    .filter(([_, field]) => {
-      const fieldType = field.type;
-      if (isTypeString(fieldType)) {
-        return fieldType.string.isKey;
-      }
-      if (isTypeReference(fieldType)) {
-        return fieldType.path.isKey;
-      }
+  isUpdatableOverride: (
+    fieldName: string,
+    _: Field,
+    collectionName: string,
+    collection: Collection,
+    schema: FlamestoreSchema,
+  ) => {
+    if ((schema.authentication?.userCollection === collectionName
+      && schema.authentication.uidField === fieldName)
+      || collection.keyFields?.includes(fieldName)
+    ) {
       return false;
-    })
-    .map(([fieldName, _], counter) =>
+    }
+    return undefined;
+  },
+  ruleFunction,
+  getRule,
+};
+
+function ruleFunction(
+  collectionName: string,
+  collection: Collection,
+  schema: FlamestoreSchema,
+): string[] {
+  const keyFields = collection.keyFields ?? [];
+  if (schema.authentication?.userCollection === collectionName) {
+    keyFields.push(schema.authentication.uidField);
+  }
+  return Object.values(keyFields)
+    .map((fieldName, counter) =>
       `      function ${fieldName}OfDocumentId(){
         return documentId.split('_')[${counter}];
       }`);
+}
+
+function getRule(
+  fieldName: string,
+  field: Field,
+  collectionName: string,
+  collection: Collection,
+  schema: FlamestoreSchema,
+): string[] {
+  const rules: string[] = [];
+  if (collection.keyFields?.includes(fieldName) ?? false) {
+    rules.push(`get(${fieldName}.reference).id == ${fieldName}OfDocumentId()`);
+  }
+  if (schema.authentication?.userCollection === collectionName
+    && schema.authentication.uidField === fieldName) {
+    rules.push(`${fieldName} == ${fieldName}OfDocumentId()`);
+  }
+  return rules;
 }

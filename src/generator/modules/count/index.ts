@@ -9,11 +9,10 @@ export const module: FlamestoreModule = {
 function validate(schema: FlamestoreSchema) {
   Object.entries(schema.collections).forEach(([colName, col]) =>
     Object.entries(col.fields).forEach(([fieldName, field]) => {
-      const fieldType = field.type;
-      if (isTypeCount(fieldType)) {
+      if (isTypeCount(field)) {
         const stackTrace = `collections.${colName}.${fieldName}.count`;
-        assertCollectionNameExists(fieldType.count.collection, schema, `${stackTrace}.collection`)
-        assertFieldHasTypeOf(fieldType.count.collection, fieldType.count.reference, FieldTypes.PATH, schema, `${stackTrace}.reference`)
+        assertCollectionNameExists(field.count.collection, schema, `${stackTrace}.collection`);
+        assertFieldHasTypeOf(field.count.collection, field.count.reference, FieldTypes.PATH, schema, `${stackTrace}.reference`);
       }
     })
   );
@@ -26,10 +25,9 @@ function triggerGenerator(
   fieldName: string,
   field: Field,
 ): TriggerMap {
-  const fieldType = field.type;
-  if (isTypeCount(fieldType)) {
-    const targetRef = fieldType.count.reference;
-    const colTriggerMap = triggerMap[fieldType.count.collection];
+  if (isTypeCount(field)) {
+    const targetRef = field.count.reference;
+    const colTriggerMap = triggerMap[field.count.collection];
 
     triggerMap[collectionName].createTrigger.addData(
       'snapshotRef',

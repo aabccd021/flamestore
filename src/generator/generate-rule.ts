@@ -1,6 +1,6 @@
 import * as fs from 'fs';
-import { Collection, Field, FlamestoreModule, FlamestoreSchema, ReferenceField, Rule, RuleType, StringField } from '../type';
-import { isOptional, isTypeReference, isTypeString } from './util';
+import { Collection, Field, FlamestoreModule, FlamestoreSchema, Rule, RuleType } from '../type';
+import { isOptional } from './util';
 
 export default function generateRule(
   schema: FlamestoreSchema,
@@ -47,19 +47,19 @@ function collectionRuleTemplate(
   modules: FlamestoreModule[],
 ) {
   const ruleFunction = modules
-    .map(module => module.ruleFunction ? module.ruleFunction(collection) : [])
+    .map(module => module.ruleFunction ? module.ruleFunction(collectionName, collection, schema) : [])
     .reduce((a, b) => a.concat(b), [])
     .map(x => `\n${x}`)
-    .join('')
+    .join('');
   const isOwnerFunction = getIsOwnerFunction(collectionName, collection, schema);
 
   const isCreateValidFunction: ValidationFunction
-    = collection.rules.create
+    = collection['rule:create']
       ? getIsCreateValidFunction(collection, modules)
       : { content: '', usedFields: [] };
   const isUpdateValidFunction: ValidationFunction
-    = collection.rules.update
-      ? getIsUpdateValidFunction(collection, modules)
+    = collection['rule:update']
+      ? getIsUpdateValidFunction(collectionName, collection, schema, modules)
       : { content: '', usedFields: [] };
   const fieldIsValidFunctions =
     Object.entries(collection.fields)
@@ -86,13 +86,13 @@ ${isOwnerFunction}${fieldIsValidFunctions}${isCreateValidFunction.content}${isUp
 }
 
 interface ValidationFunction {
-  content: string,
-  usedFields: string[]
+  content: string;
+  usedFields: string[];
 }
 
 function getRule(collection: Collection, ruleType: RuleType) {
-  if (collection.rules[ruleType]) {
-    const rule = collection.rules[ruleType];
+  if (collection[ruleType]) {
+    const rule = collection[ruleType];
     if (rule === Rule.ALL) {
       return 'true';
     }
@@ -142,7 +142,7 @@ function getIsCreateValidFunction(collection: Collection, modules: FlamestoreMod
             return override;
           }
         }
-      };
+      }
       return modules
         .some(module => module.isCreatable ? module.isCreatable(field) : false);
     })
@@ -165,16 +165,27 @@ function getIsCreateValidFunction(collection: Collection, modules: FlamestoreMod
       function isCreateValid(){
         return reqData().keys().hasOnly([${hasOnlies}])${isValids};
       }`,
-  }
+  };
 }
 
-function getIsUpdateValidFunction(collection: Collection, modules: FlamestoreModule[]): ValidationFunction {
+function getIsUpdateValidFunction(
+  collectionName: string,
+  collection: Collection,
+  schema: FlamestoreSchema,
+  modules: FlamestoreModule[],
+): ValidationFunction {
 
   const updatableFields = Object.entries(collection.fields)
-    .filter(([_, field]) => {
+    .filter(([fieldName, field]) => {
       for (const module of modules) {
         if (module.isUpdatableOverride) {
-          const override = module.isUpdatableOverride(field);
+          const override = module.isUpdatableOverride(
+            fieldName,
+            field,
+            collectionName,
+            collection,
+            schema
+          );
           if (override !== undefined) {
             return override;
           }
@@ -202,37 +213,30 @@ function getIsUpdateValidFunction(collection: Collection, modules: FlamestoreMod
       function isUpdateValid(){
         return updatedKeys().hasOnly([${hasOnlies}])${isValids};
       }`
-  }
+  };
 }
 
 function getIsOwnerFunction(collectionName: string, collection: Collection, schema: FlamestoreSchema) {
-  for (const [fieldName, field] of Object.entries(collection.fields)) {
-    const isDocExists = `!(exists(/databases/$(database)/documents/${collectionName}/$(documentId)))`;
-    const fieldType = field.type;
-    if (isTypeString(fieldType) && fieldType.string.isOwnerUid) {
+  const isDocExists = `!(exists(/databases/$(database)/documents/${collectionName}/$(documentId)))`;
+  if (schema.authentication) {
+    const uidField = schema.authentication.uidField;
+    if (schema.authentication.userCollection === collectionName) {
       return `      function isReqOwner(){
-        return request.auth.uid == reqData().${fieldName};
+        return request.auth.uid == reqData().${uidField};
       }
       function isResOwner(){
         return ${isDocExists}
-          || request.auth.uid == resData().${fieldName};
-      }`
+          || request.auth.uid == resData().${uidField};
+      }`;
     }
-    if (isTypeReference(fieldType) && fieldType.path.isOwnerDocRef) {
-      const userUidCol = (field.type as ReferenceField).path.collection;
-      const userUidFields = schema.collections[userUidCol].fields;
-      for (const [userUidFieldName, userUidField] of Object.entries(userUidFields)) {
-        if ((userUidField.type as StringField).string?.isOwnerUid) {
-          return `      function isReqOwner(){
-        return request.auth.uid == get(reqData().${fieldName}).data.${userUidFieldName};
+    if (collection.ownerField) {
+      return `      function isReqOwner(){
+        return request.auth.uid == get(reqData().${collection.ownerField}.reference).data.${uidField};
       }
       function isResOwner(){
         return ${isDocExists}
-          || request.auth.uid == get(resData().${fieldName}).data.${userUidFieldName};
-      }`
-        }
-      }
-
+          || request.auth.uid == get(resData().${collection.ownerField}.reference).data.${uidField};
+      }`;
     }
   }
   return '';
@@ -261,5 +265,3 @@ function getIsFieldsValidFunction(
         return ${additionalRule};
       }`;
 }
-
-

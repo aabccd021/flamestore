@@ -1,12 +1,31 @@
 import pluralize from 'pluralize';
-import { FlamestoreSchema, FieldTypes, Field, FieldProperty, Computed, StringField, ReferenceField, FieldType, FloatField, SumField, CountField, SyncFromField, DatetimeField, IntField, DynamicLinkField, ProjectConfiguration, DynamicLinkAttribute, DynamicLinkAttributeFromField } from '../type';
+import * as prettier from 'prettier';
+import * as fs from 'fs';
+import {
+  FlamestoreSchema,
+  FieldTypes,
+  Field,
+  Computed,
+  StringField,
+  ReferenceField,
+  FloatField,
+  SumField,
+  CountField,
+  DatetimeField,
+  IntField,
+  DynamicLinkField,
+  ProjectConfiguration,
+  DynamicLinkAttribute,
+  DynamicLinkAttributeFromField,
+  NonComputed
+} from '../type';
 
 export function assertCollectionNameExists(collectionName: string, schema: FlamestoreSchema, stackTrace: string) {
   if (!Object.keys(schema.collections).includes(collectionName)) {
     throw Error(
       `Invalid Collection: ${stackTrace} provided collection with name ${collectionName} which doesn't exist`
     );
-  };
+  }
 }
 
 function assertFieldExists(collectionName: string, fieldName: string, schema: FlamestoreSchema, stackTrace: string) {
@@ -21,7 +40,7 @@ function assertFieldExists(collectionName: string, fieldName: string, schema: Fl
 function throwFieldTypeError(
   fieldType: FieldTypes, collectionName: string, fieldName: string, schema: FlamestoreSchema, stackTrace: string
 ) {
-  throw Error(`collections.${collectionName}.${fieldName} must be type of ${fieldType} as required in ${stackTrace}.`)
+  throw Error(`collections.${collectionName}.${fieldName} must be type of ${fieldType} as required in ${stackTrace}.`);
 }
 
 export function assertFieldHasTypeOf(
@@ -29,11 +48,11 @@ export function assertFieldHasTypeOf(
 ) {
   assertFieldExists(collectionName, fieldName, schema, stackTrace);
   const field = schema.collections[collectionName].fields[fieldName];
-  if (!field.type) {
-    throw Error(`'type' field is required in ${stackTrace}.`)
+  if (!field) {
+    throw Error(`'type' field is required in ${stackTrace}.`);
   }
 
-  const type = schema.collections[collectionName].fields[fieldName].type;
+  const type = schema.collections[collectionName].fields[fieldName];
   if (fieldType === FieldTypes.INT && !isTypeInt(type)) {
     throwFieldTypeError(FieldTypes.INT, collectionName, fieldName, schema, stackTrace);
   }
@@ -48,139 +67,84 @@ export function assertFieldHasTypeOf(
   }
 }
 
-export function getColNameToSyncFrom(collectionName: string, fieldName: string, schema: FlamestoreSchema) {
-  const collection = schema.collections[collectionName];
-  const field = collection.fields[fieldName];
-  const stackTrace = `collections.${collectionName}.${fieldName}.syncFrom`;
-  const fieldType = field.type;
-  if (isTypeSyncFrom(fieldType)) {
-    const referenceFieldName = fieldType.syncFrom.reference;
-    assertFieldHasTypeOf(
-      collectionName, referenceFieldName, FieldTypes.PATH, schema, `${stackTrace}.reference`
-    )
-    const referenceType = collection.fields[referenceFieldName].type;
-    if (isTypeReference(referenceType)) {
-      const collectionNameToSyncFrom = referenceType.path.collection;
-      assertFieldExists(collectionNameToSyncFrom, fieldType.syncFrom.field, schema, `${stackTrace}.field`)
-      return collectionNameToSyncFrom;
-    }
-  }
-  throw Error('Not an syncFrom field');
+// export function getColNameToSyncFrom(collectionName: string, fieldName: string, schema: FlamestoreSchema) {
+//   const collection = schema.collections[collectionName];
+//   const field = collection.fields[fieldName];
+//   const stackTrace = `collections.${collectionName}.${fieldName}.syncFrom`;
+//   const fieldType = field;
+//   if (isTypeSyncFrom(fieldType)) {
+//     const referenceFieldName = fieldType.syncFrom.reference;
+//     assertFieldHasTypeOf(
+//       collectionName, referenceFieldName, FieldTypes.PATH, schema, `${stackTrace}.reference`
+//     )
+//     const referenceType = collection.fields[referenceFieldName];
+//     if (isTypeReference(referenceType)) {
+//       const collectionNameToSyncFrom = referenceType.path.collection;
+//       assertFieldExists(collectionNameToSyncFrom, fieldType.syncFrom.field, schema, `${stackTrace}.field`)
+//       return collectionNameToSyncFrom;
+//     }
+//   }
+//   throw Error('Not an syncFrom field');
+// }
+
+export function isTypeDynamicLink(field: Field): field is DynamicLinkField {
+  return field.hasOwnProperty('dynamicLink');
+}
+export function isTypeString(field: Field): field is StringField {
+  return field.hasOwnProperty('string');
+}
+export function isTypeFloat(field: Field): field is FloatField {
+  return field.hasOwnProperty('float');
+}
+export function isTypeReference(field: Field): field is ReferenceField {
+  return field.hasOwnProperty('path');
+}
+export function isTypeInt(field: Field): field is IntField {
+  return field.hasOwnProperty('int');
+}
+export function isTypeDatetime(field: Field): field is DatetimeField {
+  return field.hasOwnProperty('timestamp');
+}
+export function isTypeSum(field: Field): field is SumField {
+  return field.hasOwnProperty('sum');
+}
+export function isTypeCount(field: Field): field is CountField {
+  return field.hasOwnProperty('count');
 }
 
-export function isTypeDynamicLink(value: FieldType): value is DynamicLinkField {
-  return value.hasOwnProperty('dynamicLink');
-}
-export function isTypeString(value: FieldType): value is StringField {
-  return value.hasOwnProperty('string');
-}
-export function isTypeFloat(value: FieldType): value is FloatField {
-  return value.hasOwnProperty('float');
-}
-export function isTypeReference(value: FieldType): value is ReferenceField {
-  return value.hasOwnProperty('path');
-}
-export function isTypeInt(value: FieldType): value is IntField {
-  return value.hasOwnProperty('int');
-}
-export function isTypeDatetime(value: FieldType): value is DatetimeField {
-  return value.hasOwnProperty('timestamp');
-}
-export function isTypeSum(value: FieldType): value is SumField {
-  return value.hasOwnProperty('sum');
-}
-export function isTypeCount(value: FieldType): value is CountField {
-  return value.hasOwnProperty('count');
-}
-export function isTypeSyncFrom(value: FieldType): value is SyncFromField {
-  return value.hasOwnProperty('syncFrom');
+export function hasComputedField(field: Field): field is Computed {
+  return true;
 }
 
-export function getFieldType(
-  type: FieldType,
-  fieldName: string,
-  collectionName: string,
-  schema: FlamestoreSchema
-): FieldTypes {
-  if (isTypeString(type)) {
-    return FieldTypes.STRING;
-  }
-  if (isTypeFloat(type)) {
-    return FieldTypes.FLOAT;
-  }
-  if (isTypeReference(type)) {
-    return FieldTypes.PATH;
-  }
-  if (isTypeInt(type)) {
-    return FieldTypes.INT;
-  }
-  if (isTypeDatetime(type)) {
-    return FieldTypes.DATETIME;
-  }
-  if (isTypeSum(type)) {
-    return FieldTypes.FLOAT;
-  }
-  if (isTypeCount(type)) {
-    return FieldTypes.INT;
-  }
-  if (isTypeDynamicLink(type)) {
-    return FieldTypes.STRING;
-  }
-  if (isTypeSyncFrom(type)) {
-    const colNameToSyncFrom = getColNameToSyncFrom(collectionName, fieldName, schema);
-    const atype = schema.collections[colNameToSyncFrom].fields[type.syncFrom.field].type;
-    return getFieldType(atype, fieldName, collectionName, schema);
-  }
-  throw Error();
+function hasComputedProperty(field: Field): field is Computed {
+  return field.hasOwnProperty('isComputed');
 }
 
-export function getPascalCollectionName(collectionName: string): string {
-  const singularized = pluralize.singular(collectionName);
-  return singularized[0].toUpperCase() + singularized.substring(1);
-}
-
-function isComputedProperty(value: FieldProperty): value is Computed {
-  return value.hasOwnProperty('isComputed');
+function hasNonComputedProperty(field: Field): field is NonComputed {
+  return !(hasComputedProperty(field) || field === 'serverTimestamp');
 }
 
 export function isComputed(field?: Field): boolean | undefined {
-  const property = field?.property;
-  if (!property || !isComputedProperty(property)) {
+  if (!field || !hasComputedProperty(field)) {
     return undefined;
   }
-  return property.isComputed;
+  return field.isComputed;
 }
 
 export function isOptional(field?: Field): boolean | undefined {
-  const property = field?.property;
-  if (!property || isComputedProperty(property)) {
-    return undefined;
-  }
-  return property?.isOptional;
+  return (field && hasNonComputedProperty(field)) ? field?.isOptional : undefined;
 }
 
 export function isUpdatable(field?: Field): boolean | undefined {
-  const property = field?.property;
-  if (!property || isComputedProperty(property)) {
-    return undefined;
-  }
-  return property?.rules?.isUpdatable;
+  return (field && hasNonComputedProperty(field)) ? field?.isUpdatable : undefined;
 }
 
 export function isCreatable(field?: Field): boolean | undefined {
-  const property = field?.property;
-  if (!property || isComputedProperty(property)) {
-    return undefined;
-  }
-  return property?.rules?.isCreatable;
+  return (field && hasNonComputedProperty(field)) ? field?.isCreatable : undefined;
 }
 
 export function isUnique(field?: Field): boolean | undefined {
-  const property = field?.property;
-  if (!property || isComputedProperty(property)) {
-    return false;
-  }
-  return property?.isUnique
+  return (field && hasNonComputedProperty(field)) ? field?.isUnique : undefined;
 }
 
 export function getDynamicLinkDomain(projectName: string, project: ProjectConfiguration): string {
@@ -188,9 +152,19 @@ export function getDynamicLinkDomain(projectName: string, project: ProjectConfig
     return `${project.dynamicLinkDomain}`;
   }
   const projectDomain = project.domain ?? `${projectName}.web.app`;
-  return `${projectDomain}/links`
+  return `${projectDomain}/links`;
 }
 
 export function isDynamicLinkAttributeFromField(value?: DynamicLinkAttribute): value is DynamicLinkAttributeFromField {
-  return value != null && value.hasOwnProperty('field');
+  return value !== undefined && value.hasOwnProperty('field');
+}
+
+export function getPascalCollectionName(collectionName: string): string {
+  const singularized = pluralize.singular(collectionName);
+  return singularized[0].toUpperCase() + singularized.substring(1);
+}
+
+export function writePrettyFile(fileName: string, content: string) {
+  const prettyContent = prettier.format(content, { parser: "typescript" });
+  fs.writeFileSync(fileName, prettyContent);
 }

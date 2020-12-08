@@ -1,165 +1,111 @@
 {
   "$schema": "./flamestore-schema/v2.json",
-  "configuration": {
-    "region": "asia-southeast2",
-    "project": {
-      "flamestore": {
-        "dynamicLinkDomain": "flamestore.page.link",
-        "androidPackageName": "com.example.flamestore_example"
-      }
+  "region": "asia-southeast2",
+  "project": {
+    "flamestore": {
+      "dynamicLinkDomain": "flamestore.page.link",
+      "androidPackageName": "com.example.flamestore_example"
     }
+  },
+  "authentication": {
+    "userCollection": "users",
+    "uidField": "uid"
   },
   "collections": {
     "users": {
-      "rules": {
-        "get": "all",
-        "list": "authenticated",
-        "create": "owner",
-        "update": "owner"
-      },
+      "rule:get": "all",
+      "rule:list": "authenticated",
+      "rule:create": "owner",
+      "rule:update": "owner",
       "fields": {
-        "uid": {
-          "type": {
-            "string": {
-              "isKey": true,
-              "isOwnerUid": true
-            }
-          }
-        },
         "userName": {
-          "property": {
-            "isUnique": true
-          },
-          "type": {
-            "string": {
-              "minLength": 1,
-              "maxLength": 15
-            }
+          "isUnique": true,
+          "string": {
+            "minLength": 1,
+            "maxLength": 15
           }
         },
         "bio": {
-          "property": {
-            "isOptional": true
-          },
-          "type": {
-            "string": {
-              "minLength": 1,
-              "maxLength": 160
-            }
+          "isOptional": true,
+          "string": {
+            "minLength": 1,
+            "maxLength": 160
           }
         },
         "tweetsCount": {
-          "type": {
-            "count": {
-              "collection": "tweets",
-              "reference": "user"
-            }
+          "count": {
+            "collection": "tweets",
+            "reference": "user"
           }
         }
       }
     },
     "tweets": {
-      "rules": {
-        "get": "all",
-        "list": "all",
-        "create": "owner",
-        "update": "owner",
-        "delete": "owner"
-      },
+      "rule:get": "all",
+      "rule:list": "all",
+      "rule:create": "owner",
+      "rule:update": "owner",
+      "rule:delete": "owner",
+      "ownerField": "user",
       "fields": {
         "user": {
-          "type": {
-            "path": {
-              "collection": "users",
-              "isOwnerDocRef": true
-            }
-          }
-        },
-        "userName": {
-          "type": {
-            "syncFrom": {
-              "field": "userName",
-              "reference": "user"
-            }
+          "path": {
+            "collection": "users",
+            "syncFields": [
+              "userName"
+            ]
           }
         },
         "tweetText": {
-          "type": {
-            "string": {
-              "minLength": 1,
-              "maxLength": 280
-            }
+          "string": {
+            "minLength": 1,
+            "maxLength": 280
           }
         },
         "likesSum": {
-          "type": {
-            "sum": {
-              "collection": "likes",
-              "field": "likeValue",
-              "reference": "tweet"
-            }
+          "sum": {
+            "collection": "likes",
+            "field": "likeValue",
+            "reference": "tweet"
           }
         },
-        "creationTime": {
-          "type": {
-            "timestamp": {
-              "isServerTimestamp": true
-            }
-          }
-        },
+        "creationTime": "serverTimestamp",
         "hotness": {
-          "property": {
-            "isComputed": true
-          },
-          "type": {
-            "float": {}
-          }
+          "isComputed": true,
+          "float": {}
         },
         "dynamicLink": {
-          "type": {
-            "dynamicLink": {
-              "isSuffixShort": true,
-              "title": {
-                "field": "tweetText"
-              },
-              "description": "tweet description"
-            }
+          "dynamicLink": {
+            "isSuffixShort": true,
+            "title": {
+              "field": "tweetText"
+            },
+            "description": "tweet description"
           }
         }
       }
     },
     "likes": {
-      "rules": {
-        "get": "owner",
-        "create": "owner",
-        "update": "owner",
-        "delete": "owner"
-      },
+      "rule:get": "owner",
+      "rule:create": "owner",
+      "rule:update": "owner",
+      "rule:delete": "owner",
+      "keyFields": [
+        "user",
+        "tweet"
+      ],
+      "ownerField": "user",
       "fields": {
         "likeValue": {
-          "type": {
-            "int": {
-              "max": 5,
-              "min": 0,
-              "deleteDocWhen": 0
-            }
-          }
-        },
-        "user": {
-          "type": {
-            "path": {
-              "isKey": true,
-              "collection": "users",
-              "isOwnerDocRef": true
-            }
+          "int": {
+            "max": 5,
+            "min": 0,
+            "deleteDocWhen": 0
           }
         },
         "tweet": {
-          "type": {
-            "path": {
-              "isKey": true,
-              "collection": "tweets"
-            }
+          "path": {
+            "collection": "tweets"
           }
         }
       }

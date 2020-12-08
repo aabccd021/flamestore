@@ -3,7 +3,7 @@ import { isUnique } from "../../util";
 
 export const module: FlamestoreModule = {
   triggerGenerator
-}
+};
 
 function triggerGenerator(
   triggerMap: TriggerMap,

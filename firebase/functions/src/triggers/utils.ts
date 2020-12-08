@@ -1,6 +1,7 @@
-import { ProjectConfiguration, flamestoreUtils } from "flamestore";
-import * as _functions from "firebase-functions";
 import { firestore } from "firebase-admin";
+import * as _functions from "firebase-functions";
+import { flamestoreUtils, ProjectConfiguration } from "flamestore";
+
 export const serverTimestamp = firestore.FieldValue.serverTimestamp;
 export const increment = firestore.FieldValue.increment;
 export const functions = _functions.region("asia-southeast2");

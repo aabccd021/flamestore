@@ -1,20 +1,15 @@
-/* tslint:disable */
-import { functions } from "../utils";
+import { update } from "flamestore";
+import { IUser } from "../models";
 import {
-  serverTimestamp,
   foundDuplicate,
-  increment,
+  functions,
   syncField,
 } from "../utils";
-import { allSettled, update } from "flamestore";
-import { User, Tweet, Like } from "../models";
 
 export const onCreate = functions.firestore
   .document("/users/{documentId}")
   .onCreate(async (snapshot, context) => {
-    const data = snapshot.data() as User;
-
-    if (await foundDuplicate("users", "userName", snapshot, context)) return;
+    if (await foundDuplicate("users", "userName", snapshot, context)) { return; }
 
     const snapshotRefData: { [fieldName: string]: any } = {};
     snapshotRefData.tweetsCount = 0;
@@ -25,14 +20,14 @@ export const onCreate = functions.firestore
 export const onUpdate = functions.firestore
   .document("/users/{documentId}")
   .onUpdate(async (change, context) => {
-    const before = change.before.data() as User;
-    const after = change.after.data() as User;
+    const before = change.before.data() as IUser;
+    const after = change.after.data() as IUser;
 
-    if (await foundDuplicate("users", "userName", change, context)) return;
+    if (await foundDuplicate("users", "userName", change, context)) { return; }
 
     const tweetsUserData: { [fieldName: string]: any } = {};
     if (after.userName !== before.userName) {
-      tweetsUserData.userName = after.userName;
+      tweetsUserData.user = { ...tweetsUserData.user, userName: after.userName };
     }
 
     await syncField("tweets", "user", change.after.ref, tweetsUserData);

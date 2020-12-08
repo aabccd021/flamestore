@@ -14,47 +14,48 @@ import { module as ownerModule } from './modules/owner';
 import { module as pathModule } from './modules/path';
 import { module as stringModule } from './modules/string';
 import { module as sumModule } from './modules/sum';
-import { module as syncFromModule } from './modules/sync-from';
 import { module as timestampModule } from './modules/timestamp';
 import { module as uniqueModule } from './modules/unique';
 import * as fs from 'fs';
 import { FlamestoreModule, FlamestoreSchema } from '../type';
 import { generateSchema } from './generate-schema';
 import generateUtils from './generate-utils';
+import { preprocessSchema } from './preprocess-schema';
 
 const modules: FlamestoreModule[] = [
   pathModule,
   fieldRulesModule,
   intModule,
   floatModule,
-  keyModule,
   ownerModule,
   stringModule,
   sumModule,
-  syncFromModule,
   timestampModule,
   uniqueModule,
   countModule,
   computedModule,
   optionalModule,
   dynamicLinkModule,
+  keyModule,
 ];
 
 // validate raw schema
 const schemaJson = fs.readFileSync('../flamestore.json');
 const schemaJsonString = schemaJson.toString();
 const rawSchema = JSON.parse(schemaJsonString);
-modules.forEach(module => module.validateRaw && module.validateRaw(rawSchema));
+// modules.forEach(module => module.validateRaw && module.validateRaw(rawSchema));
 
 // validate schema
-const schema: FlamestoreSchema = rawSchema;
-modules.forEach(module => module.validate && module.validate(schema));
+const unprocessedSchema: FlamestoreSchema = rawSchema;
+// modules.forEach(module => module.validate && module.validate(schema));
+
+const schema = preprocessSchema(unprocessedSchema, modules);
 
 // generate rule
-const rulePath = schema.configuration.ruleOutputPath ?? "firestore/firestore.rules";
+const rulePath = schema.ruleOutputPath ?? "firestore/firestore.rules";
 generateRule(schema, rulePath, modules);
 
-const triggerDir = schema.configuration.triggerOutputPath ?? "functions/src/triggers";
+const triggerDir = schema.triggerOutputPath ?? "functions/src/triggers";
 // generate schema
 if (!fs.existsSync(triggerDir)) {
   fs.mkdirSync(triggerDir, { recursive: true });

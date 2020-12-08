@@ -9,12 +9,12 @@ export const module: FlamestoreModule = {
 function validate(schema: FlamestoreSchema) {
   for (const [collectionName, collection] of Object.entries(schema.collections)) {
     for (const [fieldName, field] of Object.entries(collection.fields)) {
-      const fieldType = field.type;
+      const fieldType = field;
       if (isTypeSum(fieldType)) {
         const stackTrace = `collections.${collectionName}.${fieldName}.sum`;
-        assertCollectionNameExists(fieldType.sum.collection, schema, `${stackTrace}.collection`)
-        assertFieldHasTypeOf(fieldType.sum.collection, fieldType.sum.reference, FieldTypes.PATH, schema, `${stackTrace}.reference`)
-        assertFieldHasTypeOf(fieldType.sum.collection, fieldType.sum.field, FieldTypes.INT, schema, `${stackTrace}.field`)
+        assertCollectionNameExists(fieldType.sum.collection, schema, `${stackTrace}.collection`);
+        assertFieldHasTypeOf(fieldType.sum.collection, fieldType.sum.reference, FieldTypes.PATH, schema, `${stackTrace}.reference`);
+        assertFieldHasTypeOf(fieldType.sum.collection, fieldType.sum.field, FieldTypes.INT, schema, `${stackTrace}.field`);
       }
     }
   }
@@ -27,7 +27,7 @@ function triggerGenerator(
   fieldName: string,
   field: Field,
 ): TriggerMap {
-  const fieldType = field.type;
+  const fieldType = field;
   if (isTypeSum(fieldType)) {
     const targetRef = fieldType.sum.reference;
     const incrementField = fieldType.sum.field;

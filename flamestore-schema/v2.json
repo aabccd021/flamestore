@@ -11,214 +11,590 @@
           },
           "type": "object"
         },
-        "rules": {
-          "additionalProperties": false,
-          "properties": {
-            "create": {
-              "$ref": "#/definitions/Rule"
-            },
-            "delete": {
-              "$ref": "#/definitions/Rule"
-            },
-            "get": {
-              "$ref": "#/definitions/Rule"
-            },
-            "list": {
-              "$ref": "#/definitions/Rule"
-            },
-            "update": {
-              "$ref": "#/definitions/Rule"
-            }
+        "keyFields": {
+          "items": {
+            "type": "string"
           },
-          "type": "object"
+          "type": "array"
+        },
+        "ownerField": {
+          "type": "string"
+        },
+        "rule:create": {
+          "$ref": "#/definitions/Rule"
+        },
+        "rule:delete": {
+          "$ref": "#/definitions/Rule"
+        },
+        "rule:get": {
+          "$ref": "#/definitions/Rule"
+        },
+        "rule:list": {
+          "$ref": "#/definitions/Rule"
+        },
+        "rule:update": {
+          "$ref": "#/definitions/Rule"
         }
       },
       "required": [
-        "fields",
-        "rules"
+        "fields"
       ],
       "type": "object"
     },
-    "Computed": {
-      "additionalProperties": false,
-      "properties": {
-        "isComputed": {
-          "type": "boolean"
+    "DynamicLinkAttribute": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "#/definitions/DynamicLinkAttributeFromField"
         }
-      },
-      "type": "object"
+      ]
     },
-    "CountField": {
+    "DynamicLinkAttributeFromField": {
       "additionalProperties": false,
       "properties": {
-        "count": {
-          "additionalProperties": false,
-          "properties": {
-            "collection": {
-              "type": "string"
-            },
-            "reference": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "collection",
-            "reference"
-          ],
-          "type": "object"
+        "field": {
+          "type": "string"
         }
       },
       "required": [
-        "count"
-      ],
-      "type": "object"
-    },
-    "DatetimeField": {
-      "additionalProperties": false,
-      "properties": {
-        "timestamp": {
-          "additionalProperties": false,
-          "properties": {
-            "isServerTimestamp": {
-              "type": "boolean"
-            }
-          },
-          "type": "object"
-        }
-      },
-      "required": [
-        "timestamp"
-      ],
-      "type": "object"
-    },
-    "DynamicLinkField": {
-      "additionalProperties": false,
-      "properties": {
-        "dynamicLink": {
-          "additionalProperties": false,
-          "properties": {
-            "description": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "additionalProperties": false,
-                  "properties": {
-                    "field": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "field"
-                  ],
-                  "type": "object"
-                }
-              ]
-            },
-            "imageURL": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "additionalProperties": false,
-                  "properties": {
-                    "field": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "field"
-                  ],
-                  "type": "object"
-                }
-              ]
-            },
-            "isSuffixShort": {
-              "type": "boolean"
-            },
-            "title": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "additionalProperties": false,
-                  "properties": {
-                    "field": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "field"
-                  ],
-                  "type": "object"
-                }
-              ]
-            }
-          },
-          "type": "object"
-        }
-      },
-      "required": [
-        "dynamicLink"
+        "field"
       ],
       "type": "object"
     },
     "Field": {
-      "additionalProperties": false,
-      "properties": {
-        "property": {
-          "$ref": "#/definitions/FieldProperty"
-        },
-        "type": {
-          "$ref": "#/definitions/FieldType"
-        }
-      },
-      "required": [
-        "type"
-      ],
-      "type": "object"
-    },
-    "FieldProperty": {
       "anyOf": [
         {
-          "$ref": "#/definitions/Computed"
+          "additionalProperties": false,
+          "properties": {
+            "isComputed": {
+              "type": "boolean"
+            },
+            "string": {
+              "additionalProperties": false,
+              "properties": {
+                "maxLength": {
+                  "type": "number"
+                },
+                "minLength": {
+                  "type": "number"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "required": [
+            "string"
+          ],
+          "type": "object"
         },
         {
-          "$ref": "#/definitions/NonComputed"
-        }
-      ]
-    },
-    "FieldType": {
-      "anyOf": [
-        {
-          "$ref": "#/definitions/StringField"
+          "additionalProperties": false,
+          "properties": {
+            "isCreatable": {
+              "type": "boolean"
+            },
+            "isOptional": {
+              "type": "boolean"
+            },
+            "isUnique": {
+              "type": "boolean"
+            },
+            "isUpdatable": {
+              "type": "boolean"
+            },
+            "string": {
+              "additionalProperties": false,
+              "properties": {
+                "maxLength": {
+                  "type": "number"
+                },
+                "minLength": {
+                  "type": "number"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "required": [
+            "string"
+          ],
+          "type": "object"
         },
         {
-          "$ref": "#/definitions/FloatField"
+          "additionalProperties": false,
+          "properties": {
+            "float": {
+              "additionalProperties": false,
+              "properties": {
+                "deleteDocWhen": {
+                  "type": "number"
+                },
+                "max": {
+                  "type": "number"
+                },
+                "min": {
+                  "type": "number"
+                }
+              },
+              "type": "object"
+            },
+            "isComputed": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "float"
+          ],
+          "type": "object"
         },
         {
-          "$ref": "#/definitions/ReferenceField"
+          "additionalProperties": false,
+          "properties": {
+            "float": {
+              "additionalProperties": false,
+              "properties": {
+                "deleteDocWhen": {
+                  "type": "number"
+                },
+                "max": {
+                  "type": "number"
+                },
+                "min": {
+                  "type": "number"
+                }
+              },
+              "type": "object"
+            },
+            "isCreatable": {
+              "type": "boolean"
+            },
+            "isOptional": {
+              "type": "boolean"
+            },
+            "isUnique": {
+              "type": "boolean"
+            },
+            "isUpdatable": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "float"
+          ],
+          "type": "object"
         },
         {
-          "$ref": "#/definitions/IntField"
+          "additionalProperties": false,
+          "properties": {
+            "isComputed": {
+              "type": "boolean"
+            },
+            "path": {
+              "additionalProperties": false,
+              "properties": {
+                "collection": {
+                  "type": "string"
+                },
+                "syncFields": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "collection"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "path"
+          ],
+          "type": "object"
         },
         {
-          "$ref": "#/definitions/DatetimeField"
+          "additionalProperties": false,
+          "properties": {
+            "isCreatable": {
+              "type": "boolean"
+            },
+            "isOptional": {
+              "type": "boolean"
+            },
+            "isUnique": {
+              "type": "boolean"
+            },
+            "isUpdatable": {
+              "type": "boolean"
+            },
+            "path": {
+              "additionalProperties": false,
+              "properties": {
+                "collection": {
+                  "type": "string"
+                },
+                "syncFields": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "collection"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "path"
+          ],
+          "type": "object"
         },
         {
-          "$ref": "#/definitions/SumField"
+          "additionalProperties": false,
+          "properties": {
+            "int": {
+              "additionalProperties": false,
+              "properties": {
+                "deleteDocWhen": {
+                  "type": "number"
+                },
+                "max": {
+                  "type": "number"
+                },
+                "min": {
+                  "type": "number"
+                }
+              },
+              "type": "object"
+            },
+            "isComputed": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "int"
+          ],
+          "type": "object"
         },
         {
-          "$ref": "#/definitions/CountField"
+          "additionalProperties": false,
+          "properties": {
+            "int": {
+              "additionalProperties": false,
+              "properties": {
+                "deleteDocWhen": {
+                  "type": "number"
+                },
+                "max": {
+                  "type": "number"
+                },
+                "min": {
+                  "type": "number"
+                }
+              },
+              "type": "object"
+            },
+            "isCreatable": {
+              "type": "boolean"
+            },
+            "isOptional": {
+              "type": "boolean"
+            },
+            "isUnique": {
+              "type": "boolean"
+            },
+            "isUpdatable": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "int"
+          ],
+          "type": "object"
         },
         {
-          "$ref": "#/definitions/SyncFromField"
+          "additionalProperties": false,
+          "properties": {
+            "isComputed": {
+              "type": "boolean"
+            },
+            "timestamp": {
+              "additionalProperties": false,
+              "type": "object"
+            }
+          },
+          "required": [
+            "timestamp"
+          ],
+          "type": "object"
         },
         {
-          "$ref": "#/definitions/DynamicLinkField"
+          "additionalProperties": false,
+          "properties": {
+            "isCreatable": {
+              "type": "boolean"
+            },
+            "isOptional": {
+              "type": "boolean"
+            },
+            "isUnique": {
+              "type": "boolean"
+            },
+            "isUpdatable": {
+              "type": "boolean"
+            },
+            "timestamp": {
+              "additionalProperties": false,
+              "type": "object"
+            }
+          },
+          "required": [
+            "timestamp"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "isComputed": {
+              "type": "boolean"
+            },
+            "sum": {
+              "additionalProperties": false,
+              "properties": {
+                "collection": {
+                  "type": "string"
+                },
+                "field": {
+                  "type": "string"
+                },
+                "reference": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "collection",
+                "field",
+                "reference"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "sum"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "isCreatable": {
+              "type": "boolean"
+            },
+            "isOptional": {
+              "type": "boolean"
+            },
+            "isUnique": {
+              "type": "boolean"
+            },
+            "isUpdatable": {
+              "type": "boolean"
+            },
+            "sum": {
+              "additionalProperties": false,
+              "properties": {
+                "collection": {
+                  "type": "string"
+                },
+                "field": {
+                  "type": "string"
+                },
+                "reference": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "collection",
+                "field",
+                "reference"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "sum"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "count": {
+              "additionalProperties": false,
+              "properties": {
+                "collection": {
+                  "type": "string"
+                },
+                "reference": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "collection",
+                "reference"
+              ],
+              "type": "object"
+            },
+            "isComputed": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "count"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "count": {
+              "additionalProperties": false,
+              "properties": {
+                "collection": {
+                  "type": "string"
+                },
+                "reference": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "collection",
+                "reference"
+              ],
+              "type": "object"
+            },
+            "isCreatable": {
+              "type": "boolean"
+            },
+            "isOptional": {
+              "type": "boolean"
+            },
+            "isUnique": {
+              "type": "boolean"
+            },
+            "isUpdatable": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "count"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "dynamicLink": {
+              "additionalProperties": false,
+              "properties": {
+                "description": {
+                  "$ref": "#/definitions/DynamicLinkAttribute"
+                },
+                "imageURL": {
+                  "$ref": "#/definitions/DynamicLinkAttribute"
+                },
+                "isSuffixShort": {
+                  "type": "boolean"
+                },
+                "title": {
+                  "$ref": "#/definitions/DynamicLinkAttribute"
+                }
+              },
+              "type": "object"
+            },
+            "isComputed": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "dynamicLink"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "dynamicLink": {
+              "additionalProperties": false,
+              "properties": {
+                "description": {
+                  "$ref": "#/definitions/DynamicLinkAttribute"
+                },
+                "imageURL": {
+                  "$ref": "#/definitions/DynamicLinkAttribute"
+                },
+                "isSuffixShort": {
+                  "type": "boolean"
+                },
+                "title": {
+                  "$ref": "#/definitions/DynamicLinkAttribute"
+                }
+              },
+              "type": "object"
+            },
+            "isCreatable": {
+              "type": "boolean"
+            },
+            "isOptional": {
+              "type": "boolean"
+            },
+            "isUnique": {
+              "type": "boolean"
+            },
+            "isUpdatable": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "dynamicLink"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "isComputed": {
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "isCreatable": {
+              "type": "boolean"
+            },
+            "isOptional": {
+              "type": "boolean"
+            },
+            "isUnique": {
+              "type": "boolean"
+            },
+            "isUpdatable": {
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
+        {
+          "const": "serverTimestamp",
+          "type": "string"
         }
       ]
     },
@@ -228,115 +604,50 @@
         "$schema": {
           "type": "string"
         },
+        "authentication": {
+          "additionalProperties": false,
+          "properties": {
+            "uidField": {
+              "type": "string"
+            },
+            "userCollection": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "userCollection",
+            "uidField"
+          ],
+          "type": "object"
+        },
         "collections": {
           "additionalProperties": {
             "$ref": "#/definitions/Collection"
           },
           "type": "object"
         },
-        "configuration": {
-          "additionalProperties": false,
-          "properties": {
-            "project": {
-              "additionalProperties": {
-                "$ref": "#/definitions/ProjectConfiguration"
-              },
-              "type": "object"
-            },
-            "region": {
-              "type": "string"
-            },
-            "ruleOutputPath": {
-              "type": "string"
-            },
-            "triggerOutputPath": {
-              "type": "string"
-            }
+        "project": {
+          "additionalProperties": {
+            "$ref": "#/definitions/ProjectConfiguration"
           },
-          "required": [
-            "region",
-            "project"
-          ],
           "type": "object"
+        },
+        "region": {
+          "type": "string"
+        },
+        "ruleOutputPath": {
+          "type": "string"
+        },
+        "triggerOutputPath": {
+          "type": "string"
         }
       },
       "required": [
         "$schema",
         "collections",
-        "configuration"
+        "region",
+        "project"
       ],
-      "type": "object"
-    },
-    "FloatField": {
-      "additionalProperties": false,
-      "properties": {
-        "float": {
-          "additionalProperties": false,
-          "properties": {
-            "deleteDocWhen": {
-              "type": "number"
-            },
-            "max": {
-              "type": "number"
-            },
-            "min": {
-              "type": "number"
-            }
-          },
-          "type": "object"
-        }
-      },
-      "required": [
-        "float"
-      ],
-      "type": "object"
-    },
-    "IntField": {
-      "additionalProperties": false,
-      "properties": {
-        "int": {
-          "additionalProperties": false,
-          "properties": {
-            "deleteDocWhen": {
-              "type": "number"
-            },
-            "max": {
-              "type": "number"
-            },
-            "min": {
-              "type": "number"
-            }
-          },
-          "type": "object"
-        }
-      },
-      "required": [
-        "int"
-      ],
-      "type": "object"
-    },
-    "NonComputed": {
-      "additionalProperties": false,
-      "properties": {
-        "isOptional": {
-          "type": "boolean"
-        },
-        "isUnique": {
-          "type": "boolean"
-        },
-        "rules": {
-          "additionalProperties": false,
-          "properties": {
-            "isCreatable": {
-              "type": "boolean"
-            },
-            "isUpdatable": {
-              "type": "boolean"
-            }
-          },
-          "type": "object"
-        }
-      },
       "type": "object"
     },
     "ProjectConfiguration": {
@@ -357,33 +668,6 @@
       ],
       "type": "object"
     },
-    "ReferenceField": {
-      "additionalProperties": false,
-      "properties": {
-        "path": {
-          "additionalProperties": false,
-          "properties": {
-            "collection": {
-              "type": "string"
-            },
-            "isKey": {
-              "type": "boolean"
-            },
-            "isOwnerDocRef": {
-              "type": "boolean"
-            }
-          },
-          "required": [
-            "collection"
-          ],
-          "type": "object"
-        }
-      },
-      "required": [
-        "path"
-      ],
-      "type": "object"
-    },
     "Rule": {
       "enum": [
         "all",
@@ -392,87 +676,6 @@
         "none"
       ],
       "type": "string"
-    },
-    "StringField": {
-      "additionalProperties": false,
-      "properties": {
-        "string": {
-          "additionalProperties": false,
-          "properties": {
-            "isKey": {
-              "type": "boolean"
-            },
-            "isOwnerUid": {
-              "type": "boolean"
-            },
-            "maxLength": {
-              "type": "number"
-            },
-            "minLength": {
-              "type": "number"
-            }
-          },
-          "type": "object"
-        }
-      },
-      "required": [
-        "string"
-      ],
-      "type": "object"
-    },
-    "SumField": {
-      "additionalProperties": false,
-      "properties": {
-        "sum": {
-          "additionalProperties": false,
-          "properties": {
-            "collection": {
-              "type": "string"
-            },
-            "field": {
-              "type": "string"
-            },
-            "reference": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "collection",
-            "field",
-            "reference"
-          ],
-          "type": "object"
-        }
-      },
-      "required": [
-        "sum"
-      ],
-      "type": "object"
-    },
-    "SyncFromField": {
-      "additionalProperties": false,
-      "properties": {
-        "syncFrom": {
-          "additionalProperties": false,
-          "properties": {
-            "field": {
-              "type": "string"
-            },
-            "reference": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "field",
-            "reference"
-          ],
-          "type": "object"
-        }
-      },
-      "required": [
-        "syncFrom"
-      ],
-      "type": "object"
     }
   }
 }

@@ -1,8 +1,11 @@
 import { EventContext } from "firebase-functions";
-import { Tweet, ComputedTweet } from "../models";
+import { ComputedTweet, ITweet } from "../models";
 import { ComputeDocument } from "../utils";
 
-function computeHotness(tweet: Pick<Tweet, 'creationTime' | 'likesSum'>, context: EventContext): number {
+function computeHotness(
+  tweet: Pick<ITweet, "creationTime" | "likesSum">,
+  context: EventContext,
+): number {
   if (!tweet.creationTime || !tweet.likesSum) {
     return 0;
   }
@@ -14,12 +17,12 @@ function computeHotness(tweet: Pick<Tweet, 'creationTime' | 'likesSum'>, context
 const computeTweet = new ComputeDocument({
   computedDocument: ComputedTweet,
   computeOnCreate() {
-    return new ComputedTweet({ hotness: 0 })
+    return new ComputedTweet({ hotness: 0 });
   },
-  dependenciesOnUpdate: ['creationTime', 'likesSum'],
+  dependenciesOnUpdate: ["creationTime", "likesSum"],
   computeOnUpdate(_, after, context) {
     const hotness = computeHotness(after, context);
-    return new ComputedTweet({ hotness })
+    return new ComputedTweet({ hotness });
   }
 });
 
