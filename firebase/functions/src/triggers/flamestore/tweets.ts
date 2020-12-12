@@ -1,28 +1,33 @@
-import { allSettled, update } from "flamestore";
-import { ITweet, IUser } from "../models";
+import { Tweet, User } from "../models";
 import {
   functions,
   increment,
   serverTimestamp,
+  allSettled,
+  update,
 } from "../utils";
 
 export const onCreate = functions.firestore
   .document("/tweets/{documentId}")
-  .onCreate(async (snapshot, context) => {
-    const data = snapshot.data() as ITweet;
+  .onCreate(async (snapshot, _) => {
+    const data = snapshot.data() as Tweet;
 
     const [refusersDataSnapshot] = await Promise.all([
       data.user.reference.get(),
     ]);
-    const refusersData = refusersDataSnapshot.data() as IUser;
+    const refusersData = refusersDataSnapshot.data() as User;
 
-    const snapshotRefData: { [fieldName: string]: any } = {};
-    snapshotRefData.user = { ...snapshotRefData?.user, userName: refusersData.userName };
-    snapshotRefData.likesSum = 0;
-    snapshotRefData.creationTime = serverTimestamp();
+    const snapshotRefData = {
+      user: {
+        userName: refusersData.userName,
+      },
+      likesSum: 0,
+      creationTime: serverTimestamp(),
+    };
 
-    const userData: { [fieldName: string]: any } = {};
-    userData.tweetsCount = increment(1);
+    const userData = {
+      tweetsCount: increment(1),
+    };
 
     await allSettled([
       update(snapshot.ref, snapshotRefData),
@@ -32,11 +37,12 @@ export const onCreate = functions.firestore
 
 export const onDelete = functions.firestore
   .document("/tweets/{documentId}")
-  .onDelete(async (snapshot, context) => {
-    const data = snapshot.data() as ITweet;
+  .onDelete(async (snapshot, _) => {
+    const data = snapshot.data() as Tweet;
 
-    const userData: { [fieldName: string]: any } = {};
-    userData.tweetsCount = increment(-1);
+    const userData = {
+      tweetsCount: increment(-1),
+    };
 
     await update(data.user.reference, userData);
   });

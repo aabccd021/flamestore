@@ -1,4 +1,9 @@
-import { FlamestoreModule, Collection, FlamestoreSchema, Field } from "../../../type";
+import {
+  FlamestoreModule,
+  Collection,
+  FlamestoreSchema,
+  Field,
+} from "../../../type";
 
 export const module: FlamestoreModule = {
   isUpdatableOverride: (
@@ -6,11 +11,12 @@ export const module: FlamestoreModule = {
     _: Field,
     collectionName: string,
     collection: Collection,
-    schema: FlamestoreSchema,
+    schema: FlamestoreSchema
   ) => {
-    if ((schema.authentication?.userCollection === collectionName
-      && schema.authentication.uidField === fieldName)
-      || collection.keyFields?.includes(fieldName)
+    if (
+      (schema.authentication?.userCollection === collectionName &&
+        schema.authentication.uidField === fieldName) ||
+      collection.keyFields?.includes(fieldName)
     ) {
       return false;
     }
@@ -23,17 +29,18 @@ export const module: FlamestoreModule = {
 function ruleFunction(
   collectionName: string,
   collection: Collection,
-  schema: FlamestoreSchema,
+  schema: FlamestoreSchema
 ): string[] {
   const keyFields = collection.keyFields ?? [];
   if (schema.authentication?.userCollection === collectionName) {
     keyFields.push(schema.authentication.uidField);
   }
-  return Object.values(keyFields)
-    .map((fieldName, counter) =>
+  return Object.values(keyFields).map(
+    (fieldName, counter) =>
       `      function ${fieldName}OfDocumentId(){
         return documentId.split('_')[${counter}];
-      }`);
+      }`
+  );
 }
 
 function getRule(
@@ -41,14 +48,16 @@ function getRule(
   field: Field,
   collectionName: string,
   collection: Collection,
-  schema: FlamestoreSchema,
+  schema: FlamestoreSchema
 ): string[] {
   const rules: string[] = [];
   if (collection.keyFields?.includes(fieldName) ?? false) {
     rules.push(`get(${fieldName}.reference).id == ${fieldName}OfDocumentId()`);
   }
-  if (schema.authentication?.userCollection === collectionName
-    && schema.authentication.uidField === fieldName) {
+  if (
+    schema.authentication?.userCollection === collectionName &&
+    schema.authentication.uidField === fieldName
+  ) {
     rules.push(`${fieldName} == ${fieldName}OfDocumentId()`);
   }
   return rules;

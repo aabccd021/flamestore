@@ -1,6 +1,6 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import * as prettier from 'prettier';
+import * as fs from "fs";
+import * as path from "path";
+import * as prettier from "prettier";
 import {
   FlamestoreSchema,
   FlamestoreModule,
@@ -8,44 +8,45 @@ import {
   TriggerMap,
   CollectionTriggerMap,
   TriggerData,
-  UpdateFieldData
-} from '../type';
-import { getPascalCollectionName, writePrettyFile } from './util';
+  UpdateFieldData,
+} from "../type";
+import { getPascalCollectionName, writePrettyFile } from "./util";
 
 export default function generate(
   schema: FlamestoreSchema,
   outputFilePath: string,
-  modules: FlamestoreModule[],
-) {
-  const triggerGenerators = modules
-    .filter(module => module.triggerGenerator)
-    .map(module => module.triggerGenerator!);
+  modules: FlamestoreModule[]
+): void {
+  const triggerGenerators = modules.map((module) => module.triggerGenerator);
   const triggerMap = getCompleteTriggerMap(schema, triggerGenerators);
 
-  const triggerDir = path.join(outputFilePath, 'flamestore');
-  Object.entries(triggerMap)
-    .forEach(([colName, colTriggerMap]) => {
-      const colString = stringOfCollectionTrigger(colName, colTriggerMap);
-      const triggerContent = triggerContentOf(schema, colString);
-      const triggerFileContent = prettier.format(triggerContent, { parser: "typescript" });
-      if (!fs.existsSync(triggerDir)) {
-        fs.mkdirSync(triggerDir);
-      }
-      writePrettyFile(path.join(triggerDir, `${colName}.ts`), triggerFileContent);
+  const triggerDir = path.join(outputFilePath, "flamestore");
+  Object.entries(triggerMap).forEach(([colName, colTriggerMap]) => {
+    const colString = stringOfCollectionTrigger(colName, colTriggerMap);
+    const triggerContent = triggerContentOf(schema, colString);
+    const triggerFileContent = prettier.format(triggerContent, {
+      parser: "typescript",
     });
+    if (!fs.existsSync(triggerDir)) {
+      fs.mkdirSync(triggerDir);
+    }
+    writePrettyFile(path.join(triggerDir, `${colName}.ts`), triggerFileContent);
+  });
 
   const indexFileContent = Object.keys(schema.collections)
-    .map(colName => `export * as ${colName} from "./${colName}";`)
-    .join('\n');
-  writePrettyFile(path.join(triggerDir, 'index.ts'), indexFileContent);
+    .map((colName) => `export * as ${colName} from "./${colName}";`)
+    .join("\n");
+  writePrettyFile(path.join(triggerDir, "index.ts"), indexFileContent);
 }
 
 const triggerContentOf = (schema: FlamestoreSchema, colString: string) => {
-  const functionImport = schema.region ? '' : 'import {functions} from "firebase-admin"';
-  const functionImportFromUtil = schema.region ? 'functions,' : '';
+  const functionImport = schema.region
+    ? ""
+    : 'import {functions} from "firebase-admin"';
+  const functionImportFromUtil = schema.region ? "functions," : "";
   const modelNames = Object.keys(schema.collections)
-    .map(collectionName => `I${getPascalCollectionName(collectionName)}`)
-    .join(',');
+    .map((collectionName) => `I${getPascalCollectionName(collectionName)}`)
+    .join(",");
   return `
 ${functionImport}
 import {foundDuplicate, ${functionImportFromUtil} increment,  serverTimestamp, syncField } from '../utils';
@@ -56,82 +57,85 @@ ${colString}
 `;
 };
 
-function getCompleteTriggerMap(schema: FlamestoreSchema, triggerGenerators: TriggerGenerator[]): TriggerMap {
+function getCompleteTriggerMap(
+  schema: FlamestoreSchema,
+  triggerGenerators: (TriggerGenerator | undefined)[]
+): TriggerMap {
   let triggerMap: TriggerMap = {};
   for (const [collectionName, _] of Object.entries(schema.collections)) {
     triggerMap[collectionName] = new CollectionTriggerMap();
   }
   for (const triggerGenerator of triggerGenerators) {
-    for (const [collectionName, collection] of Object.entries(schema.collections)) {
-      for (const [fieldName, field] of Object.entries(collection.fields)) {
-        triggerMap = triggerGenerator(
-          triggerMap,
-          collectionName,
-          collection,
-          fieldName,
-          field,
-          schema,
-        );
+    if (triggerGenerator !== undefined) {
+      for (const [collectionName, collection] of Object.entries(
+        schema.collections
+      )) {
+        for (const [fieldName, field] of Object.entries(collection.fields)) {
+          triggerMap = triggerGenerator(
+            triggerMap,
+            collectionName,
+            collection,
+            fieldName,
+            field,
+            schema
+          );
+        }
       }
     }
   }
   return triggerMap;
 }
 
-function stringOfCollectionTrigger(colName: string, colTriggerMap: CollectionTriggerMap): string {
-  let content = '';
+function stringOfCollectionTrigger(
+  colName: string,
+  colTriggerMap: CollectionTriggerMap
+): string {
+  let content = "";
   if (!colTriggerMap.createTrigger.isEmpty()) {
-    content += onCreateTemplate(
-      colName,
-      colTriggerMap.createTrigger);
+    content += onCreateTemplate(colName, colTriggerMap.createTrigger);
   }
   if (!colTriggerMap.updateTrigger.isEmpty()) {
-    content += onUpdateTemplate(
-      colName,
-      colTriggerMap.updateTrigger);
+    content += onUpdateTemplate(colName, colTriggerMap.updateTrigger);
   }
   if (!colTriggerMap.deleteTrigger.isEmpty()) {
-    content += onDeleteTemplate(
-      colName,
-      colTriggerMap.deleteTrigger);
+    content += onDeleteTemplate(colName, colTriggerMap.deleteTrigger);
   }
   return content;
 }
 
-function onCreateTemplate(
-  collectionName: string,
-  refTriggerData: TriggerData,
-) {
+function onCreateTemplate(collectionName: string, refTriggerData: TriggerData) {
   return triggerTemplate(
     TriggerType.Create,
     collectionName,
     refTriggerData,
-    `const data = snapshot.data() as I${getPascalCollectionName(collectionName)};`
+    `const data = snapshot.data() as I${getPascalCollectionName(
+      collectionName
+    )};`
   );
 }
 
-function onUpdateTemplate(
-  collectionName: string,
-  refTriggerData: TriggerData,
-) {
+function onUpdateTemplate(collectionName: string, refTriggerData: TriggerData) {
   return triggerTemplate(
     TriggerType.Update,
     collectionName,
     refTriggerData,
-    `const before = change.before.data() as I${getPascalCollectionName(collectionName)};
-    const after = change.after.data() as I${getPascalCollectionName(collectionName)};`
+    `const before = change.before.data() as I${getPascalCollectionName(
+      collectionName
+    )};
+    const after = change.after.data() as I${getPascalCollectionName(
+      collectionName
+    )};`
   );
 }
 
-function onDeleteTemplate(
-  collectionName: string,
-  refTriggerData: TriggerData,
-) {
+function onDeleteTemplate(collectionName: string, refTriggerData: TriggerData) {
   return triggerTemplate(
     TriggerType.Delete,
     collectionName,
     refTriggerData,
-    `const data = snapshot.data() as I${getPascalCollectionName(collectionName)};`
+    `const data = snapshot.data() as I${getPascalCollectionName(
+      collectionName
+    )};`
   );
 }
 
@@ -139,19 +143,22 @@ function triggerTemplate(
   triggerType: TriggerType,
   collectionName: string,
   refTriggerData: TriggerData,
-  prepareTrigger: string,
+  prepareTrigger: string
 ) {
   const triggerContent = refTriggerDataToString(refTriggerData);
   const dependencyPromises = dependencyPromisesToString(refTriggerData);
-  const batchCommit = refTriggerDataToBatchCommitString(refTriggerData, triggerType);
+  const batchCommit = refTriggerDataToBatchCommitString(
+    refTriggerData,
+    triggerType
+  );
 
   const finalPrepareTrigger =
-    Object.keys(refTriggerData._data).filter(e => e !== 'snapshotRef').length === 0
-      && triggerType === TriggerType.Create
-      ? ''
+    Object.keys(refTriggerData._data).filter((e) => e !== "snapshotRef")
+      .length === 0 && triggerType === TriggerType.Create
+      ? ""
       : prepareTrigger;
 
-  const firstParam = triggerType === TriggerType.Update ? 'change' : 'snapshot';
+  const firstParam = triggerType === TriggerType.Update ? "change" : "snapshot";
   return `
   export const on${triggerType} = functions.firestore
   .document('/${collectionName}/{documentId}')
@@ -170,21 +177,25 @@ function triggerTemplate(
 
 function dependencyPromisesToString(triggerData: TriggerData) {
   if (Object.keys(triggerData.dependencyPromises).length === 0) {
-    return '';
+    return "";
   }
-  let dependencyNames = '';
-  let dependencyPromises = '';
-  let dependencyAssignment = '';
-  for (const [dependencyName, dependencyPromise] of Object.entries(triggerData.dependencyPromises)) {
+  let dependencyNames = "";
+  let dependencyPromises = "";
+  let dependencyAssignment = "";
+  for (const [dependencyName, dependencyPromise] of Object.entries(
+    triggerData.dependencyPromises
+  )) {
     dependencyNames += `${dependencyName}Snapshot,`;
     dependencyPromises += `${dependencyPromise.promise},`;
-    dependencyAssignment += `const ${dependencyName} = ${dependencyName}Snapshot.data() as I${getPascalCollectionName(dependencyPromise.collection)};`;
+    dependencyAssignment += `const ${dependencyName} = ${dependencyName}Snapshot.data() as I${getPascalCollectionName(
+      dependencyPromise.collection
+    )};`;
   }
   return `const [${dependencyNames}] = await Promise.all([${dependencyPromises}]);${dependencyAssignment}`;
 }
 
 function refTriggerToString(refName: string, refTrigger: UpdateFieldData) {
-  let content = '';
+  let content = "";
   for (const [fieldName, fieldData] of Object.entries(refTrigger)) {
     let assignment = `${refName}Data.${fieldName}=${fieldData.fieldValue};`;
     if (fieldData.fieldCondition) {
@@ -196,15 +207,23 @@ function refTriggerToString(refName: string, refTrigger: UpdateFieldData) {
 }
 
 function refTriggerDataToString(triggerData: TriggerData) {
-  let content = '';
+  let content = "";
   for (const [refName, refTrigger] of Object.entries(triggerData._data)) {
     if (refTrigger !== {}) {
-      content += `const ${refName}Data: {[fieldName:string]:any} = {};${refTriggerToString(refName, refTrigger)};\n\n`;
+      content += `const ${refName}Data: {[fieldName:string]:any} = {};${refTriggerToString(
+        refName,
+        refTrigger
+      )};\n\n`;
     }
   }
-  for (const [refName, refTrigger] of Object.entries(triggerData._nonUpdateData)) {
+  for (const [refName, refTrigger] of Object.entries(
+    triggerData._nonUpdateData
+  )) {
     if (refTrigger !== {}) {
-      content += `const ${refName}Data: {[fieldName:string]:any} = {};${refTriggerToString(refName, refTrigger)};\n\n`;
+      content += `const ${refName}Data: {[fieldName:string]:any} = {};${refTriggerToString(
+        refName,
+        refTrigger
+      )};\n\n`;
     }
   }
   for (const xcontent of Object.values(triggerData._content)) {
@@ -213,12 +232,18 @@ function refTriggerDataToString(triggerData: TriggerData) {
   return content;
 }
 
-function refTriggerDataToBatchCommitString(triggerData: TriggerData, triggerType: TriggerType) {
-  const dataName = triggerType === TriggerType.Update ? 'after' : 'data';
-  const post = triggerType === TriggerType.Update ? '.after' : '';
+function refTriggerDataToBatchCommitString(
+  triggerData: TriggerData,
+  triggerType: TriggerType
+) {
+  const dataName = triggerType === TriggerType.Update ? "after" : "data";
+  const post = triggerType === TriggerType.Update ? ".after" : "";
   const content: string[] = [];
   for (const [refName, refTrigger] of Object.entries(triggerData._data)) {
-    const setName = refName === 'snapshotRef' ? `snapshot${post}.ref` : `${dataName}.${refName}.reference`;
+    const setName =
+      refName === "snapshotRef"
+        ? `snapshot${post}.ref`
+        : `${dataName}.${refName}.reference`;
     if (refTrigger !== {}) {
       content.push(`update(${setName},${refName}Data)`);
     }
@@ -228,12 +253,12 @@ function refTriggerDataToBatchCommitString(triggerData: TriggerData, triggerType
     return `await ${batchCommit[0]};`;
   }
   return `await allSettled([
-       ${batchCommit.join(',')}
+       ${batchCommit.join(",")}
   ]);`;
 }
 
 enum TriggerType {
-  Create = 'Create',
-  Update = 'Update',
-  Delete = 'Delete',
+  Create = "Create",
+  Update = "Update",
+  Delete = "Delete",
 }

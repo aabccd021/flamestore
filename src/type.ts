@@ -1,6 +1,6 @@
 export interface FlamestoreSchema {
-  '$schema': string;
-  authentication?: { userCollection: string, uidField: string };
+  $schema: string;
+  authentication?: { userCollection: string; uidField: string };
   collections: { [name: string]: Collection };
   ruleOutputPath?: string;
   triggerOutputPath?: string;
@@ -15,18 +15,18 @@ export interface ProjectConfiguration {
 }
 
 export type Collection = {
-  fields: { [name: string]: Field }
-  ownerField?: string
-  keyFields?: string[]
+  fields: { [name: string]: Field };
+  ownerField?: string;
+  keyFields?: string[];
 } & { [key in RuleType]?: Rule };
 
 export enum FieldTypes {
-  INT = 'int',
-  FLOAT = 'float',
-  STRING = 'string',
-  PATH = 'path',
-  DATETIME = 'timestamp',
-  MAP = 'map'
+  INT = "int",
+  FLOAT = "float",
+  STRING = "string",
+  PATH = "path",
+  DATETIME = "timestamp",
+  MAP = "map",
 }
 
 export enum RuleType {
@@ -34,19 +34,22 @@ export enum RuleType {
   LIST = "rule:list",
   CREATE = "rule:create",
   UPDATE = "rule:update",
-  DELETE = "rule:delete"
+  DELETE = "rule:delete",
 }
 
 export enum Rule {
   ALL = "all",
   OWNER = "owner",
   AUTHENTICATED = "authenticated",
-  NONE = "none"
+  NONE = "none",
 }
 
-export type Field = (FieldType & (Computed | NonComputed)) | "serverTimestamp";
+export type SpecialField = "serverTimestamp";
 
-export type FieldType = StringField
+export type Field = (FieldType & (Computed | NonComputed)) | SpecialField;
+
+export type FieldType =
+  | StringField
   | FloatField
   | ReferenceField
   | IntField
@@ -54,15 +57,15 @@ export type FieldType = StringField
   | SumField
   | CountField
   | DynamicLinkField
+  // eslint-disable-next-line @typescript-eslint/ban-types
   | {};
 
 export interface DynamicLinkField {
-  dynamicLink: {
-    title?: DynamicLinkAttribute
-    description?: DynamicLinkAttribute
-    imageURL?: DynamicLinkAttribute
-    isSuffixShort?: boolean
-  };
+  type: "dynamicLink";
+  title?: DynamicLinkAttribute;
+  description?: DynamicLinkAttribute;
+  imageURL?: DynamicLinkAttribute;
+  isSuffixShort?: boolean;
 }
 
 export type DynamicLinkAttribute = string | DynamicLinkAttributeFromField;
@@ -80,56 +83,50 @@ export interface NonComputed {
 }
 
 export interface SumField {
-  sum: {
-    collection: string
-    field: string
-    reference: string
-  };
+  type: "sum";
+  collection: string;
+  field: string;
+  reference: string;
 }
 
 export interface CountField {
-  count: {
-    collection: string
-    reference: string
-  };
+  type: "count";
+  collection: string;
+  reference: string;
 }
 
 export interface StringField {
-  string: {
-    minLength?: number
-    maxLength?: number
-  };
+  type: "string";
+  minLength?: number;
+  maxLength?: number;
 }
 
 export interface DatetimeField {
-  timestamp: {};
+  type: "timestamp";
 }
 
 export interface ReferenceField {
-  path: {
-    collection: string
-    syncFields?: string[]
-  };
+  type: "path";
+  collection: string;
+  syncFields?: string[];
 }
 
 export interface IntField {
-  int: {
-    min?: number
-    max?: number
-    deleteDocWhen?: number
-  };
+  type: "int";
+  min?: number;
+  max?: number;
+  deleteDocWhen?: number;
 }
 
 export interface FloatField {
-  float: {
-    min?: number
-    max?: number
-    deleteDocWhen?: number
-  };
+  type: "float";
+  min?: number;
+  max?: number;
+  deleteDocWhen?: number;
 }
 
 export interface FlamestoreModule {
-  validateRaw?: (rawSchema: any) => void;
+  validateRaw?: (rawSchema: unknown) => void;
   validate?: (schema: FlamestoreSchema) => void;
   ruleFunction?: (
     collectionName: string,
@@ -153,7 +150,7 @@ export interface FlamestoreModule {
     collectionName: string,
     collection: Collection,
     schema: FlamestoreSchema
-    ) => boolean | undefined;
+  ) => boolean | undefined;
   isPrimitive?: (field: Field) => boolean;
   isObject?: (field: Field) => boolean;
   preprocessSchema?: (schema: FlamestoreSchema) => FlamestoreSchema;
@@ -186,45 +183,59 @@ export class CollectionTriggerMap {
 
 export class TriggerData {
   _header: string[] = [];
-  dependencyPromises: { [dependencyName: string]: { collection: string, promise: string } } = {};
+  dependencyPromises: {
+    [dependencyName: string]: { collection: string; promise: string };
+  } = {};
   _resultPromises: string[] = [];
   _data: UpdateData = {};
   _nonUpdateData: UpdateData = {};
   _content: string[] = [];
 
-  addData(dataName: string, fieldName: string, fieldValue: string, fieldCondition?: string) {
+  addData(
+    dataName: string,
+    fieldName: string,
+    fieldValue: string,
+    fieldCondition?: string
+  ): void {
     if (!Object.keys(this._data).includes(dataName)) {
       this._data[dataName] = {};
     }
     this._data[dataName][fieldName] = { fieldValue, fieldCondition };
   }
-  addNonUpdateData(dataName: string, fieldName: string, fieldValue: string, fieldCondition?: string) {
+  addNonUpdateData(
+    dataName: string,
+    fieldName: string,
+    fieldValue: string,
+    fieldCondition?: string
+  ): void {
     if (!Object.keys(this._nonUpdateData).includes(dataName)) {
       this._nonUpdateData[dataName] = {};
     }
     this._nonUpdateData[dataName][fieldName] = { fieldValue, fieldCondition };
   }
-  addHeader(content: string) {
-    if (!this._header.join('').includes(content)) {
+  addHeader(content: string): void {
+    if (!this._header.join("").includes(content)) {
       this._header.push(content);
     }
   }
-  addContent(content: string) {
-    if (!this._content.join('').includes(content)) {
+  addContent(content: string): void {
+    if (!this._content.join("").includes(content)) {
       this._content.push(content);
     }
   }
-  addResultPromise(content: string) {
-    if (!this._resultPromises.join('').includes(content)) {
+  addResultPromise(content: string): void {
+    if (!this._resultPromises.join("").includes(content)) {
       this._resultPromises.push(content);
     }
   }
   isEmpty(): boolean {
-    return this._header.length === 0
-      && Object.keys(this.dependencyPromises).length === 0
-      && this._resultPromises.join('') === ''
-      && Object.keys(this._data).length === 0
-      && Object.keys(this._nonUpdateData).length === 0;
+    return (
+      this._header.length === 0 &&
+      Object.keys(this.dependencyPromises).length === 0 &&
+      this._resultPromises.join("") === "" &&
+      Object.keys(this._data).length === 0 &&
+      Object.keys(this._nonUpdateData).length === 0
+    );
   }
 }
 
@@ -233,5 +244,5 @@ interface UpdateData {
 }
 
 export interface UpdateFieldData {
-  [fieldName: string]: { fieldValue: string, fieldCondition?: string };
+  [fieldName: string]: { fieldValue: string; fieldCondition?: string };
 }

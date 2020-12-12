@@ -1,18 +1,39 @@
-import { FlamestoreSchema, FieldTypes, Collection, Field, TriggerMap, FlamestoreModule } from "../../../type";
-import { assertCollectionNameExists, assertFieldHasTypeOf, isTypeCount } from "../../util";
+import {
+  FlamestoreSchema,
+  FieldTypes,
+  Collection,
+  Field,
+  TriggerMap,
+  FlamestoreModule,
+} from "../../../type";
+import {
+  assertCollectionNameExists,
+  assertFieldHasTypeOf,
+  isTypeCount,
+} from "../../util";
 
 export const module: FlamestoreModule = {
   validate,
   triggerGenerator,
 };
 
-function validate(schema: FlamestoreSchema) {
+function validate(schema: FlamestoreSchema): void {
   Object.entries(schema.collections).forEach(([colName, col]) =>
     Object.entries(col.fields).forEach(([fieldName, field]) => {
       if (isTypeCount(field)) {
         const stackTrace = `collections.${colName}.${fieldName}.count`;
-        assertCollectionNameExists(field.count.collection, schema, `${stackTrace}.collection`);
-        assertFieldHasTypeOf(field.count.collection, field.count.reference, FieldTypes.PATH, schema, `${stackTrace}.reference`);
+        assertCollectionNameExists(
+          field.collection,
+          schema,
+          `${stackTrace}.collection`
+        );
+        assertFieldHasTypeOf(
+          field.collection,
+          field.reference,
+          FieldTypes.PATH,
+          schema,
+          `${stackTrace}.reference`
+        );
       }
     })
   );
@@ -23,29 +44,21 @@ function triggerGenerator(
   collectionName: string,
   __: Collection,
   fieldName: string,
-  field: Field,
+  field: Field
 ): TriggerMap {
   if (isTypeCount(field)) {
-    const targetRef = field.count.reference;
-    const colTriggerMap = triggerMap[field.count.collection];
+    const targetRef = field.reference;
+    const colTriggerMap = triggerMap[field.collection];
 
     triggerMap[collectionName].createTrigger.addData(
-      'snapshotRef',
+      "snapshotRef",
       fieldName,
-      '0',
+      "0"
     );
 
-    colTriggerMap.createTrigger.addData(
-      targetRef,
-      fieldName,
-      'increment(1)'
-    );
+    colTriggerMap.createTrigger.addData(targetRef, fieldName, "increment(1)");
 
-    colTriggerMap.deleteTrigger.addData(
-      targetRef,
-      fieldName,
-      'increment(-1)'
-    );
+    colTriggerMap.deleteTrigger.addData(targetRef, fieldName, "increment(-1)");
   }
   return triggerMap;
 }

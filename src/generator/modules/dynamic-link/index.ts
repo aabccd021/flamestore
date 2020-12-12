@@ -1,5 +1,15 @@
-import { Collection, Field, FieldTypes, FlamestoreModule, FlamestoreSchema } from "../../../type";
-import { getDynamicLinkDomain, isDynamicLinkAttributeFromField, isTypeDynamicLink } from "../../util";
+import {
+  Collection,
+  Field,
+  FieldTypes,
+  FlamestoreModule,
+  FlamestoreSchema,
+} from "../../../type";
+import {
+  getDynamicLinkDomain,
+  isDynamicLinkAttributeFromField,
+  isTypeDynamicLink,
+} from "../../util";
 
 export const module: FlamestoreModule = {
   isCreatable: (field: Field) => isTypeDynamicLink(field),
@@ -7,23 +17,21 @@ export const module: FlamestoreModule = {
   validate,
 };
 
-function validate(schema: FlamestoreSchema) {
+function validate(schema: FlamestoreSchema): void {
   Object.entries(schema.collections).forEach(([collectionName, collection]) => {
-    Object.entries(collection.fields).forEach(([fieldName, field]) => {
-      const type = field;
-      if (isTypeDynamicLink(type)) {
-        const dl = type.dynamicLink;
+    Object.entries(collection.fields).forEach(([fieldName, dl]) => {
+      if (isTypeDynamicLink(dl)) {
         Object.values([
-          ['title', dl.title],
-          ['description', dl.description],
-          ['imageURL', dl.imageURL],
+          ["title", dl.title],
+          ["description", dl.description],
+          ["imageURL", dl.imageURL],
         ]).forEach(([attrName, attr]) => {
           if (isDynamicLinkAttributeFromField(attr)) {
             if (!Object.keys(collection.fields).includes(attr.field)) {
               throw Error(
                 `Error on schema.collections.${collectionName}.fields.${fieldName}` +
-                `.dynamicLink.${attrName}.field: Field ${attr.field} does not` +
-                ` exists on collection ${collectionName}`
+                  `.dynamicLink.${attrName}.field: Field ${attr.field} does not` +
+                  ` exists on collection ${collectionName}`
               );
             }
           }
@@ -38,18 +46,22 @@ function getRule(
   field: Field,
   _: string,
   __: Collection,
-  schema: FlamestoreSchema,
-) {
+  schema: FlamestoreSchema
+): string[] {
   const content = [];
   const fieldType = field;
   if (isTypeDynamicLink(fieldType)) {
     content.push(`${fieldName} is ${FieldTypes.STRING}`);
     const prefixIsValidArray = Object.entries(schema.project)
-      .map(([projectName, project]) => `https://${getDynamicLinkDomain(projectName, project)}/`)
-      .map(domain => `${fieldName}[0:${domain.length}] == '${domain}'`);
-    const prefixIsValid = prefixIsValidArray.length === 1
-      ? prefixIsValidArray[0]
-      : `(${prefixIsValidArray.join('||')})`;
+      .map(
+        ([projectName, project]) =>
+          `https://${getDynamicLinkDomain(projectName, project)}/`
+      )
+      .map((domain) => `${fieldName}[0:${domain.length}] == '${domain}'`);
+    const prefixIsValid =
+      prefixIsValidArray.length === 1
+        ? prefixIsValidArray[0]
+        : `(${prefixIsValidArray.join("||")})`;
     content.push(prefixIsValid);
   }
   return content;

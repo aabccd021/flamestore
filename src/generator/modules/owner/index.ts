@@ -5,24 +5,27 @@ export const module: FlamestoreModule = {
     if (schema.authentication) {
       const auth = schema.authentication;
       schema.collections[auth.userCollection].fields[auth.uidField] = {
-        string: {}
+        type: "string",
       };
-      Object.entries(schema.collections)
-        .forEach(([collectionName, collection]) => {
+      Object.entries(schema.collections).forEach(
+        ([collectionName, collection]) => {
           if (collection.ownerField) {
             if (collection.fields[collection.ownerField]) {
-              (schema.collections[collectionName].fields[collection.ownerField] as ReferenceField)
-                .path.collection = auth.userCollection;
+              (schema.collections[collectionName].fields[
+                collection.ownerField
+              ] as ReferenceField).collection = auth.userCollection;
             } else {
-              schema.collections[collectionName].fields[collection.ownerField] = {
-                path: {
-                  collection: auth.userCollection
-                }
+              schema.collections[collectionName].fields[
+                collection.ownerField
+              ] = {
+                type: "path",
+                collection: auth.userCollection,
               };
             }
           }
-        });
+        }
+      );
     }
     return schema;
-  }
+  },
 };

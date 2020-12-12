@@ -1,194 +1,220 @@
-import { firestore } from 'firebase-admin';
-import { logger, Change, EventContext, FunctionBuilder } from "firebase-functions";
-import { ProjectConfiguration } from './type';
-import { QueryDocumentSnapshot } from 'firebase-functions/lib/providers/firestore';
-export { ProjectConfiguration } from './type';
-export async function allSettled(promises: Promise<any>[]): Promise<any> {
-  return Promise.all(promises.map((p) => p.catch((_) => null)));
-}
-export async function update(
-  ref: firestore.DocumentReference,
-  data: { [fieldName: string]: any; }
+import { firestore as defaultFirestore } from "firebase-admin";
+import {
+  logger,
+  Change,
+  EventContext,
+  FunctionBuilder,
+} from "firebase-functions";
+import _ from "lodash";
+import { QueryDocumentSnapshot } from "firebase-functions/lib/providers/firestore";
+export { ProjectConfiguration } from "./type";
+
+export function useFamestoreUtils(
+  firestore: typeof defaultFirestore,
+  functions: FunctionBuilder
 ) {
-  logger.log(`Update ${ref.id}`, { data });
-  if (Object.keys(data).length > 0) {
-    await ref.set(data, { merge: true });
+  const _firestore = firestore();
+  const serverTimestamp = firestore.FieldValue.serverTimestamp;
+  const increment = firestore.FieldValue.increment;
+  async function allSettled(promises: Promise<unknown>[]): Promise<unknown> {
+    return Promise.all(promises.map((p) => p.catch(() => null)));
   }
-}
-export abstract class Computed {
-  abstract collection: string;
-  abstract toMap(): { [fieldName: string]: any };
-  abstract document: any;
-  abstract isDependencyChanged(before: any, after: any, keys: any[]): boolean;
-}
-export function flamestoreUtils(
-  project: ProjectConfiguration,
-  _firestore: firestore.Firestore,
-  functions: FunctionBuilder,
-) {
-  // const createDynamicLink = async (
-  //   collectionName: string,
-  //   id: string,
-  //   socialTitle?: string,
-  //   socialDescription?: string,
-  //   socialImageLink?: string
-  // ) => {
-  //   const dynamicLinkInfo: DynamicLinkInfo = {
-  //     dynamicLinkInfo: {
-  //       domainUriPrefix: `https://${project.dynamicLinkDomain}`,
-  //       link: `https://${project.domain}/${collectionName}/${id}`,
-  //       androidInfo: {
-  //         androidPackageName: project.androidPackageName,
-  //       },
-  //       socialMetaTagInfo: {
-  //         socialTitle,
-  //         socialDescription,
-  //         socialImageLink,
-  //       }
-  //     }
-  //   };
-  //   removeEmpty(dynamicLinkInfo);
-  //   const url = `https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key=${project.apiKey}`;
-  //   const opts: RequestInit = {
-  //     method: 'POST',
-  //     headers: { 'Content-Type': 'application/json' },
-  //     body: JSON.stringify(dynamicLinkInfo),
-  //   };
-  //   const res = await fetch(url, opts);
-  //   _functions.logger.log('Created dynamic link', res);
-  // };
-  const foundDuplicate = async (
+  async function update(
+    ref: defaultFirestore.DocumentReference,
+    rawData: { [fieldName: string]: unknown }
+  ): Promise<void> {
+    const data = deepOmitNil(rawData);
+    if (data) {
+      logger.log(`Update ${ref.id}`, { omittedData: data });
+      await ref.set(data, { merge: true });
+    }
+  }
+  function hasDependencyChanged<T>(before: T, after: T): boolean {
+    for (const key in before) {
+      if (!isFieldEqual(before[key], after[key])) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function isFieldEqual<T>(before: T, after: T): boolean {
+    if (
+      before instanceof firestore.Timestamp &&
+      after instanceof firestore.Timestamp
+    ) {
+      return before.isEqual(after);
+    }
+    if (
+      before instanceof firestore.DocumentReference &&
+      after instanceof firestore.DocumentReference
+    ) {
+      return before.isEqual(after);
+    }
+    if (isReference(before) && isReference(after)) {
+      for (const key in before) {
+        if (isFieldEqual(before[key], after[key])) {
+          return true;
+        }
+      }
+      return false;
+    }
+    if (!before && !after) {
+      return false;
+    }
+    return before === after;
+  }
+
+  function isReference(field: unknown): boolean {
+    return Object.prototype.hasOwnProperty.call(field, "reference");
+  }
+
+  async function foundDuplicate(
     collectionName: string,
     fieldName: string,
-    snapshotOrChange: QueryDocumentSnapshot |
-      Change<QueryDocumentSnapshot>,
+    snapshotOrChange: QueryDocumentSnapshot | Change<QueryDocumentSnapshot>,
     context: EventContext
-  ): Promise<boolean> => {
-    function isSnapshot(value: QueryDocumentSnapshot |
-      Change<QueryDocumentSnapshot>): value is QueryDocumentSnapshot {
-      return !value.hasOwnProperty('after');
-    }
-    const snapshot = isSnapshot(snapshotOrChange) ? snapshotOrChange : snapshotOrChange.after;
+  ): Promise<boolean> {
+    const snapshot = isSnapshot(snapshotOrChange)
+      ? snapshotOrChange
+      : snapshotOrChange.after;
     const duplicates = await _firestore
       .collection(collectionName)
       .where(fieldName, "==", snapshot.data()[fieldName])
       .get();
-    if (duplicates.docs.length > 1) {
-      logger.warn(
-        `Duplicate ${fieldName} created on ${collectionName}`,
-        { snapshot, context }
-      );
-      if (isSnapshot(snapshotOrChange)) {
-        await snapshotOrChange.ref.delete();
-      } else {
-        await snapshotOrChange.before.ref.set({
-          [fieldName]: snapshotOrChange.before.data()[fieldName]
-        }, { merge: true });
-      }
-      return true;
+    if (duplicates?.docs?.length) {
+      return false;
     }
-    return false;
-  };
+    logger.warn(`Duplicate ${fieldName} created on ${collectionName}`, {
+      snapshot,
+      context,
+    });
+    if (isSnapshot(snapshotOrChange)) {
+      await snapshotOrChange.ref.delete();
+    } else {
+      await snapshotOrChange.before.ref.set(
+        {
+          [fieldName]: snapshotOrChange.before.data()[fieldName],
+        },
+        { merge: true }
+      );
+    }
+    return true;
+  }
 
-  const syncField = async (
+  async function syncField(
     collection: string,
-    refField: string,
-    ref: firestore.DocumentReference,
-    data: { [fieldName: string]: any; }
-  ) => {
-    if (Object.keys(data).length === 0) {
+    referenceField: string,
+    reference: defaultFirestore.DocumentReference,
+    rawData: { [fieldName: string]: unknown }
+  ) {
+    const data = deepOmitNil(rawData);
+    if (!data) {
       return;
     }
     const querySnapshot = await _firestore
       .collection(collection)
-      .where(`${refField}.reference`, "==", ref)
+      .where(`${referenceField}.reference`, "==", reference)
       .get();
     const results = await Promise.all(
-      querySnapshot.docs.map(
-        (doc) => doc.ref
+      querySnapshot.docs.map((doc) =>
+        doc.ref
           .set(data, { merge: true })
-          .then((_) => "")
-          .catch((__) => `${doc.ref.id}`)
+          .then(() => "")
+          .catch(() => `${doc.ref.id}`)
       )
     );
     const filteredResult = results.filter((result) => result !== "");
     logger.log(
-      `Update where ${collection}.${refField}.reference.id == ${ref.id} success on ${results.length - filteredResult.length} documents`,
+      `Update where ${collection}.${referenceField}.reference.id == ${
+        reference.id
+      } success on ${results.length - filteredResult.length} documents`,
       { updateData: data }
     );
     if (filteredResult.length > 0) {
       logger.warn(
-        `Update where ${collection}.${refField}.reference.id == ${ref.id} fail on ${filteredResult.length} documents`,
+        `Update where ${collection}.${referenceField}.reference.id ==` +
+          ` ${reference.id} failed on ${filteredResult.length} documents`,
         { documentIds: filteredResult }
       );
     }
-  };
+  }
 
-  const computeDocumentFactory = () => {
-    return class ComputeDocument<V extends Computed, K extends keyof T, T = V["document"]> {
-      computedDocument: V;
-      computeOnCreate: onCreateFn<Pick<T, K>, V>;
-      dependenciesOnUpdate: K[];
-      computeOnUpdate: onUpdateFn<Pick<T, K>, V>;
-
-      constructor({
-        computedDocument,
-        computeOnCreate,
-        dependenciesOnUpdate,
-        computeOnUpdate,
-      }: {
-        computedDocument: new () => V;
-        computeOnCreate: onCreateFn<Pick<T, K>, V>;
-        dependenciesOnUpdate: K[];
-        computeOnUpdate: onUpdateFn<Pick<T, K>, V>;
-      }) {
-        this.computedDocument = new computedDocument();
-        this.computeOnCreate = computeOnCreate;
-        this.dependenciesOnUpdate = dependenciesOnUpdate;
-        this.computeOnUpdate = computeOnUpdate;
+  function computeDocument<
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    T extends Object,
+    C extends keyof T,
+    D extends keyof Omit<T, C>
+  >({
+    collection,
+    computedFields,
+    dependencyFields,
+    computeOnCreate,
+    computeOnUpdate,
+  }: {
+    collection: string;
+    computedFields: C[];
+    dependencyFields: D[];
+    computeOnCreate: onCreateFn<Omit<T, C>, Pick<T, C>>;
+    computeOnUpdate: onUpdateFn<Pick<Omit<T, C>, D>, Pick<T, C>>;
+  }) {
+    const document = functions.firestore.document(
+      `/${collection}/{documentId}`
+    );
+    const onCreate = document.onCreate(async (snapshot, context) => {
+      const newDocument = _.omit(snapshot.data() as T, computedFields);
+      const result = deepOmitNil(computeOnCreate(newDocument, context));
+      if (result) {
+        await update(snapshot.ref, result);
       }
-
-      public get document() {
-        return functions.firestore
-          .document(`/${this.computedDocument.collection}/{documentId}`);
-      }
-
-      public get onCreate() {
-        return this.document.onCreate(async (snapshot, context) => {
-          const newDoc = snapshot.data() as T;
-          const result = this.computeOnCreate(newDoc, context).toMap();
-          await update(snapshot.ref, result);
-        });
-      }
-
-      public get onUpdate() {
-        return this.document.onUpdate(async (change, context) => {
-          const before = change.before.data() as T;
-          const after = change.after.data() as T;
-          const pickedBefore = pick(before, this.dependenciesOnUpdate);
-          const pickedAfter = pick(after, this.dependenciesOnUpdate);
-          const dependencyChanged = this.computedDocument.isDependencyChanged(before, after, this.dependenciesOnUpdate);
-          if (!dependencyChanged) {
-            return;
-          }
-          const result = this.computeOnUpdate(pickedBefore, pickedAfter, context).toMap();
+    });
+    const onUpdate = document.onUpdate(async (change, context) => {
+      const before = _.omit(change.before.data() as T, computedFields);
+      const after = _.omit(change.after.data() as T, computedFields);
+      const dependencyBefore = _.pick(before, dependencyFields);
+      const dependencyAfter = _.pick(after, dependencyFields);
+      if (hasDependencyChanged(dependencyBefore, dependencyAfter)) {
+        const result = deepOmitNil(computeOnUpdate(before, after, context));
+        if (result) {
           await update(change.after.ref, result);
-        });
+        }
       }
-    };
+    });
+    return { onCreate, onUpdate };
+  }
+  function deepOmitNil(obj: any) {
+    _.forIn(obj, (value, key) => {
+      obj[key] =
+        _.isObject(value) && !(value instanceof firestore.FieldValue)
+          ? deepOmitNil(value)
+          : value;
+    });
+    const omitted = _.omitBy(obj, _.isNil);
+    if (_.isEmpty(omitted)) {
+      return null;
+    }
+    return omitted;
+  }
+
+  return {
+    foundDuplicate,
+    syncField,
+    computeDocument,
+    allSettled,
+    update,
+    serverTimestamp,
+    increment,
   };
-  return { foundDuplicate, syncField, computeDocumentFactory };
 }
 
-const removeEmpty = (obj: any) => {
-  Object.keys(obj).forEach(key => {
-    if (obj[key] && typeof obj[key] === "object") removeEmpty(obj[key]);
-    else if (!obj[key]) delete obj[key];
-  });
-};
-
-type onCreateFn<T, V> = (document: T, context: EventContext) => V;
-type onUpdateFn<T, V> = (before: T, after: T, context: EventContext) => V;
-function pick<T, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> {
-  return obj as Pick<T, K>;
+export type onCreateFn<T, V> = (document: T, context: EventContext) => V;
+export type onUpdateFn<T, V> = (
+  before: T,
+  after: T,
+  context: EventContext
+) => V;
+function isSnapshot(
+  value: QueryDocumentSnapshot | Change<QueryDocumentSnapshot>
+): value is QueryDocumentSnapshot {
+  return !Object.prototype.hasOwnProperty.call(value, "after");
 }

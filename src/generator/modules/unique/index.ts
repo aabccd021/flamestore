@@ -2,7 +2,7 @@ import { TriggerMap, Collection, Field, FlamestoreModule } from "../../../type";
 import { isUnique } from "../../util";
 
 export const module: FlamestoreModule = {
-  triggerGenerator
+  triggerGenerator,
 };
 
 function triggerGenerator(
@@ -10,7 +10,7 @@ function triggerGenerator(
   collectionName: string,
   _: Collection,
   fieldName: string,
-  field: Field,
+  field: Field
 ): TriggerMap {
   if (isUnique(field)) {
     triggerMap[collectionName].createTrigger.addHeader(

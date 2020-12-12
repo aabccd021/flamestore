@@ -1,4 +1,3 @@
 import { FlamestoreModule } from "../../../type";
 
-export const module: FlamestoreModule = {
-};
+export const module: FlamestoreModule = {};

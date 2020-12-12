@@ -20,23 +20,20 @@
       "fields": {
         "userName": {
           "isUnique": true,
-          "string": {
-            "minLength": 1,
-            "maxLength": 15
-          }
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 15
         },
         "bio": {
           "isOptional": true,
-          "string": {
-            "minLength": 1,
-            "maxLength": 160
-          }
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
         },
         "tweetsCount": {
-          "count": {
-            "collection": "tweets",
-            "reference": "user"
-          }
+          "type": "count",
+          "collection": "tweets",
+          "reference": "user"
         }
       }
     },
@@ -49,39 +46,35 @@
       "ownerField": "user",
       "fields": {
         "user": {
-          "path": {
-            "collection": "users",
-            "syncFields": [
-              "userName"
-            ]
-          }
+          "type": "path",
+          "collection": "users",
+          "syncFields": [
+            "userName"
+          ]
         },
         "tweetText": {
-          "string": {
-            "minLength": 1,
-            "maxLength": 280
-          }
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 280
         },
         "likesSum": {
-          "sum": {
-            "collection": "likes",
-            "field": "likeValue",
-            "reference": "tweet"
-          }
+          "type": "sum",
+          "collection": "likes",
+          "field": "likeValue",
+          "reference": "tweet"
         },
         "creationTime": "serverTimestamp",
         "hotness": {
           "isComputed": true,
-          "float": {}
+          "type": "float"
         },
         "dynamicLink": {
-          "dynamicLink": {
-            "isSuffixShort": true,
-            "title": {
-              "field": "tweetText"
-            },
-            "description": "tweet description"
-          }
+          "type": "dynamicLink",
+          "isSuffixShort": true,
+          "title": {
+            "field": "tweetText"
+          },
+          "description": "tweet description"
         }
       }
     },
@@ -97,16 +90,14 @@
       "ownerField": "user",
       "fields": {
         "likeValue": {
-          "int": {
-            "max": 5,
-            "min": 0,
-            "deleteDocWhen": 0
-          }
+          "type": "int",
+          "max": 5,
+          "min": 0,
+          "deleteDocWhen": 0
         },
         "tweet": {
-          "path": {
-            "collection": "tweets"
-          }
+          "type": "path",
+          "collection": "tweets"
         }
       }
     }

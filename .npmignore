@@ -1,6 +1,5 @@
 .prettierrc
 tsconfig.json
-tslint.json
 package.json
 test/
 src/

@@ -2,10 +2,15 @@ import { FlamestoreModule, FlamestoreSchema } from "../type";
 
 export function preprocessSchema(
   unprocessed: FlamestoreSchema,
-  modules: FlamestoreModule[],
+  modules: FlamestoreModule[]
 ): FlamestoreSchema {
   let schema = unprocessed;
-  modules.forEach(module => schema = module.preprocessSchema ? module.preprocessSchema(schema) : schema);
+  modules.forEach(
+    (module) =>
+      (schema = module.preprocessSchema
+        ? module.preprocessSchema(schema)
+        : schema)
+  );
   // sort collection and fields
   // const collections = schema.collections;
   // const newCollections: { [name: string]: Collection } = {};

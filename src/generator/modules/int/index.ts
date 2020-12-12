@@ -4,23 +4,22 @@ import { isTypeInt } from "../../util";
 export const module: FlamestoreModule = {
   isCreatable: (field) => isTypeInt(field),
   isUpdatable: (field) => isTypeInt(field),
-  getRule
+  getRule,
 };
 
 function getRule(fieldName: string, field: Field): string[] {
   const content = [];
-  const fieldType = field;
-  if (isTypeInt(fieldType)) {
+  if (isTypeInt(field)) {
     content.push(`${fieldName} is ${FieldTypes.INT}`);
-    const min = fieldType.int?.min;
+    const min = field.min;
     if (min || min === 0) {
       content.push(`${fieldName} >= ${min}`);
     }
-    const max = fieldType.int?.max;
+    const max = field.max;
     if (max || max === 0) {
-      content.push(`${fieldName} <= ${fieldType.int.max}`);
+      content.push(`${fieldName} <= ${field.max}`);
     }
-    const deleteDocWhen = fieldType.int?.deleteDocWhen;
+    const deleteDocWhen = field.deleteDocWhen;
     if (deleteDocWhen || deleteDocWhen === 0) {
       content.push(`${fieldName} != ${deleteDocWhen}`);
     }

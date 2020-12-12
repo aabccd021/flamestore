@@ -11,7 +11,7 @@ function getRule(
   fieldName: string,
   field: Field,
   _: string,
-  collection: Collection,
+  collection: Collection
 ): string[] {
   const content = [];
   const fieldType = field;
@@ -20,11 +20,11 @@ function getRule(
     if (collection.keyFields?.includes(fieldName) ?? false) {
       content.push(`${fieldName} == ${fieldName}OfDocumentId()`);
     }
-    const maxLength = fieldType.string?.maxLength;
+    const maxLength = fieldType.maxLength;
     if (maxLength || maxLength === 0) {
       content.push(`${fieldName}.size() <= ${maxLength}`);
     }
-    const minLength = fieldType.string?.minLength;
+    const minLength = fieldType.minLength;
     if (minLength || minLength === 0) {
       content.push(`${fieldName}.size() >= ${minLength}`);
     }

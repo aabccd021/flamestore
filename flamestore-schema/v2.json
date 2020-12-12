@@ -71,21 +71,19 @@
             "isComputed": {
               "type": "boolean"
             },
-            "string": {
-              "additionalProperties": false,
-              "properties": {
-                "maxLength": {
-                  "type": "number"
-                },
-                "minLength": {
-                  "type": "number"
-                }
-              },
-              "type": "object"
+            "maxLength": {
+              "type": "number"
+            },
+            "minLength": {
+              "type": "number"
+            },
+            "type": {
+              "const": "string",
+              "type": "string"
             }
           },
           "required": [
-            "string"
+            "type"
           ],
           "type": "object"
         },
@@ -104,68 +102,52 @@
             "isUpdatable": {
               "type": "boolean"
             },
-            "string": {
-              "additionalProperties": false,
-              "properties": {
-                "maxLength": {
-                  "type": "number"
-                },
-                "minLength": {
-                  "type": "number"
-                }
-              },
-              "type": "object"
+            "maxLength": {
+              "type": "number"
+            },
+            "minLength": {
+              "type": "number"
+            },
+            "type": {
+              "const": "string",
+              "type": "string"
             }
           },
           "required": [
-            "string"
+            "type"
           ],
           "type": "object"
         },
         {
           "additionalProperties": false,
           "properties": {
-            "float": {
-              "additionalProperties": false,
-              "properties": {
-                "deleteDocWhen": {
-                  "type": "number"
-                },
-                "max": {
-                  "type": "number"
-                },
-                "min": {
-                  "type": "number"
-                }
-              },
-              "type": "object"
+            "deleteDocWhen": {
+              "type": "number"
             },
             "isComputed": {
               "type": "boolean"
+            },
+            "max": {
+              "type": "number"
+            },
+            "min": {
+              "type": "number"
+            },
+            "type": {
+              "const": "float",
+              "type": "string"
             }
           },
           "required": [
-            "float"
+            "type"
           ],
           "type": "object"
         },
         {
           "additionalProperties": false,
           "properties": {
-            "float": {
-              "additionalProperties": false,
-              "properties": {
-                "deleteDocWhen": {
-                  "type": "number"
-                },
-                "max": {
-                  "type": "number"
-                },
-                "min": {
-                  "type": "number"
-                }
-              },
-              "type": "object"
+            "deleteDocWhen": {
+              "type": "number"
             },
             "isCreatable": {
               "type": "boolean"
@@ -178,46 +160,55 @@
             },
             "isUpdatable": {
               "type": "boolean"
+            },
+            "max": {
+              "type": "number"
+            },
+            "min": {
+              "type": "number"
+            },
+            "type": {
+              "const": "float",
+              "type": "string"
             }
           },
           "required": [
-            "float"
+            "type"
           ],
           "type": "object"
         },
         {
           "additionalProperties": false,
           "properties": {
+            "collection": {
+              "type": "string"
+            },
             "isComputed": {
               "type": "boolean"
             },
-            "path": {
-              "additionalProperties": false,
-              "properties": {
-                "collection": {
-                  "type": "string"
-                },
-                "syncFields": {
-                  "items": {
-                    "type": "string"
-                  },
-                  "type": "array"
-                }
+            "syncFields": {
+              "items": {
+                "type": "string"
               },
-              "required": [
-                "collection"
-              ],
-              "type": "object"
+              "type": "array"
+            },
+            "type": {
+              "const": "path",
+              "type": "string"
             }
           },
           "required": [
-            "path"
+            "collection",
+            "type"
           ],
           "type": "object"
         },
         {
           "additionalProperties": false,
           "properties": {
+            "collection": {
+              "type": "string"
+            },
             "isCreatable": {
               "type": "boolean"
             },
@@ -230,74 +221,53 @@
             "isUpdatable": {
               "type": "boolean"
             },
-            "path": {
-              "additionalProperties": false,
-              "properties": {
-                "collection": {
-                  "type": "string"
-                },
-                "syncFields": {
-                  "items": {
-                    "type": "string"
-                  },
-                  "type": "array"
-                }
+            "syncFields": {
+              "items": {
+                "type": "string"
               },
-              "required": [
-                "collection"
-              ],
-              "type": "object"
+              "type": "array"
+            },
+            "type": {
+              "const": "path",
+              "type": "string"
             }
           },
           "required": [
-            "path"
+            "collection",
+            "type"
           ],
           "type": "object"
         },
         {
           "additionalProperties": false,
           "properties": {
-            "int": {
-              "additionalProperties": false,
-              "properties": {
-                "deleteDocWhen": {
-                  "type": "number"
-                },
-                "max": {
-                  "type": "number"
-                },
-                "min": {
-                  "type": "number"
-                }
-              },
-              "type": "object"
+            "deleteDocWhen": {
+              "type": "number"
             },
             "isComputed": {
               "type": "boolean"
+            },
+            "max": {
+              "type": "number"
+            },
+            "min": {
+              "type": "number"
+            },
+            "type": {
+              "const": "int",
+              "type": "string"
             }
           },
           "required": [
-            "int"
+            "type"
           ],
           "type": "object"
         },
         {
           "additionalProperties": false,
           "properties": {
-            "int": {
-              "additionalProperties": false,
-              "properties": {
-                "deleteDocWhen": {
-                  "type": "number"
-                },
-                "max": {
-                  "type": "number"
-                },
-                "min": {
-                  "type": "number"
-                }
-              },
-              "type": "object"
+            "deleteDocWhen": {
+              "type": "number"
             },
             "isCreatable": {
               "type": "boolean"
@@ -310,10 +280,20 @@
             },
             "isUpdatable": {
               "type": "boolean"
+            },
+            "max": {
+              "type": "number"
+            },
+            "min": {
+              "type": "number"
+            },
+            "type": {
+              "const": "int",
+              "type": "string"
             }
           },
           "required": [
-            "int"
+            "type"
           ],
           "type": "object"
         },
@@ -323,13 +303,13 @@
             "isComputed": {
               "type": "boolean"
             },
-            "timestamp": {
-              "additionalProperties": false,
-              "type": "object"
+            "type": {
+              "const": "timestamp",
+              "type": "string"
             }
           },
           "required": [
-            "timestamp"
+            "type"
           ],
           "type": "object"
         },
@@ -348,51 +328,53 @@
             "isUpdatable": {
               "type": "boolean"
             },
-            "timestamp": {
-              "additionalProperties": false,
-              "type": "object"
+            "type": {
+              "const": "timestamp",
+              "type": "string"
             }
           },
           "required": [
-            "timestamp"
+            "type"
           ],
           "type": "object"
         },
         {
           "additionalProperties": false,
           "properties": {
+            "collection": {
+              "type": "string"
+            },
+            "field": {
+              "type": "string"
+            },
             "isComputed": {
               "type": "boolean"
             },
-            "sum": {
-              "additionalProperties": false,
-              "properties": {
-                "collection": {
-                  "type": "string"
-                },
-                "field": {
-                  "type": "string"
-                },
-                "reference": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "collection",
-                "field",
-                "reference"
-              ],
-              "type": "object"
+            "reference": {
+              "type": "string"
+            },
+            "type": {
+              "const": "sum",
+              "type": "string"
             }
           },
           "required": [
-            "sum"
+            "collection",
+            "field",
+            "reference",
+            "type"
           ],
           "type": "object"
         },
         {
           "additionalProperties": false,
           "properties": {
+            "collection": {
+              "type": "string"
+            },
+            "field": {
+              "type": "string"
+            },
             "isCreatable": {
               "type": "boolean"
             },
@@ -405,78 +387,51 @@
             "isUpdatable": {
               "type": "boolean"
             },
-            "sum": {
-              "additionalProperties": false,
-              "properties": {
-                "collection": {
-                  "type": "string"
-                },
-                "field": {
-                  "type": "string"
-                },
-                "reference": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "collection",
-                "field",
-                "reference"
-              ],
-              "type": "object"
+            "reference": {
+              "type": "string"
+            },
+            "type": {
+              "const": "sum",
+              "type": "string"
             }
           },
           "required": [
-            "sum"
+            "collection",
+            "field",
+            "reference",
+            "type"
           ],
           "type": "object"
         },
         {
           "additionalProperties": false,
           "properties": {
-            "count": {
-              "additionalProperties": false,
-              "properties": {
-                "collection": {
-                  "type": "string"
-                },
-                "reference": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "collection",
-                "reference"
-              ],
-              "type": "object"
+            "collection": {
+              "type": "string"
             },
             "isComputed": {
               "type": "boolean"
+            },
+            "reference": {
+              "type": "string"
+            },
+            "type": {
+              "const": "count",
+              "type": "string"
             }
           },
           "required": [
-            "count"
+            "collection",
+            "reference",
+            "type"
           ],
           "type": "object"
         },
         {
           "additionalProperties": false,
           "properties": {
-            "count": {
-              "additionalProperties": false,
-              "properties": {
-                "collection": {
-                  "type": "string"
-                },
-                "reference": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "collection",
-                "reference"
-              ],
-              "type": "object"
+            "collection": {
+              "type": "string"
             },
             "isCreatable": {
               "type": "boolean"
@@ -489,63 +444,58 @@
             },
             "isUpdatable": {
               "type": "boolean"
+            },
+            "reference": {
+              "type": "string"
+            },
+            "type": {
+              "const": "count",
+              "type": "string"
             }
           },
           "required": [
-            "count"
+            "collection",
+            "reference",
+            "type"
           ],
           "type": "object"
         },
         {
           "additionalProperties": false,
           "properties": {
-            "dynamicLink": {
-              "additionalProperties": false,
-              "properties": {
-                "description": {
-                  "$ref": "#/definitions/DynamicLinkAttribute"
-                },
-                "imageURL": {
-                  "$ref": "#/definitions/DynamicLinkAttribute"
-                },
-                "isSuffixShort": {
-                  "type": "boolean"
-                },
-                "title": {
-                  "$ref": "#/definitions/DynamicLinkAttribute"
-                }
-              },
-              "type": "object"
+            "description": {
+              "$ref": "#/definitions/DynamicLinkAttribute"
+            },
+            "imageURL": {
+              "$ref": "#/definitions/DynamicLinkAttribute"
             },
             "isComputed": {
               "type": "boolean"
+            },
+            "isSuffixShort": {
+              "type": "boolean"
+            },
+            "title": {
+              "$ref": "#/definitions/DynamicLinkAttribute"
+            },
+            "type": {
+              "const": "dynamicLink",
+              "type": "string"
             }
           },
           "required": [
-            "dynamicLink"
+            "type"
           ],
           "type": "object"
         },
         {
           "additionalProperties": false,
           "properties": {
-            "dynamicLink": {
-              "additionalProperties": false,
-              "properties": {
-                "description": {
-                  "$ref": "#/definitions/DynamicLinkAttribute"
-                },
-                "imageURL": {
-                  "$ref": "#/definitions/DynamicLinkAttribute"
-                },
-                "isSuffixShort": {
-                  "type": "boolean"
-                },
-                "title": {
-                  "$ref": "#/definitions/DynamicLinkAttribute"
-                }
-              },
-              "type": "object"
+            "description": {
+              "$ref": "#/definitions/DynamicLinkAttribute"
+            },
+            "imageURL": {
+              "$ref": "#/definitions/DynamicLinkAttribute"
             },
             "isCreatable": {
               "type": "boolean"
@@ -553,15 +503,25 @@
             "isOptional": {
               "type": "boolean"
             },
+            "isSuffixShort": {
+              "type": "boolean"
+            },
             "isUnique": {
               "type": "boolean"
             },
             "isUpdatable": {
               "type": "boolean"
+            },
+            "title": {
+              "$ref": "#/definitions/DynamicLinkAttribute"
+            },
+            "type": {
+              "const": "dynamicLink",
+              "type": "string"
             }
           },
           "required": [
-            "dynamicLink"
+            "type"
           ],
           "type": "object"
         },
@@ -593,8 +553,7 @@
           "type": "object"
         },
         {
-          "const": "serverTimestamp",
-          "type": "string"
+          "$ref": "#/definitions/SpecialField"
         }
       ]
     },
@@ -675,6 +634,10 @@
         "authenticated",
         "none"
       ],
+      "type": "string"
+    },
+    "SpecialField": {
+      "const": "serverTimestamp",
       "type": "string"
     }
   }

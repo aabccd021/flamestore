@@ -1,20 +1,48 @@
-import { FlamestoreSchema, FieldTypes, Collection, Field, TriggerMap, FlamestoreModule } from "../../../type";
-import { assertCollectionNameExists, assertFieldHasTypeOf, isTypeSum } from "../../util";
+import {
+  FlamestoreSchema,
+  FieldTypes,
+  Collection,
+  Field,
+  TriggerMap,
+  FlamestoreModule,
+} from "../../../type";
+import {
+  assertCollectionNameExists,
+  assertFieldHasTypeOf,
+  isTypeSum,
+} from "../../util";
 
 export const module: FlamestoreModule = {
   validate,
   triggerGenerator,
 };
 
-function validate(schema: FlamestoreSchema) {
-  for (const [collectionName, collection] of Object.entries(schema.collections)) {
+function validate(schema: FlamestoreSchema): void {
+  for (const [collectionName, collection] of Object.entries(
+    schema.collections
+  )) {
     for (const [fieldName, field] of Object.entries(collection.fields)) {
-      const fieldType = field;
-      if (isTypeSum(fieldType)) {
+      if (isTypeSum(field)) {
         const stackTrace = `collections.${collectionName}.${fieldName}.sum`;
-        assertCollectionNameExists(fieldType.sum.collection, schema, `${stackTrace}.collection`);
-        assertFieldHasTypeOf(fieldType.sum.collection, fieldType.sum.reference, FieldTypes.PATH, schema, `${stackTrace}.reference`);
-        assertFieldHasTypeOf(fieldType.sum.collection, fieldType.sum.field, FieldTypes.INT, schema, `${stackTrace}.field`);
+        assertCollectionNameExists(
+          field.collection,
+          schema,
+          `${stackTrace}.collection`
+        );
+        assertFieldHasTypeOf(
+          field.collection,
+          field.reference,
+          FieldTypes.PATH,
+          schema,
+          `${stackTrace}.reference`
+        );
+        assertFieldHasTypeOf(
+          field.collection,
+          field.field,
+          FieldTypes.INT,
+          schema,
+          `${stackTrace}.field`
+        );
       }
     }
   }
@@ -25,33 +53,32 @@ function triggerGenerator(
   collectionName: string,
   __: Collection,
   fieldName: string,
-  field: Field,
+  field: Field
 ): TriggerMap {
-  const fieldType = field;
-  if (isTypeSum(fieldType)) {
-    const targetRef = fieldType.sum.reference;
-    const incrementField = fieldType.sum.field;
+  if (isTypeSum(field)) {
+    const targetRef = field.reference;
+    const incrementField = field.field;
 
     triggerMap[collectionName].createTrigger.addData(
-      'snapshotRef',
+      "snapshotRef",
       fieldName,
-      '0',
+      "0"
     );
 
-    triggerMap[fieldType.sum.collection].createTrigger.addData(
+    triggerMap[field.collection].createTrigger.addData(
       targetRef,
       fieldName,
       `increment(data.${incrementField})`
     );
 
-    triggerMap[fieldType.sum.collection].updateTrigger.addData(
+    triggerMap[field.collection].updateTrigger.addData(
       targetRef,
       fieldName,
       `increment(after.${incrementField} - before.${incrementField})`,
       `after.${incrementField} !== before.${incrementField}`
     );
 
-    triggerMap[fieldType.sum.collection].deleteTrigger.addData(
+    triggerMap[field.collection].deleteTrigger.addData(
       targetRef,
       fieldName,
       `increment(-data.${incrementField})`
