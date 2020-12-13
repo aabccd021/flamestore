@@ -1,64 +1,40 @@
-import {
-  FlamestoreModule,
-  Collection,
-  FlamestoreSchema,
-  Field,
-} from "../../../type";
+import _ from "lodash";
+import { FlamestoreModule } from "../../type";
 
 export const module: FlamestoreModule = {
-  isUpdatableOverride: (
-    fieldName: string,
-    _: Field,
-    collectionName: string,
-    collection: Collection,
-    schema: FlamestoreSchema
-  ) => {
-    if (
-      (schema.authentication?.userCollection === collectionName &&
-        schema.authentication.uidField === fieldName) ||
-      collection.keyFields?.includes(fieldName)
-    ) {
-      return false;
-    }
-    return undefined;
+  isNotUpdatable: ({ fName, schema, colName, col }) => {
+    return (
+      ((schema.authentication?.userCollection === colName &&
+        schema.authentication.uidField === fName) ||
+        col.keyFields?.includes(fName)) ??
+      false
+    );
   },
-  ruleFunction,
-  getRule,
-};
 
-function ruleFunction(
-  collectionName: string,
-  collection: Collection,
-  schema: FlamestoreSchema
-): string[] {
-  const keyFields = collection.keyFields ?? [];
-  if (schema.authentication?.userCollection === collectionName) {
-    keyFields.push(schema.authentication.uidField);
-  }
-  return Object.values(keyFields).map(
-    (fieldName, counter) =>
-      `      function ${fieldName}OfDocumentId(){
+  ruleFunction({ colName, col, schema }) {
+    const keyFields = col.keyFields ?? [];
+    if (schema.authentication?.userCollection === colName) {
+      keyFields.push(schema.authentication.uidField);
+    }
+    return _.values(keyFields).map(
+      (fName, counter) =>
+        `      function ${fName}OfDocumentId(){
         return documentId.split('_')[${counter}];
       }`
-  );
-}
+    );
+  },
 
-function getRule(
-  fieldName: string,
-  field: Field,
-  collectionName: string,
-  collection: Collection,
-  schema: FlamestoreSchema
-): string[] {
-  const rules: string[] = [];
-  if (collection.keyFields?.includes(fieldName) ?? false) {
-    rules.push(`get(${fieldName}.reference).id == ${fieldName}OfDocumentId()`);
-  }
-  if (
-    schema.authentication?.userCollection === collectionName &&
-    schema.authentication.uidField === fieldName
-  ) {
-    rules.push(`${fieldName} == ${fieldName}OfDocumentId()`);
-  }
-  return rules;
-}
+  getRule({ fName, col, schema, colName }) {
+    const rules: string[] = [];
+    if (col.keyFields?.includes(fName) ?? false) {
+      rules.push(`get(${fName}.reference).id == ${fName}OfDocumentId()`);
+    }
+    if (
+      schema.authentication?.userCollection === colName &&
+      schema.authentication.uidField === fName
+    ) {
+      rules.push(`${fName} == ${fName}OfDocumentId()`);
+    }
+    return rules;
+  },
+};

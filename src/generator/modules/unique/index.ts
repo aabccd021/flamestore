@@ -1,5 +1,6 @@
-import { TriggerMap, Collection, Field, FlamestoreModule } from "../../../type";
-import { isUnique } from "../../util";
+import { FieldIteration } from "../../../type";
+import { addTriggerHeader, FlamestoreModule, TriggerMap } from "../../type";
+import { isFieldUnique } from "../../util";
 
 export const module: FlamestoreModule = {
   triggerGenerator,
@@ -7,19 +8,20 @@ export const module: FlamestoreModule = {
 
 function triggerGenerator(
   triggerMap: TriggerMap,
-  collectionName: string,
-  _: Collection,
-  fieldName: string,
-  field: Field
+  { field, fName, colName }: FieldIteration
 ): TriggerMap {
-  if (isUnique(field)) {
-    triggerMap[collectionName].createTrigger.addHeader(
-      `if (await foundDuplicate('${collectionName}','${fieldName}', snapshot, context)) return;\n\n`
+  if (isFieldUnique(field)) {
+    triggerMap[colName].createTrigger = addTriggerHeader(
+      triggerMap[colName].createTrigger,
+      `if (await foundDuplicate('${colName}','${fName}', snapshot, context)) return;\n\n`
     );
+    triggerMap[colName].createTrigger.useContext = true;
 
-    triggerMap[collectionName].updateTrigger.addHeader(
-      `if (await foundDuplicate('${collectionName}','${fieldName}', change, context)) return;\n\n`
+    triggerMap[colName].updateTrigger = addTriggerHeader(
+      triggerMap[colName].updateTrigger,
+      `if (await foundDuplicate('${colName}','${fName}', change, context)) return;\n\n`
     );
+    triggerMap[colName].updateTrigger.useContext = true;
   }
   return triggerMap;
 }

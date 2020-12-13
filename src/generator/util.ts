@@ -4,8 +4,6 @@ import * as fs from "fs";
 import {
   FlamestoreSchema,
   FieldTypes,
-  Field,
-  Computed,
   StringField,
   ReferenceField,
   FloatField,
@@ -17,16 +15,19 @@ import {
   ProjectConfiguration,
   DynamicLinkAttribute,
   DynamicLinkAttributeFromField,
-  NonComputed,
-  SpecialField,
+  Field,
+  FieldProperty,
+  FieldIteration,
+  CollectionIteration,
 } from "../type";
+import _ from "lodash";
 
 export function assertCollectionNameExists(
   collectionName: string,
   schema: FlamestoreSchema,
   stackTrace: string
 ): void {
-  if (!Object.keys(schema.collections).includes(collectionName)) {
+  if (!_.keys(schema.collections).includes(collectionName)) {
     throw Error(
       `Invalid Collection: ${stackTrace} provided collection with name ${collectionName} which doesn't exist`
     );
@@ -40,9 +41,7 @@ function assertFieldExists(
   stackTrace: string
 ) {
   assertCollectionNameExists(collectionName, schema, stackTrace);
-  if (
-    !Object.keys(schema.collections[collectionName].fields).includes(fieldName)
-  ) {
+  if (!_.keys(schema.collections[collectionName].fields).includes(fieldName)) {
     throw Error(
       `${stackTrace} provided field with name ${fieldName} in collection ${collectionName} when the field doesn't exist.`
     );
@@ -75,36 +74,24 @@ export function assertFieldHasTypeOf(
   }
 
   const type = schema.collections[collectionName].fields[fieldName];
-  if (fieldType === FieldTypes.INT && !isTypeInt(type)) {
+  if (fieldType === "int" && !isTypeInt(type)) {
+    throwFieldTypeError("int", collectionName, fieldName, schema, stackTrace);
+  }
+  if (fieldType === "string" && !isTypeString(type)) {
     throwFieldTypeError(
-      FieldTypes.INT,
+      "string",
       collectionName,
       fieldName,
       schema,
       stackTrace
     );
   }
-  if (fieldType === FieldTypes.STRING && !isTypeString(type)) {
-    throwFieldTypeError(
-      FieldTypes.STRING,
-      collectionName,
-      fieldName,
-      schema,
-      stackTrace
-    );
+  if (fieldType === "path" && !isTypeReference(type)) {
+    throwFieldTypeError("path", collectionName, fieldName, schema, stackTrace);
   }
-  if (fieldType === FieldTypes.PATH && !isTypeReference(type)) {
+  if (fieldType === "timestamp" && !isTypeDatetime(type)) {
     throwFieldTypeError(
-      FieldTypes.PATH,
-      collectionName,
-      fieldName,
-      schema,
-      stackTrace
-    );
-  }
-  if (fieldType === FieldTypes.DATETIME && !isTypeDatetime(type)) {
-    throwFieldTypeError(
-      FieldTypes.DATETIME,
+      "timestamp",
       collectionName,
       fieldName,
       schema,
@@ -114,67 +101,64 @@ export function assertFieldHasTypeOf(
 }
 
 export function isTypeDynamicLink(field: Field): field is DynamicLinkField {
-  return Object.prototype.hasOwnProperty.call(field, "dynamicLink");
+  return (field as DynamicLinkField).type === "dynamicLink";
 }
 export function isTypeString(field: Field): field is StringField {
-  return Object.prototype.hasOwnProperty.call(field, "string");
+  return (field as StringField).type === "string";
 }
 export function isTypeFloat(field: Field): field is FloatField {
-  return Object.prototype.hasOwnProperty.call(field, "float");
+  return (field as FloatField).type === "float";
 }
 export function isTypeReference(field: Field): field is ReferenceField {
-  return Object.prototype.hasOwnProperty.call(field, "path");
+  return (field as ReferenceField).type === "path";
 }
 export function isTypeInt(field: Field): field is IntField {
-  return Object.prototype.hasOwnProperty.call(field, "int");
+  return (field as IntField).type === "int";
 }
 export function isTypeDatetime(field: Field): field is DatetimeField {
-  return Object.prototype.hasOwnProperty.call(field, "timestamp");
+  return (field as DatetimeField).type === "timestamp";
 }
 export function isTypeSum(field: Field): field is SumField {
-  return Object.prototype.hasOwnProperty.call(field, "sum");
+  return (field as SumField).type === "sum";
 }
 export function isTypeCount(field: Field): field is CountField {
-  return Object.prototype.hasOwnProperty.call(field, "count");
+  return (field as CountField).type === "count";
 }
-
-function hasComputedProperty(field: Field): field is Computed {
-  return Object.prototype.hasOwnProperty.call(field, "isComputed");
+export function hasFieldProperty(field: Field): field is FieldProperty {
+  return (field as FieldProperty).property !== undefined;
 }
-
-export function isSpecialField(field: Field): field is SpecialField {
-  return field === "serverTimestamp";
+export function isFieldComputed(field: Field): boolean {
+  return hasFieldProperty(field) && field.property === "isComputed";
 }
-
-function hasNonComputedProperty(field: Field): field is NonComputed {
-  return !(hasComputedProperty(field) || isSpecialField(field));
+export function isFieldUnique(field: Field): boolean {
+  return (
+    hasFieldProperty(field) &&
+    !_.isNil(field.property) &&
+    (field.property === "isUnique" || field.property.includes("isUnique"))
+  );
 }
-
-export function isComputed(field?: Field): boolean | undefined {
-  if (!field || !hasComputedProperty(field)) {
-    return undefined;
-  }
-  return field.isComputed;
+export function isFieldOptional(field: Field): boolean {
+  return (
+    hasFieldProperty(field) &&
+    !_.isNil(field.property) &&
+    (field.property === "isOptional" || field.property.includes("isOptional"))
+  );
 }
-
-export function isOptional(field?: Field): boolean | undefined {
-  return field && hasNonComputedProperty(field) ? field?.isOptional : undefined;
+export function isFieldNotCreatable(field: Field): boolean {
+  return (
+    hasFieldProperty(field) &&
+    !_.isNil(field.property) &&
+    (field.property === "isNotCreatable" ||
+      field.property.includes("isNotCreatable"))
+  );
 }
-
-export function isUpdatable(field?: Field): boolean | undefined {
-  return field && hasNonComputedProperty(field)
-    ? field?.isUpdatable
-    : undefined;
-}
-
-export function isCreatable(field?: Field): boolean | undefined {
-  return field && hasNonComputedProperty(field)
-    ? field?.isCreatable
-    : undefined;
-}
-
-export function isUnique(field?: Field): boolean | undefined {
-  return field && hasNonComputedProperty(field) ? field?.isUnique : undefined;
+export function isFieldNotUpdatable(field: Field): boolean {
+  return (
+    hasFieldProperty(field) &&
+    !_.isNil(field.property) &&
+    (field.property === "isNotUpdatable" ||
+      field.property.includes("isNotUpdatable"))
+  );
 }
 
 export function getDynamicLinkDomain(
@@ -204,4 +188,20 @@ export function getPascalCollectionName(collectionName: string): string {
 export function writePrettyFile(fileName: string, content: string): void {
   const prettyContent = prettier.format(content, { parser: "typescript" });
   fs.writeFileSync(fileName, prettyContent);
+}
+
+export function fIterOf(colIter: CollectionIteration): FieldIteration[] {
+  return _.map(colIter.col.fields, (field, fName) => ({
+    field,
+    fName,
+    ...colIter,
+  }));
+}
+
+export function colIterOf(schema: FlamestoreSchema): CollectionIteration[] {
+  return _.map(schema.collections, (col, colName) => ({
+    col,
+    colName,
+    schema,
+  }));
 }

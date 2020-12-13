@@ -17,10 +17,11 @@ import { module as sumModule } from "./modules/sum";
 import { module as timestampModule } from "./modules/timestamp";
 import { module as uniqueModule } from "./modules/unique";
 import * as fs from "fs";
-import { FlamestoreModule, FlamestoreSchema } from "../type";
+import { FlamestoreSchema } from "../type";
 import { generateSchema } from "./generate-schema";
 import generateUtils from "./generate-utils";
 import { preprocessSchema } from "./preprocess-schema";
+import { FlamestoreModule } from "./type";
 
 const modules: FlamestoreModule[] = [
   pathModule,

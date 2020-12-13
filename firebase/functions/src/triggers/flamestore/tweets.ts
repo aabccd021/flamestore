@@ -1,4 +1,4 @@
-import { Tweet, User } from "../models";
+import { User, Tweet } from "../models";
 import {
   functions,
   increment,
@@ -9,7 +9,7 @@ import {
 
 export const onCreate = functions.firestore
   .document("/tweets/{documentId}")
-  .onCreate(async (snapshot, _) => {
+  .onCreate(async (snapshot) => {
     const data = snapshot.data() as Tweet;
 
     const [refusersDataSnapshot] = await Promise.all([
@@ -18,17 +18,11 @@ export const onCreate = functions.firestore
     const refusersData = refusersDataSnapshot.data() as User;
 
     const snapshotRefData = {
-      user: {
-        userName: refusersData.userName,
-      },
+      user: { userName: refusersData.userName },
       likesSum: 0,
       creationTime: serverTimestamp(),
     };
-
-    const userData = {
-      tweetsCount: increment(1),
-    };
-
+    const userData = { tweetsCount: increment(1) };
     await allSettled([
       update(snapshot.ref, snapshotRefData),
       update(data.user.reference, userData),
@@ -37,12 +31,9 @@ export const onCreate = functions.firestore
 
 export const onDelete = functions.firestore
   .document("/tweets/{documentId}")
-  .onDelete(async (snapshot, _) => {
+  .onDelete(async (snapshot) => {
     const data = snapshot.data() as Tweet;
 
-    const userData = {
-      tweetsCount: increment(-1),
-    };
-
+    const userData = { tweetsCount: increment(-1) };
     await update(data.user.reference, userData);
   });

@@ -1,40 +1,29 @@
-import {
-  TriggerMap,
-  Collection,
-  Field,
-  FlamestoreModule,
-  FieldTypes,
-} from "../../../type";
+import { FieldIteration } from "../../../type";
+import { addTriggerData, FlamestoreModule, TriggerMap } from "../../type";
 import { isTypeDatetime } from "../../util";
 
 export const module: FlamestoreModule = {
-  triggerGenerator,
-  isCreatable: (field: Field) => isTypeDatetime(field),
-  isUpdatable: (field: Field) => isTypeDatetime(field),
-  isPrimitive: (field: Field) => !isTypeDatetime(field),
-  getRule,
+  isCreatable: ({ field }) => isTypeDatetime(field),
+  isUpdatable: ({ field }) => isTypeDatetime(field),
+  isPrimitive: ({ field }) => !isTypeDatetime(field),
+  getRule({ fName, field }) {
+    if (isTypeDatetime(field)) {
+      return [`${fName} is datetime`];
+    }
+    return [];
+  },
+  triggerGenerator(
+    triggerMap: TriggerMap,
+    { field, colName, fName }: FieldIteration
+  ): TriggerMap {
+    if (field === "serverTimestamp") {
+      triggerMap[colName].createTrigger = addTriggerData(
+        triggerMap[colName].createTrigger,
+        "snapshotRef",
+        fName,
+        "serverTimestamp()"
+      );
+    }
+    return triggerMap;
+  },
 };
-
-function getRule(fieldName: string, field: Field): string[] {
-  if (isTypeDatetime(field)) {
-    return [`${fieldName} is ${FieldTypes.DATETIME}`];
-  }
-  return [];
-}
-
-function triggerGenerator(
-  triggerMap: TriggerMap,
-  collectionName: string,
-  _: Collection,
-  fieldName: string,
-  field: Field
-): TriggerMap {
-  if (field === "serverTimestamp") {
-    triggerMap[collectionName].createTrigger.addData(
-      "snapshotRef",
-      fieldName,
-      "serverTimestamp()"
-    );
-  }
-  return triggerMap;
-}

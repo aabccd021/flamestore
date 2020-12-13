@@ -1,9 +1,7 @@
-import { Field, FlamestoreModule, FlamestoreSchema } from "../type";
+import { Field, FlamestoreSchema } from "../type";
 import * as path from "path";
 import {
   getPascalCollectionName,
-  isComputed,
-  isOptional,
   isTypeString,
   isTypeDatetime,
   isTypeFloat,
@@ -13,187 +11,93 @@ import {
   isTypeDynamicLink,
   isTypeSum,
   writePrettyFile,
+  fIterOf,
+  colIterOf,
+  isFieldOptional,
+  isFieldComputed,
 } from "./util";
+import _ from "lodash";
+import { FlamestoreModule } from "./type";
 
 export function generateSchema(
   outputFilePath: string,
   schema: FlamestoreSchema,
   modules: FlamestoreModule[]
 ): void {
-  const schemaContent = Object.entries(schema.collections)
-    .map(([colName, col]) => {
-      const attributes = Object.entries(col.fields)
-        .map(([fieldName, field]) => {
-          const mustExists = modules.some((module) => {
-            if (isOptional(field)) {
-              return false;
-            }
-            if (module.isCreatable) {
-              return module.isCreatable(field);
-            }
-            return false;
-          });
-          let finalMustExists = mustExists;
-          for (const module of modules) {
-            if (module.isCreatableOverride) {
-              const creatableOverride = module.isCreatableOverride(field);
-              if (creatableOverride !== undefined) {
-                finalMustExists = creatableOverride;
-              }
-            }
-          }
-          const question = finalMustExists ? "" : "?";
-          return `${fieldName}${question}: ${getDataTypeString(
-            field,
-            schema
-          )};`;
+  const schemaContent = colIterOf(schema)
+    .map((colIter) => {
+      const { colName } = colIter;
+      const attributes = fIterOf(colIter)
+        .map((fIter) => {
+          const { fName, field } = fIter;
+          const mustExists =
+            !isFieldOptional(field) &&
+            _(modules)
+              .map((module) => module.isCreatable)
+              .compact()
+              .some((isCreatable) => isCreatable(fIter)) &&
+            !_(modules)
+              .map((module) => module.isNotCreatable)
+              .compact()
+              .some((isNotCreatable) => isNotCreatable(fIter));
+          const question = mustExists ? "" : "?";
+          return `${fName}${question}: ${getDataTypeString(field, schema)};`;
         })
         .join("\n");
-      return fieldString(colName, attributes);
+      return `export interface ${getPascalCollectionName(
+        colName
+      )} {${attributes}}`;
     })
-    .join("\n");
-  const computedSchemaContent = Object.entries(schema.collections)
-    .filter(([_, col]) => Object.values(col.fields).some((f) => isComputed(f)))
-    .map(([colName, col]) => {
-      const computedFields = Object.entries(col.fields).filter(([_, field]) =>
-        isComputed(field)
+    .join("\n\n");
+  const computedSchemaContent = colIterOf(schema)
+    .filter(({ col }) => _(col.fields).some((f) => isFieldComputed(f)))
+    .map((colIter) => {
+      const { colName } = colIter;
+      const pascal = getPascalCollectionName(colName);
+      const computedFields = fIterOf(colIter).filter(({ field }) =>
+        isFieldComputed(field)
       );
-      const computedFieldDeclaration = computedFields
-        .map(
-          ([fieldName, field]) =>
-            `private ${fieldName}?: ${getDataTypeString(field, schema)};`
-        )
-        .join("\n");
-      const computedFieldType = computedFields
-        .map(
-          ([fieldName, field]) =>
-            `${fieldName}?: ${getDataTypeString(field, schema)},`
-        )
-        .join("\n");
-      const computedFieldAssignment = computedFields
-        .map(([fieldName, _]) => `this.${fieldName} = arg?.${fieldName};`)
-        .join("\n");
-      const computedFieldReturn = computedFields
-        .map(
-          ([fieldName, _]) =>
-            `if(this.${fieldName}){data.${fieldName}= this.${fieldName};}`
-        )
-        .join("\n");
-      const isNonComputedSameVars = Object.entries(col.fields)
-        .map(([fieldName, field]) => {
-          const varName = `${fieldName}:`;
-          if (computedFields.map(([e, _]) => e).includes(fieldName)) {
-            return `${varName} true`;
-          }
-          const isEqual = isFieldEqual(fieldName, field, modules, schema);
-          return `${varName} ${isEqual}`;
+      const computedFieldsUnion = computedFields
+        .map(({ fName }) => `"${fName}"`)
+        .join("|");
+      const computedFieldsParam = computedFields
+        .map(({ fName }) => `"${fName}"`)
+        .join(",");
+      return `type ${pascal}ComputedFields = ${computedFieldsUnion};
+      type Computed${pascal} = Omit<${pascal}, ${pascal}ComputedFields>;
+      type NonComputed${pascal} = Pick<${pascal}, ${pascal}ComputedFields>;
+
+      export function compute${pascal}<D extends keyof Computed${pascal}>({
+        computeOnCreate,
+        computeOnUpdate,
+        dependencyFields,
+      }: {
+        computeOnCreate: onCreateFn<Computed${pascal}, NonComputed${pascal}>;
+        computeOnUpdate: onUpdateFn<Pick<Computed${pascal}, D>, NonComputed${pascal}>;
+        dependencyFields: D[];
+      }) {
+        return computeDocument({
+          computeOnCreate,
+          computeOnUpdate,
+          dependencyFields: dependencyFields,
+          computedFields: [${computedFieldsParam}],
+          collection: "${colName}",
         })
-        .sort()
-        .join(",\n");
-      return computedFieldString(
-        colName,
-        computedFieldDeclaration,
-        computedFieldType,
-        computedFieldAssignment,
-        computedFieldReturn,
-        isNonComputedSameVars
-      );
+      }
+      `;
     })
     .join("\n");
-  const finalContents = schemaString(schemaContent + computedSchemaContent);
-  const fileName = path.join(outputFilePath, "models.ts");
-  writePrettyFile(fileName, finalContents);
-}
-
-function computedFieldString(
-  colName: string,
-  fieldDeclaration: string,
-  fieldType: string,
-  fieldAssignment: string,
-  fieldReturn: string,
-  isNonComputedSameVars: string
-): string {
-  const pascal = getPascalCollectionName(colName);
-  const ICol = `I${pascal}`;
-  return `
-export class Computed${pascal} extends Computed {
-  public collection: string;
-  public document!: ${ICol};
-  ${fieldDeclaration}
-  constructor(arg?: {
-    ${fieldType}
-  }) {
-    super();
-    this.collection = '${colName}';
-    ${fieldAssignment}
-  }
-
-  public toMap() {
-    const data: { [fieldName: string]: any } = {};
-    ${fieldReturn}
-    return data;
-  }
-
-  public isDependencyChanged<K extends keyof ${ICol}>(before: ${ICol}, after: ${ICol}, keys: K[]) {
-    const isValueSame = {
-    ${isNonComputedSameVars}
-    };
-    return keys.some(key => !isValueSame[key])
-  }
-  }
-  `;
-}
-
-function fieldString(colName: string, attributes: string): string {
-  return `
-    export interface I${getPascalCollectionName(colName)} {
-    ${attributes}
-  }
-  `;
-}
-
-function isFieldEqual(
-  fieldName: string,
-  field: Field,
-  modules: FlamestoreModule[],
-  schema: FlamestoreSchema,
-  prefix = ""
-): string {
-  if (isTypeReference(field)) {
-    const referenceIsEqueal = `before?.${fieldName}?.reference  ? after?.${fieldName}?.reference ? before.${fieldName}.reference.isEqual(after.${fieldName}.reference):  false :after?.${fieldName}?.reference ?false: true`;
-    const fields = schema.collections[field.collection].fields;
-    const otherFieldsIsEqual =
-      field.syncFields?.map((syncFieldName) =>
-        isFieldEqual(
-          syncFieldName,
-          fields[syncFieldName],
-          modules,
-          schema,
-          `.${fieldName}`
-        )
-      ) ?? [];
-    const isEqual = [referenceIsEqueal, ...otherFieldsIsEqual]
-      .map((e) => `(${e})`)
-      .join(" && ");
-    return `${isEqual}`;
-  }
-  const aprefix = prefix === "" ? prefix : `?${prefix}`;
-  if (
-    modules.every((module) =>
-      module.isPrimitive ? module.isPrimitive(field) : true
-    )
-  ) {
-    return `before${aprefix}?.${fieldName} === after${aprefix}?.${fieldName}`;
-  }
-  return `before${aprefix}?.${fieldName}  ? after${aprefix}?.${fieldName} ? before${prefix}.${fieldName}.isEqual(after${prefix}.${fieldName}):  false :after?.${fieldName} ?false: true`;
-}
-
-function schemaString(schemaContent: string): string {
-  return `
+  const finalContent = `
 import { firestore } from 'firebase-admin';
-import { Computed } from "flamestore";
+import { onCreateFn, onUpdateFn } from "flamestore/lib";
+import {computeDocument} from "./utils";
+
 ${schemaContent}
+
+${computedSchemaContent}
 `;
+  const fileName = path.join(outputFilePath, "models.ts");
+  writePrettyFile(fileName, finalContent);
 }
 
 function getDataTypeString(field: Field, schema: FlamestoreSchema): string {
@@ -210,17 +114,18 @@ function getDataTypeString(field: Field, schema: FlamestoreSchema): string {
     return "number";
   }
   if (isTypeReference(field)) {
-    const fields =
-      field.syncFields
-        ?.map((fieldName) => {
+    const fieldString =
+      _([field.syncField ?? []])
+        .flatMap()
+        .map((fName) => {
           const referencedField =
-            schema.collections[field.collection].fields[fieldName];
-          return `${fieldName}?:${getDataTypeString(referencedField, schema)};`;
+            schema.collections[field.collection].fields[fName];
+          return `${fName}?:${getDataTypeString(referencedField, schema)};`;
         })
         .join("\n") ?? "";
     return `{
       reference: firestore.DocumentReference;
-      ${fields}
+      ${fieldString}
     }`;
   }
   if (isTypeSum(field)) {

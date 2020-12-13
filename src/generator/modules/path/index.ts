@@ -1,68 +1,68 @@
+import _ from "lodash";
+import { FieldIteration } from "../../../type";
 import {
-  Collection,
-  Field,
-  FieldTypes,
+  addResultPromise,
+  addTriggerData,
+  addTriggerNonUpdateData,
   FlamestoreModule,
   TriggerMap,
-} from "../../../type";
+} from "../../type";
 import { getPascalCollectionName, isTypeReference } from "../../util";
 
 export const module: FlamestoreModule = {
-  getRule,
-  isCreatable: (field) => isTypeReference(field),
-  triggerGenerator,
-};
-
-function getRule(fieldName: string, field: Field): string[] {
-  const rules: string[] = [];
-  if (isTypeReference(field)) {
-    rules.push(`${fieldName} is ${FieldTypes.MAP}`);
-    rules.push(`${fieldName}.keys() == ['reference']`);
-    rules.push(`${fieldName}.reference is path`);
-    rules.push(`exists(${fieldName}.reference)`);
-  }
-  return rules;
-}
-
-function triggerGenerator(
-  triggerMap: TriggerMap,
-  collectionName: string,
-  __: Collection,
-  fieldName: string,
-  field: Field
-): TriggerMap {
-  if (isTypeReference(field) && field.syncFields) {
-    const colNameToSyncFrom = field.collection;
-    field.syncFields.forEach((syncFieldName) => {
-      triggerMap[collectionName].createTrigger.dependencyPromises[
+  isCreatable: ({ field }) => isTypeReference(field),
+  getRule({ fName, field }) {
+    const rules: string[] = [];
+    if (isTypeReference(field)) {
+      rules.push(`${fName} is map`);
+      rules.push(`${fName}.keys() == ['reference']`);
+      rules.push(`${fName}.reference is path`);
+      rules.push(`exists(${fName}.reference)`);
+    }
+    return rules;
+  },
+  triggerGenerator(
+    triggerMap: TriggerMap,
+    { fName, field, colName }: FieldIteration
+  ) {
+    if (isTypeReference(field) && field.syncField) {
+      const colNameToSyncFrom = field.collection;
+      triggerMap[colName].createTrigger.dependencyPromises[
         `ref${colNameToSyncFrom}Data`
       ] = {
-        promise: `data.${fieldName}.reference.get()`,
+        promise: `data.${fName}.reference.get()`,
         collection: colNameToSyncFrom,
       };
-
-      triggerMap[collectionName].createTrigger.addData(
-        "snapshotRef",
-        `${fieldName}.${syncFieldName}`,
-        `ref${colNameToSyncFrom}Data.${syncFieldName}`
-      );
-
-      triggerMap[colNameToSyncFrom].updateTrigger.addNonUpdateData(
-        `${collectionName}${getPascalCollectionName(fieldName)}`,
-        `${fieldName}.${syncFieldName}`,
-        `after.${syncFieldName}`,
-        `after.${syncFieldName} !== before.${syncFieldName}`
-      );
-
-      triggerMap[colNameToSyncFrom].updateTrigger.addResultPromise(
+      triggerMap[colNameToSyncFrom].updateTrigger = addResultPromise(
+        triggerMap[colNameToSyncFrom].updateTrigger,
         `syncField(
-        '${collectionName}',
-        '${fieldName}',
-        change.after.ref,
-        ${collectionName}${getPascalCollectionName(field.collection)}Data
-        )`
+          '${colName}',
+          '${fName}',
+          change.after.ref,
+          ${colName}${getPascalCollectionName(field.collection)}Data
+          )`
       );
-    });
-  }
-  return triggerMap;
-}
+      const syncFields = _.flatMap([field.syncField]);
+      const createAssignment = syncFields
+        .map((f) => `${f}: ref${colNameToSyncFrom}Data.${f}`)
+        .join(",\n");
+      triggerMap[colName].createTrigger = addTriggerData(
+        triggerMap[colName].createTrigger,
+        "snapshotRef",
+        `${fName}`,
+        `{${createAssignment}}`
+      );
+
+      const updateAssignment = syncFields
+        .map((f) => `${f}: after.${f} !== before.${f} ?after.${f}: null`)
+        .join(",\n");
+      triggerMap[colNameToSyncFrom].updateTrigger = addTriggerNonUpdateData(
+        triggerMap[colNameToSyncFrom].updateTrigger,
+        `${colName}${getPascalCollectionName(fName)}`,
+        `${fName}`,
+        `{${updateAssignment}}`
+      );
+    }
+    return triggerMap;
+  },
+};

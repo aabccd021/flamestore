@@ -1,28 +1,27 @@
 import * as fs from "fs";
+import _ from "lodash";
 import {
   Collection,
-  Field,
-  FlamestoreModule,
+  CollectionIteration,
+  FieldIteration,
   FlamestoreSchema,
-  Rule,
   RuleType,
 } from "../type";
-import { isOptional } from "./util";
+import { FlamestoreModule } from "./type";
+import { colIterOf, fIterOf as fIterOf, isFieldOptional } from "./util";
 
 export default function generateRule(
   schema: FlamestoreSchema,
   outputFilePath: string,
   modules: FlamestoreModule[]
 ): void {
-  const collectionsRule = Object.entries(schema.collections)
-    .map(([collectionName, collection]) =>
-      collectionRuleTemplate(collectionName, collection, schema, modules)
-    )
+  const colsRule = colIterOf(schema)
+    .map((colIter) => colRuleTemplate(modules, colIter))
     .join("\n");
-  fs.writeFileSync(outputFilePath, ruleTemplate(collectionsRule));
+  fs.writeFileSync(outputFilePath, ruleTemplate(colsRule));
 }
 
-function ruleTemplate(collectionsRule: string) {
+function ruleTemplate(colsRule: string) {
   return `rules_version = '2';
 service cloud.firestore {
 
@@ -42,64 +41,50 @@ service cloud.firestore {
     function updatedKeys(){
       return reqData().diff(resData()).affectedKeys();
     }
-${collectionsRule}
+${colsRule}
   }
 }`;
 }
 
-function collectionRuleTemplate(
-  collectionName: string,
-  collection: Collection,
-  schema: FlamestoreSchema,
-  modules: FlamestoreModule[]
+function colRuleTemplate(
+  modules: FlamestoreModule[],
+  colIter: CollectionIteration
 ) {
-  const ruleFunction = modules
-    .map((module) =>
-      module.ruleFunction
-        ? module.ruleFunction(collectionName, collection, schema)
-        : []
-    )
-    .reduce((a, b) => a.concat(b), [])
-    .map((x) => `\n${x}`)
+  const { colName, col } = colIter;
+  const ruleFunction = _(modules)
+    .map((module) => module.ruleFunction)
+    .compact()
+    .map((ruleFunction) => ruleFunction(colIter))
+    .flatMap()
+    .map((rule) => `\n${rule}`)
     .join("");
-  const isOwnerFunction = getIsOwnerFunction(
-    collectionName,
-    collection,
-    schema
-  );
+  const isOwnerFunction = getIsOwnerFunction(colIter);
 
-  const isCreateValidFunction: ValidationFunction = collection["rule:create"]
-    ? getIsCreateValidFunction(collection, modules)
-    : { content: "", usedFields: [] };
-  const isUpdateValidFunction: ValidationFunction = collection["rule:update"]
-    ? getIsUpdateValidFunction(collectionName, collection, schema, modules)
-    : { content: "", usedFields: [] };
-  const fieldIsValidFunctions = Object.entries(collection.fields)
+  const emptyValidationFunction = { content: "", usedFields: [] };
+  const isCreateValidFunction: ValidationFunction = col["rule:create"]
+    ? getIsCreateValidFunction(modules, colIter)
+    : emptyValidationFunction;
+  const isUpdateValidFunction: ValidationFunction = col["rule:update"]
+    ? getIsUpdateValidFunction(modules, colIter)
+    : emptyValidationFunction;
+
+  const fieldIsValidFunctions = fIterOf(colIter)
     .filter(
-      ([fieldName]) =>
-        isUpdateValidFunction.usedFields.includes(fieldName) ||
-        isCreateValidFunction.usedFields.includes(fieldName)
+      ({ fName }) =>
+        isUpdateValidFunction.usedFields.includes(fName) ||
+        isCreateValidFunction.usedFields.includes(fName)
     )
-    .map(([fieldName, field]) =>
-      getIsFieldsValidFunction(
-        schema,
-        collectionName,
-        collection,
-        fieldName,
-        field,
-        modules
-      )
-    )
+    .map((fIter) => getIsFieldsValidFunction(modules, fIter))
     .join("");
-  return `    match /${collectionName}/{documentId} {${ruleFunction}
+  return `    match /${colName}/{documentId} {${ruleFunction}
 ${isOwnerFunction}${fieldIsValidFunctions}${isCreateValidFunction.content}${
     isUpdateValidFunction.content
   }
-      allow get: if ${getRule(collection, RuleType.GET)};
-      allow list: if ${getRule(collection, RuleType.LIST)};
-      allow create: if ${getRule(collection, RuleType.CREATE)};
-      allow update: if ${getRule(collection, RuleType.UPDATE)};
-      allow delete: if ${getRule(collection, RuleType.DELETE)};
+      allow get: if ${getRule(col, "rule:get")};
+      allow list: if ${getRule(col, "rule:list")};
+      allow create: if ${getRule(col, "rule:create")};
+      allow update: if ${getRule(col, "rule:update")};
+      allow delete: if ${getRule(col, "rule:delete")};
     }`;
 }
 
@@ -108,39 +93,39 @@ interface ValidationFunction {
   usedFields: string[];
 }
 
-function getRule(collection: Collection, ruleType: RuleType) {
-  if (collection[ruleType]) {
-    const rule = collection[ruleType];
-    if (rule === Rule.ALL) {
+function getRule(col: Collection, ruleType: RuleType) {
+  if (col[ruleType]) {
+    const rule = col[ruleType];
+    if (rule === "all") {
       return "true";
     }
-    if (rule === Rule.NONE) {
+    if (rule === "none") {
       return "false";
     }
-    if (rule === Rule.OWNER || rule === Rule.AUTHENTICATED) {
-      if ([RuleType.GET, RuleType.LIST, RuleType.DELETE].includes(ruleType)) {
+    if (rule === "owner" || rule === "authenticated") {
+      if (["rule:get", "rule:list", "rule:delete"].includes(ruleType)) {
         let userPermission;
-        if (rule === Rule.OWNER) {
+        if (rule === "owner") {
           userPermission = "isResOwner()";
-        } else if (rule === Rule.AUTHENTICATED) {
+        } else if (rule === "authenticated") {
           userPermission = "isAuthenticated()";
         }
         return `${userPermission}`;
       }
-      if (ruleType === RuleType.CREATE) {
+      if (ruleType === "rule:create") {
         let userPermission;
-        if (rule === Rule.OWNER) {
+        if (rule === "owner") {
           userPermission = "isReqOwner()";
-        } else if (rule === Rule.AUTHENTICATED) {
+        } else if (rule === "authenticated") {
           userPermission = "isAuthenticated()";
         }
         return `${userPermission} && isCreateValid()`;
       }
-      if (ruleType === RuleType.UPDATE) {
+      if (ruleType === "rule:update") {
         let userPermission;
-        if (rule === Rule.OWNER) {
+        if (rule === "owner") {
           userPermission = "isReqOwner() && isResOwner()";
-        } else if (rule === Rule.AUTHENTICATED) {
+        } else if (rule === "authenticated") {
           userPermission = "isAuthenticated()";
         }
         return `${userPermission} && isUpdateValid()`;
@@ -151,38 +136,34 @@ function getRule(collection: Collection, ruleType: RuleType) {
 }
 
 function getIsCreateValidFunction(
-  collection: Collection,
-  modules: FlamestoreModule[]
+  modules: FlamestoreModule[],
+  colIter: CollectionIteration
 ): ValidationFunction {
-  const creatableFields = Object.entries(collection.fields)
-    .filter(([_, field]) => {
-      for (const module of modules) {
-        if (module.isCreatableOverride) {
-          const override = module.isCreatableOverride(field);
-          if (override !== undefined) {
-            return override;
-          }
-        }
-      }
-      return modules.some((module) =>
-        module.isCreatable ? module.isCreatable(field) : false
-      );
-    })
-    .map(([fieldName, _]) => fieldName);
+  const creatableFields = fIterOf(colIter).filter(
+    (fIter) =>
+      !_(modules)
+        .map((m) => m?.isNotCreatable)
+        .compact()
+        .some((f) => f(fIter)) &&
+      _(modules)
+        .map((m) => m?.isCreatable)
+        .compact()
+        .some((f) => f(fIter))
+  );
 
   const isValids = creatableFields
-    .map((fieldName) => {
-      return isOptional(collection.fields[fieldName])
-        ? `(!('${fieldName}' in reqData()) || ${fieldName}IsValid())`
-        : `${fieldName}IsValid()`;
-    })
+    .map(({ field, fName }) =>
+      isFieldOptional(field)
+        ? `(!('${fName}' in reqData()) || ${fName}IsValid())`
+        : `${fName}IsValid()`
+    )
     .map((x) => `\n          && ${x}`)
     .join("");
 
-  const hasOnlies = creatableFields.map((x) => `'${x}'`);
+  const hasOnlies = creatableFields.map(({ fName }) => `'${fName}'`);
 
   return {
-    usedFields: creatableFields,
+    usedFields: creatableFields.map(({ fName }) => fName),
     content: `
       function isCreateValid(){
         return reqData().keys().hasOnly([${hasOnlies}])${isValids};
@@ -191,51 +172,34 @@ function getIsCreateValidFunction(
 }
 
 function getIsUpdateValidFunction(
-  collectionName: string,
-  collection: Collection,
-  schema: FlamestoreSchema,
-  modules: FlamestoreModule[]
+  modules: FlamestoreModule[],
+  colIter: CollectionIteration
 ): ValidationFunction {
-  const updatableFields = Object.entries(collection.fields)
-    .filter(([fieldName, field]) => {
-      for (const module of modules) {
-        if (module.isUpdatableOverride) {
-          const override = module.isUpdatableOverride(
-            fieldName,
-            field,
-            collectionName,
-            collection,
-            schema
-          );
-          if (override !== undefined) {
-            return override;
-          }
-        }
-      }
-      return modules.some((module) =>
-        module.isUpdatable ? module.isUpdatable(field) : false
-      );
-    })
-    .map(([fieldName, _]) => fieldName);
+  const updatableFields = fIterOf(colIter).filter(
+    (fIter) =>
+      !_(modules)
+        .map((m) => m?.isNotUpdatable)
+        .compact()
+        .some((f) => f(fIter)) &&
+      _(modules)
+        .map((m) => m?.isUpdatable)
+        .compact()
+        .some((f) => f(fIter))
+  );
 
-  const isValids = updatableFields
-    .map((fieldName) => {
-      const isNotDeleted = isOptional(collection.fields[fieldName])
-        ? []
-        : [`isNotDeleted('${fieldName}')`];
-      return [
-        `(!('${fieldName}' in reqData()) || ${fieldName}IsValid())`,
-        ...isNotDeleted,
-      ];
-    })
-    .reduce((a, b) => a.concat(b), [])
+  const isValids = _(updatableFields)
+    .map(({ fName, field }) => [
+      `(!('${fName}' in reqData()) || ${fName}IsValid())`,
+      ...(!isFieldOptional(field) ? [`isNotDeleted('${fName}')`] : []),
+    ])
+    .flatMap()
     .map((x) => `\n          && ${x}`)
     .join("");
 
-  const hasOnlies = updatableFields.map((x) => `'${x}'`);
+  const hasOnlies = updatableFields.map(({ fName }) => `'${fName}'`);
 
   return {
-    usedFields: updatableFields,
+    usedFields: updatableFields.map(({ fName }) => fName),
     content: `
       function isUpdateValid(){
         return updatedKeys().hasOnly([${hasOnlies}])${isValids};
@@ -243,15 +207,11 @@ function getIsUpdateValidFunction(
   };
 }
 
-function getIsOwnerFunction(
-  collectionName: string,
-  collection: Collection,
-  schema: FlamestoreSchema
-) {
-  const isDocExists = `!(exists(/databases/$(database)/documents/${collectionName}/$(documentId)))`;
+function getIsOwnerFunction({ colName, col, schema }: CollectionIteration) {
+  const isDocExists = `!(exists(/databases/$(database)/documents/${colName}/$(documentId)))`;
   if (schema.authentication) {
     const uidField = schema.authentication.uidField;
-    if (schema.authentication.userCollection === collectionName) {
+    if (schema.authentication.userCollection === colName) {
       return `      function isReqOwner(){
         return request.auth.uid == reqData().${uidField};
       }
@@ -260,13 +220,13 @@ function getIsOwnerFunction(
           || request.auth.uid == resData().${uidField};
       }`;
     }
-    if (collection.ownerField) {
+    if (col.ownerField) {
       return `      function isReqOwner(){
-        return request.auth.uid == get(reqData().${collection.ownerField}.reference).data.${uidField};
+        return request.auth.uid == get(reqData().${col.ownerField}.reference).data.${uidField};
       }
       function isResOwner(){
         return ${isDocExists}
-          || request.auth.uid == get(resData().${collection.ownerField}.reference).data.${uidField};
+          || request.auth.uid == get(resData().${col.ownerField}.reference).data.${uidField};
       }`;
     }
   }
@@ -274,28 +234,22 @@ function getIsOwnerFunction(
 }
 
 function getIsFieldsValidFunction(
-  schema: FlamestoreSchema,
-  collectionName: string,
-  collection: Collection,
-  fieldName: string,
-  field: Field,
-  modules: FlamestoreModule[]
+  modules: FlamestoreModule[],
+  fIter: FieldIteration
 ): string {
-  const additionalRule = Object.values(modules)
-    .map((module) =>
-      module.getRule
-        ? module.getRule(fieldName, field, collectionName, collection, schema)
-        : []
-    )
-    .reduce((a, b) => a.concat(b), [])
+  const { fName } = fIter;
+  const additionalRule = _(modules)
+    .map((module) => module.getRule)
+    .compact()
+    .map((getRule) => getRule(fIter))
+    .flatMap()
     .join(" && ");
-
-  if (additionalRule === "") {
-    return "";
-  }
-  return `
-      function ${fieldName}IsValid(){
-        let ${fieldName} = reqData().${fieldName};
+  return (
+    additionalRule &&
+    `
+      function ${fName}IsValid(){
+        let ${fName} = reqData().${fName};
         return ${additionalRule};
-      }`;
+      }`
+  );
 }

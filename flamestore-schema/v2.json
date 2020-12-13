@@ -41,6 +41,10 @@
       ],
       "type": "object"
     },
+    "Computed": {
+      "const": "isComputed",
+      "type": "string"
+    },
     "DynamicLinkAttribute": {
       "anyOf": [
         {
@@ -68,45 +72,27 @@
         {
           "additionalProperties": false,
           "properties": {
-            "isComputed": {
-              "type": "boolean"
-            },
             "maxLength": {
               "type": "number"
             },
             "minLength": {
               "type": "number"
             },
-            "type": {
-              "const": "string",
-              "type": "string"
-            }
-          },
-          "required": [
-            "type"
-          ],
-          "type": "object"
-        },
-        {
-          "additionalProperties": false,
-          "properties": {
-            "isCreatable": {
-              "type": "boolean"
-            },
-            "isOptional": {
-              "type": "boolean"
-            },
-            "isUnique": {
-              "type": "boolean"
-            },
-            "isUpdatable": {
-              "type": "boolean"
-            },
-            "maxLength": {
-              "type": "number"
-            },
-            "minLength": {
-              "type": "number"
+            "property": {
+              "anyOf": [
+                {
+                  "items": {
+                    "$ref": "#/definitions/NonComputed"
+                  },
+                  "type": "array"
+                },
+                {
+                  "$ref": "#/definitions/NonComputed"
+                },
+                {
+                  "$ref": "#/definitions/Computed"
+                }
+              ]
             },
             "type": {
               "const": "string",
@@ -124,48 +110,27 @@
             "deleteDocWhen": {
               "type": "number"
             },
-            "isComputed": {
-              "type": "boolean"
-            },
             "max": {
               "type": "number"
             },
             "min": {
               "type": "number"
             },
-            "type": {
-              "const": "float",
-              "type": "string"
-            }
-          },
-          "required": [
-            "type"
-          ],
-          "type": "object"
-        },
-        {
-          "additionalProperties": false,
-          "properties": {
-            "deleteDocWhen": {
-              "type": "number"
-            },
-            "isCreatable": {
-              "type": "boolean"
-            },
-            "isOptional": {
-              "type": "boolean"
-            },
-            "isUnique": {
-              "type": "boolean"
-            },
-            "isUpdatable": {
-              "type": "boolean"
-            },
-            "max": {
-              "type": "number"
-            },
-            "min": {
-              "type": "number"
+            "property": {
+              "anyOf": [
+                {
+                  "items": {
+                    "$ref": "#/definitions/NonComputed"
+                  },
+                  "type": "array"
+                },
+                {
+                  "$ref": "#/definitions/NonComputed"
+                },
+                {
+                  "$ref": "#/definitions/Computed"
+                }
+              ]
             },
             "type": {
               "const": "float",
@@ -183,49 +148,34 @@
             "collection": {
               "type": "string"
             },
-            "isComputed": {
-              "type": "boolean"
+            "property": {
+              "anyOf": [
+                {
+                  "items": {
+                    "$ref": "#/definitions/NonComputed"
+                  },
+                  "type": "array"
+                },
+                {
+                  "$ref": "#/definitions/NonComputed"
+                },
+                {
+                  "$ref": "#/definitions/Computed"
+                }
+              ]
             },
-            "syncFields": {
-              "items": {
-                "type": "string"
-              },
-              "type": "array"
-            },
-            "type": {
-              "const": "path",
-              "type": "string"
-            }
-          },
-          "required": [
-            "collection",
-            "type"
-          ],
-          "type": "object"
-        },
-        {
-          "additionalProperties": false,
-          "properties": {
-            "collection": {
-              "type": "string"
-            },
-            "isCreatable": {
-              "type": "boolean"
-            },
-            "isOptional": {
-              "type": "boolean"
-            },
-            "isUnique": {
-              "type": "boolean"
-            },
-            "isUpdatable": {
-              "type": "boolean"
-            },
-            "syncFields": {
-              "items": {
-                "type": "string"
-              },
-              "type": "array"
+            "syncField": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "string"
+                }
+              ]
             },
             "type": {
               "const": "path",
@@ -244,14 +194,27 @@
             "deleteDocWhen": {
               "type": "number"
             },
-            "isComputed": {
-              "type": "boolean"
-            },
             "max": {
               "type": "number"
             },
             "min": {
               "type": "number"
+            },
+            "property": {
+              "anyOf": [
+                {
+                  "items": {
+                    "$ref": "#/definitions/NonComputed"
+                  },
+                  "type": "array"
+                },
+                {
+                  "$ref": "#/definitions/NonComputed"
+                },
+                {
+                  "$ref": "#/definitions/Computed"
+                }
+              ]
             },
             "type": {
               "const": "int",
@@ -266,67 +229,21 @@
         {
           "additionalProperties": false,
           "properties": {
-            "deleteDocWhen": {
-              "type": "number"
-            },
-            "isCreatable": {
-              "type": "boolean"
-            },
-            "isOptional": {
-              "type": "boolean"
-            },
-            "isUnique": {
-              "type": "boolean"
-            },
-            "isUpdatable": {
-              "type": "boolean"
-            },
-            "max": {
-              "type": "number"
-            },
-            "min": {
-              "type": "number"
-            },
-            "type": {
-              "const": "int",
-              "type": "string"
-            }
-          },
-          "required": [
-            "type"
-          ],
-          "type": "object"
-        },
-        {
-          "additionalProperties": false,
-          "properties": {
-            "isComputed": {
-              "type": "boolean"
-            },
-            "type": {
-              "const": "timestamp",
-              "type": "string"
-            }
-          },
-          "required": [
-            "type"
-          ],
-          "type": "object"
-        },
-        {
-          "additionalProperties": false,
-          "properties": {
-            "isCreatable": {
-              "type": "boolean"
-            },
-            "isOptional": {
-              "type": "boolean"
-            },
-            "isUnique": {
-              "type": "boolean"
-            },
-            "isUpdatable": {
-              "type": "boolean"
+            "property": {
+              "anyOf": [
+                {
+                  "items": {
+                    "$ref": "#/definitions/NonComputed"
+                  },
+                  "type": "array"
+                },
+                {
+                  "$ref": "#/definitions/NonComputed"
+                },
+                {
+                  "$ref": "#/definitions/Computed"
+                }
+              ]
             },
             "type": {
               "const": "timestamp",
@@ -347,8 +264,21 @@
             "field": {
               "type": "string"
             },
-            "isComputed": {
-              "type": "boolean"
+            "property": {
+              "anyOf": [
+                {
+                  "items": {
+                    "$ref": "#/definitions/NonComputed"
+                  },
+                  "type": "array"
+                },
+                {
+                  "$ref": "#/definitions/NonComputed"
+                },
+                {
+                  "$ref": "#/definitions/Computed"
+                }
+              ]
             },
             "reference": {
               "type": "string"
@@ -372,78 +302,21 @@
             "collection": {
               "type": "string"
             },
-            "field": {
-              "type": "string"
-            },
-            "isCreatable": {
-              "type": "boolean"
-            },
-            "isOptional": {
-              "type": "boolean"
-            },
-            "isUnique": {
-              "type": "boolean"
-            },
-            "isUpdatable": {
-              "type": "boolean"
-            },
-            "reference": {
-              "type": "string"
-            },
-            "type": {
-              "const": "sum",
-              "type": "string"
-            }
-          },
-          "required": [
-            "collection",
-            "field",
-            "reference",
-            "type"
-          ],
-          "type": "object"
-        },
-        {
-          "additionalProperties": false,
-          "properties": {
-            "collection": {
-              "type": "string"
-            },
-            "isComputed": {
-              "type": "boolean"
-            },
-            "reference": {
-              "type": "string"
-            },
-            "type": {
-              "const": "count",
-              "type": "string"
-            }
-          },
-          "required": [
-            "collection",
-            "reference",
-            "type"
-          ],
-          "type": "object"
-        },
-        {
-          "additionalProperties": false,
-          "properties": {
-            "collection": {
-              "type": "string"
-            },
-            "isCreatable": {
-              "type": "boolean"
-            },
-            "isOptional": {
-              "type": "boolean"
-            },
-            "isUnique": {
-              "type": "boolean"
-            },
-            "isUpdatable": {
-              "type": "boolean"
+            "property": {
+              "anyOf": [
+                {
+                  "items": {
+                    "$ref": "#/definitions/NonComputed"
+                  },
+                  "type": "array"
+                },
+                {
+                  "$ref": "#/definitions/NonComputed"
+                },
+                {
+                  "$ref": "#/definitions/Computed"
+                }
+              ]
             },
             "reference": {
               "type": "string"
@@ -469,11 +342,24 @@
             "imageURL": {
               "$ref": "#/definitions/DynamicLinkAttribute"
             },
-            "isComputed": {
-              "type": "boolean"
-            },
             "isSuffixShort": {
               "type": "boolean"
+            },
+            "property": {
+              "anyOf": [
+                {
+                  "items": {
+                    "$ref": "#/definitions/NonComputed"
+                  },
+                  "type": "array"
+                },
+                {
+                  "$ref": "#/definitions/NonComputed"
+                },
+                {
+                  "$ref": "#/definitions/Computed"
+                }
+              ]
             },
             "title": {
               "$ref": "#/definitions/DynamicLinkAttribute"
@@ -486,74 +372,14 @@
           "required": [
             "type"
           ],
-          "type": "object"
-        },
-        {
-          "additionalProperties": false,
-          "properties": {
-            "description": {
-              "$ref": "#/definitions/DynamicLinkAttribute"
-            },
-            "imageURL": {
-              "$ref": "#/definitions/DynamicLinkAttribute"
-            },
-            "isCreatable": {
-              "type": "boolean"
-            },
-            "isOptional": {
-              "type": "boolean"
-            },
-            "isSuffixShort": {
-              "type": "boolean"
-            },
-            "isUnique": {
-              "type": "boolean"
-            },
-            "isUpdatable": {
-              "type": "boolean"
-            },
-            "title": {
-              "$ref": "#/definitions/DynamicLinkAttribute"
-            },
-            "type": {
-              "const": "dynamicLink",
-              "type": "string"
-            }
-          },
-          "required": [
-            "type"
-          ],
-          "type": "object"
-        },
-        {
-          "additionalProperties": false,
-          "properties": {
-            "isComputed": {
-              "type": "boolean"
-            }
-          },
-          "type": "object"
-        },
-        {
-          "additionalProperties": false,
-          "properties": {
-            "isCreatable": {
-              "type": "boolean"
-            },
-            "isOptional": {
-              "type": "boolean"
-            },
-            "isUnique": {
-              "type": "boolean"
-            },
-            "isUpdatable": {
-              "type": "boolean"
-            }
-          },
           "type": "object"
         },
         {
           "$ref": "#/definitions/SpecialField"
+        },
+        {
+          "additionalProperties": false,
+          "type": "object"
         }
       ]
     },
@@ -608,6 +434,15 @@
         "project"
       ],
       "type": "object"
+    },
+    "NonComputed": {
+      "enum": [
+        "isUnique",
+        "isOptional",
+        "isNotCreatable",
+        "isNotUpdatable"
+      ],
+      "type": "string"
     },
     "ProjectConfiguration": {
       "additionalProperties": false,

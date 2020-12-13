@@ -1,9 +1,7 @@
-import { FlamestoreModule, Field } from "../../../type";
-import { isComputed } from "../../util";
+import { FlamestoreModule } from "../../type";
+import { isFieldComputed } from "../../util";
 
 export const module: FlamestoreModule = {
-  isCreatableOverride: (field: Field) =>
-    isComputed(field) !== undefined ? !isComputed(field) : undefined,
-  isUpdatableOverride: (_, field: Field) =>
-    isComputed(field) !== undefined ? !isComputed(field) : undefined,
+  isNotCreatable: ({ field }) => isFieldComputed(field),
+  isNotUpdatable: ({ field }) => isFieldComputed(field),
 };

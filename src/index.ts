@@ -9,7 +9,7 @@ import _ from "lodash";
 import { QueryDocumentSnapshot } from "firebase-functions/lib/providers/firestore";
 export { ProjectConfiguration } from "./type";
 
-export function useFamestoreUtils(
+export function useFlamestoreUtils(
   firestore: typeof defaultFirestore,
   functions: FunctionBuilder
 ) {

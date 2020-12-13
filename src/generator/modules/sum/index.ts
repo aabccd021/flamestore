@@ -1,11 +1,6 @@
-import {
-  FlamestoreSchema,
-  FieldTypes,
-  Collection,
-  Field,
-  TriggerMap,
-  FlamestoreModule,
-} from "../../../type";
+import _ from "lodash";
+import { FlamestoreSchema, FieldIteration } from "../../../type";
+import { addTriggerData, FlamestoreModule, TriggerMap } from "../../type";
 import {
   assertCollectionNameExists,
   assertFieldHasTypeOf,
@@ -18,12 +13,10 @@ export const module: FlamestoreModule = {
 };
 
 function validate(schema: FlamestoreSchema): void {
-  for (const [collectionName, collection] of Object.entries(
-    schema.collections
-  )) {
-    for (const [fieldName, field] of Object.entries(collection.fields)) {
+  for (const [colName, collection] of _.entries(schema.collections)) {
+    for (const [fName, field] of _.entries(collection.fields)) {
       if (isTypeSum(field)) {
-        const stackTrace = `collections.${collectionName}.${fieldName}.sum`;
+        const stackTrace = `collections.${colName}.${fName}.sum`;
         assertCollectionNameExists(
           field.collection,
           schema,
@@ -32,14 +25,14 @@ function validate(schema: FlamestoreSchema): void {
         assertFieldHasTypeOf(
           field.collection,
           field.reference,
-          FieldTypes.PATH,
+          "path",
           schema,
           `${stackTrace}.reference`
         );
         assertFieldHasTypeOf(
           field.collection,
           field.field,
-          FieldTypes.INT,
+          "int",
           schema,
           `${stackTrace}.field`
         );
@@ -50,37 +43,38 @@ function validate(schema: FlamestoreSchema): void {
 
 function triggerGenerator(
   triggerMap: TriggerMap,
-  collectionName: string,
-  __: Collection,
-  fieldName: string,
-  field: Field
+  { colName, field, fName }: FieldIteration
 ): TriggerMap {
   if (isTypeSum(field)) {
     const targetRef = field.reference;
     const incrementField = field.field;
 
-    triggerMap[collectionName].createTrigger.addData(
+    triggerMap[colName].createTrigger = addTriggerData(
+      triggerMap[colName].createTrigger,
       "snapshotRef",
-      fieldName,
+      fName,
       "0"
     );
 
-    triggerMap[field.collection].createTrigger.addData(
+    triggerMap[field.collection].createTrigger = addTriggerData(
+      triggerMap[field.collection].createTrigger,
       targetRef,
-      fieldName,
+      fName,
       `increment(data.${incrementField})`
     );
 
-    triggerMap[field.collection].updateTrigger.addData(
+    triggerMap[field.collection].updateTrigger = addTriggerData(
+      triggerMap[field.collection].updateTrigger,
       targetRef,
-      fieldName,
-      `increment(after.${incrementField} - before.${incrementField})`,
-      `after.${incrementField} !== before.${incrementField}`
+      fName,
+      `before.${incrementField} !== after.${incrementField} ?` +
+        `increment(after.${incrementField} - before.${incrementField}) : null`
     );
 
-    triggerMap[field.collection].deleteTrigger.addData(
+    triggerMap[field.collection].deleteTrigger = addTriggerData(
+      triggerMap[field.collection].deleteTrigger,
       targetRef,
-      fieldName,
+      fName,
       `increment(-data.${incrementField})`
     );
   }

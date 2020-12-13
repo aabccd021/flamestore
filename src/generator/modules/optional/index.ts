@@ -1,3 +1,3 @@
-import { FlamestoreModule } from "../../../type";
+import { FlamestoreModule } from "../../type";
 
 export const module: FlamestoreModule = {};

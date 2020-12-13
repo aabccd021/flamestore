@@ -1,10 +1,6 @@
-import {
-  Collection,
-  Field,
-  FieldTypes,
-  FlamestoreModule,
-  FlamestoreSchema,
-} from "../../../type";
+import _ from "lodash";
+import { FieldIteration, FlamestoreSchema } from "../../../type";
+import { FlamestoreModule } from "../../type";
 import {
   getDynamicLinkDomain,
   isDynamicLinkAttributeFromField,
@@ -12,22 +8,22 @@ import {
 } from "../../util";
 
 export const module: FlamestoreModule = {
-  isCreatable: (field: Field) => isTypeDynamicLink(field),
+  isCreatable: ({ field }) => isTypeDynamicLink(field),
   getRule,
   validate,
 };
 
 function validate(schema: FlamestoreSchema): void {
-  Object.entries(schema.collections).forEach(([collectionName, collection]) => {
-    Object.entries(collection.fields).forEach(([fieldName, dl]) => {
+  _.entries(schema.collections).forEach(([collectionName, collection]) => {
+    _.entries(collection.fields).forEach(([fieldName, dl]) => {
       if (isTypeDynamicLink(dl)) {
-        Object.values([
+        _.values([
           ["title", dl.title],
           ["description", dl.description],
           ["imageURL", dl.imageURL],
         ]).forEach(([attrName, attr]) => {
           if (isDynamicLinkAttributeFromField(attr)) {
-            if (!Object.keys(collection.fields).includes(attr.field)) {
+            if (!_.keys(collection.fields).includes(attr.field)) {
               throw Error(
                 `Error on schema.collections.${collectionName}.fields.${fieldName}` +
                   `.dynamicLink.${attrName}.field: Field ${attr.field} does not` +
@@ -41,23 +37,16 @@ function validate(schema: FlamestoreSchema): void {
   });
 }
 
-function getRule(
-  fieldName: string,
-  field: Field,
-  _: string,
-  __: Collection,
-  schema: FlamestoreSchema
-): string[] {
+function getRule({ fName, field, schema }: FieldIteration): string[] {
   const content = [];
-  const fieldType = field;
-  if (isTypeDynamicLink(fieldType)) {
-    content.push(`${fieldName} is ${FieldTypes.STRING}`);
-    const prefixIsValidArray = Object.entries(schema.project)
+  if (isTypeDynamicLink(field)) {
+    content.push(`${fName} is string`);
+    const prefixIsValidArray = _.entries(schema.project)
       .map(
         ([projectName, project]) =>
           `https://${getDynamicLinkDomain(projectName, project)}/`
       )
-      .map((domain) => `${fieldName}[0:${domain.length}] == '${domain}'`);
+      .map((domain) => `${fName}[0:${domain.length}] == '${domain}'`);
     const prefixIsValid =
       prefixIsValidArray.length === 1
         ? prefixIsValidArray[0]
@@ -81,7 +70,7 @@ function getRule(
 //       var title;
 //       var description;
 //       var imageUrl;
-//       Object.entries(collection.fields).forEach(([dlFieldName, dlField]) => {
+//       _.entries(collection.fields).forEach(([dlFieldName, dlField]) => {
 //         if (isTypeString(dlField)) {
 //           const stringType = dlField.string;
 //           if (stringType === "dynamicLinkTitle") {
