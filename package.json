@@ -15,7 +15,7 @@
     "patch-publish": "npm run build && npm version patch && npm publish",
     "build:check": "tsc --noEmit",
     "flamestore2": "npm run build && node lib/index.js -i sample/sample.json --ro firebase/functions/firestore.rules --to firebase/functions/src/flamestore/triggers.ts",
-    "generate-schema": "ts-json-schema-generator --path src/type.ts --type FlamestoreSchema --out flamestore-schema/v2.json"
+    "generate-schema": "ts-json-schema-generator --path src/type.ts --type FlamestoreSchema --out flamestore-schema/v1.json"
   },
   "dependencies": {
     "firebase-admin": "^9.4.2",

@@ -16,9 +16,10 @@ import {
   DynamicLinkAttribute,
   DynamicLinkAttributeFromField,
   Field,
-  FieldProperty,
   FieldIteration,
   CollectionIteration,
+  NormalField,
+  ComputedField,
 } from "../type";
 import _ from "lodash";
 
@@ -124,29 +125,41 @@ export function isTypeSum(field: Field): field is SumField {
 export function isTypeCount(field: Field): field is CountField {
   return (field as CountField).type === "count";
 }
-export function hasFieldProperty(field: Field): field is FieldProperty {
-  return (field as FieldProperty).property !== undefined;
+export function isNormalField(field: Field): field is NormalField {
+  return (
+    isTypeDynamicLink(field) ||
+    isTypeString(field) ||
+    isTypeFloat(field) ||
+    isTypeReference(field) ||
+    isTypeInt(field) ||
+    isTypeDatetime(field) ||
+    isTypeSum(field) ||
+    isTypeCount(field)
+  );
+}
+export function isTypeComputed(field: Field): field is ComputedField {
+  return (field as ComputedField).compute !== undefined;
 }
 export function isFieldComputed(field: Field): boolean {
-  return hasFieldProperty(field) && field.property === "isComputed";
+  return isTypeComputed(field);
 }
 export function isFieldUnique(field: Field): boolean {
   return (
-    hasFieldProperty(field) &&
+    isNormalField(field) &&
     !_.isNil(field.property) &&
     (field.property === "isUnique" || field.property.includes("isUnique"))
   );
 }
 export function isFieldOptional(field: Field): boolean {
   return (
-    hasFieldProperty(field) &&
+    isNormalField(field) &&
     !_.isNil(field.property) &&
     (field.property === "isOptional" || field.property.includes("isOptional"))
   );
 }
 export function isFieldNotCreatable(field: Field): boolean {
   return (
-    hasFieldProperty(field) &&
+    isNormalField(field) &&
     !_.isNil(field.property) &&
     (field.property === "isNotCreatable" ||
       field.property.includes("isNotCreatable"))
@@ -154,7 +167,7 @@ export function isFieldNotCreatable(field: Field): boolean {
 }
 export function isFieldNotUpdatable(field: Field): boolean {
   return (
-    hasFieldProperty(field) &&
+    isNormalField(field) &&
     !_.isNil(field.property) &&
     (field.property === "isNotUpdatable" ||
       field.property.includes("isNotUpdatable"))

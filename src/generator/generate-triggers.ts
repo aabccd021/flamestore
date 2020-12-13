@@ -37,8 +37,8 @@ export default function generate(
     writePrettyFile(path.join(triggerDir, `${colName}.ts`), triggerFileContent);
   });
 
-  const indexFileContent = _.keys(schema.collections)
-    .map((colName) => `export * as ${colName} from "./${colName}";`)
+  const indexFileContent = colIterOf(schema)
+    .map(({ colName }) => `export * as ${colName} from "./${colName}";`)
     .join("\n");
   writePrettyFile(path.join(triggerDir, "index.ts"), indexFileContent);
 }
@@ -167,21 +167,24 @@ function triggerTemplate(
 }
 
 function dependencyPromisesToString(triggerData: TriggerData) {
-  if (_.keys(triggerData.dependencyPromises).length === 0) {
+  if (_.isEmpty(triggerData.dependencyPromises)) {
     return "";
   }
-  let dependencyNames = "";
-  let dependencyPromises = "";
-  let dependencyAssignment = "";
-  for (const [dependencyName, dependencyPromise] of _.entries(
-    triggerData.dependencyPromises
-  )) {
-    dependencyNames += `${dependencyName}Snapshot,`;
-    dependencyPromises += `${dependencyPromise.promise},`;
-    dependencyAssignment += `const ${dependencyName} = ${dependencyName}Snapshot.data() as ${getPascalCollectionName(
-      dependencyPromise.collection
-    )};`;
-  }
+  const dependencyNames = _(triggerData.dependencyPromises)
+    .keys()
+    .map((d) => `${d}Snapshot`)
+    .join();
+  const dependencyPromises = _(triggerData.dependencyPromises)
+    .map((d) => `${d.promise}`)
+    .join();
+  const dependencyAssignment = _(triggerData.dependencyPromises)
+    .map(
+      (d, dName) =>
+        `const ${dName} = ${dName}Snapshot.data() as ${getPascalCollectionName(
+          d.collection
+        )};`
+    )
+    .join("\n");
   return `const [${dependencyNames}] = await Promise.all([${dependencyPromises}]);${dependencyAssignment}`;
 }
 
@@ -211,16 +214,15 @@ function refTriggerDataToBatchCommitString(
 ) {
   const dataName = triggerType === "Update" ? "after" : "data";
   const post = triggerType === "Update" ? ".after" : "";
-  const content: string[] = [];
-  for (const [refName, refTrigger] of _.entries(triggerData.data)) {
-    const setName =
-      refName === "snapshotRef"
-        ? `snapshot${post}.ref`
-        : `${dataName}.${refName}.reference`;
-    if (refTrigger !== {}) {
-      content.push(`update(${setName},${refName}Data)`);
-    }
-  }
+  const content = _.entries(triggerData.data)
+    .filter(([_, refTrigger]) => refTrigger !== {})
+    .map(([refName, _]) => {
+      const setName =
+        refName === "snapshotRef"
+          ? `snapshot${post}.ref`
+          : `${dataName}.${refName}.reference`;
+      return `update(${setName},${refName}Data)`;
+    });
   const batchCommit = [...content, ...triggerData.resultPromises];
   if (batchCommit.length === 1) {
     return `await ${batchCommit[0]};`;

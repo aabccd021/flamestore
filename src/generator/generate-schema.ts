@@ -15,6 +15,7 @@ import {
   colIterOf,
   isFieldOptional,
   isFieldComputed,
+  isTypeComputed,
 } from "./util";
 import _ from "lodash";
 import { FlamestoreModule } from "./type";
@@ -101,6 +102,20 @@ ${computedSchemaContent}
 }
 
 function getDataTypeString(field: Field, schema: FlamestoreSchema): string {
+  if (isTypeComputed(field)) {
+    if (field.compute === "float" || field.compute === "int") {
+      return "number";
+    }
+    if (field.compute === "path") {
+      return "firestore.DocumentReference";
+    }
+    if (field.compute === "timestamp") {
+      return "firestore.Timestamp";
+    }
+    if (field.compute === "string") {
+      return "string";
+    }
+  }
   if (isTypeString(field)) {
     return "string";
   }

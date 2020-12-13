@@ -4,9 +4,30 @@ export interface FlamestoreSchema {
   collections: { [name: string]: Collection };
   ruleOutputPath?: string;
   triggerOutputPath?: string;
-  region: string;
+  region: Region;
   project: { [name: string]: ProjectConfiguration };
 }
+
+type Region =
+  | "us-central1"
+  | "us-east1"
+  | "us-east4"
+  | "us-west2"
+  | "us-west3"
+  | "us-west4"
+  | "europe-west1"
+  | "europe-west2"
+  | "europe-west3"
+  | "europe-west6"
+  | "asia-east2"
+  | "asia-northeast1"
+  | "asia-northeast2"
+  | "asia-northeast3"
+  | "asia-south1"
+  | "asia-southeast2"
+  | "northamerica-northeast1"
+  | "southamerica-east1"
+  | "australia-southeast1";
 
 export interface ProjectConfiguration {
   domain?: string;
@@ -20,13 +41,16 @@ export type Collection = {
   keyFields?: string[];
 } & { [key in RuleType]?: Rule };
 
-export type FieldTypes =
+export type PrimitiveFieldTypes =
   | "int"
   | "float"
   | "string"
   | "path"
-  | "timestamp"
-  | "map";
+  | "timestamp";
+
+export type NonPrimitiveFieldTypes = "sum" | "count" | "dynamicLink";
+
+export type FieldTypes = PrimitiveFieldTypes | NonPrimitiveFieldTypes;
 
 export type RuleType =
   | "rule:get"
@@ -37,24 +61,30 @@ export type RuleType =
 
 export type Rule = "all" | "owner" | "authenticated" | "none";
 
-export type SpecialField = "serverTimestamp";
+export type SpecialField = "serverTimestamp" | ComputedField;
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-export type Field = (FieldType & FieldProperty) | SpecialField | {};
+export type Field = NormalField | SpecialField;
 
-export interface FieldProperty {
-  property?: NonComputed[] | NonComputed | Computed;
+export interface ComputedField {
+  compute: PrimitiveFieldTypes;
 }
 
+export interface FieldProperty {
+  type: FieldTypes;
+  property?: NonComputed[] | NonComputed;
+}
+
+export type NormalField = FieldProperty & FieldType;
+
 export type FieldType =
+  | DynamicLinkField
   | StringField
   | FloatField
   | ReferenceField
   | IntField
   | DatetimeField
   | SumField
-  | CountField
-  | DynamicLinkField;
+  | CountField;
 
 export interface DynamicLinkField {
   type: "dynamicLink";
@@ -66,8 +96,6 @@ export interface DynamicLinkField {
 
 export type DynamicLinkAttribute = string | DynamicLinkAttributeFromField;
 export type DynamicLinkAttributeFromField = { field: string };
-
-export type Computed = "isComputed";
 
 export type NonComputed =
   | "isUnique"

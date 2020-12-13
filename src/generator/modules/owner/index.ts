@@ -1,6 +1,6 @@
-import _ from "lodash";
 import { ReferenceField } from "../../../type";
 import { FlamestoreModule } from "../../type";
+import { colIterOf } from "../../util";
 
 export const module: FlamestoreModule = {
   preprocessSchema: (schema) => {
@@ -9,14 +9,14 @@ export const module: FlamestoreModule = {
       schema.collections[auth.userCollection].fields[auth.uidField] = {
         type: "string",
       };
-      _.entries(schema.collections).forEach(([collectionName, collection]) => {
-        if (collection.ownerField) {
-          if (collection.fields[collection.ownerField]) {
-            (schema.collections[collectionName].fields[
-              collection.ownerField
+      colIterOf(schema).forEach(({ colName, col }) => {
+        if (col.ownerField) {
+          if (col.fields[col.ownerField]) {
+            (schema.collections[colName].fields[
+              col.ownerField
             ] as ReferenceField).collection = auth.userCollection;
           } else {
-            schema.collections[collectionName].fields[collection.ownerField] = {
+            schema.collections[colName].fields[col.ownerField] = {
               type: "path",
               collection: auth.userCollection,
             };
