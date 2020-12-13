@@ -31,22 +31,22 @@ export interface Like {
   };
 }
 
-const tweetComputeFieldss = ["hotness"] as const;
-type TweetC = typeof tweetComputeFieldss[number];
+const tweetsComputeFields = ["hotness"] as const;
+type TweetC = typeof tweetsComputeFields[number];
 export function computeTweet<D extends keyof Omit<Tweet, TweetC>>({
   dependencyFields,
-  computeOnCreate,
-  computeOnUpdate,
+  onCreate,
+  onUpdate,
 }: {
   dependencyFields: D[];
-  computeOnCreate: onCreateFn<Tweet, TweetC>;
-  computeOnUpdate: onUpdateFn<Tweet, TweetC, D>;
+  onCreate: onCreateFn<Tweet, TweetC>;
+  onUpdate: onUpdateFn<Tweet, TweetC, D>;
 }) {
-  return computeDocument<Tweet, TweetC, D>(
+  return computeDocument(
     "tweets",
-    tweetComputeFieldss,
+    tweetsComputeFields,
     dependencyFields,
-    computeOnCreate,
-    computeOnUpdate
+    onCreate,
+    onUpdate
   );
 }

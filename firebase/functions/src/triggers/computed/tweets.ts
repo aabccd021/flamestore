@@ -15,10 +15,10 @@ function computeHotness(
 
 export const { onCreate, onUpdate } = computeTweet({
   dependencyFields: ["creationTime", "likesSum"],
-  computeOnCreate: () => {
+  onCreate: () => {
     return { hotness: 0 };
   },
-  computeOnUpdate: ({ after, context }) => {
+  onUpdate: ({ after, context }) => {
     const hotness = computeHotness(after, context);
     return { hotness };
   },

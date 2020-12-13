@@ -58,32 +58,27 @@ export function generateSchema(
       const computedFields = fIterOf(colIter).filter(({ field }) =>
         isFieldComputed(field)
       );
-      const computedFieldsUnion = computedFields
-        .map(({ fName }) => `"${fName}"`)
-        .join("|");
       const computedFieldsParam = computedFields
         .map(({ fName }) => `"${fName}"`)
         .join(",");
-      return `type ${pascal}ComputedFields = ${computedFieldsUnion};
-      type Computed${pascal} = Omit<${pascal}, ${pascal}ComputedFields>;
-      type NonComputed${pascal} = Pick<${pascal}, ${pascal}ComputedFields>;
-
-      export function compute${pascal}<D extends keyof Computed${pascal}>({
-        computeOnCreate,
-        computeOnUpdate,
+      return `const ${colName}ComputeFields = [${computedFieldsParam}] as const;
+        type ${pascal}C = typeof ${colName}ComputeFields[number];
+        export function compute${pascal}<D extends keyof Omit<${pascal},${pascal}C>>({
         dependencyFields,
+        onCreate,
+        onUpdate,
       }: {
-        computeOnCreate: onCreateFn<Computed${pascal}, NonComputed${pascal}>;
-        computeOnUpdate: onUpdateFn<Pick<Computed${pascal}, D>, NonComputed${pascal}>;
         dependencyFields: D[];
+        onCreate: onCreateFn<${pascal}, ${pascal}C>;
+        onUpdate: onUpdateFn<${pascal}, ${pascal}C, D>;
       }) {
-        return computeDocument({
-          computeOnCreate,
-          computeOnUpdate,
-          dependencyFields: dependencyFields,
-          computedFields: [${computedFieldsParam}],
-          collection: "${colName}",
-        })
+        return computeDocument(
+          "${colName}",
+          ${colName}ComputeFields,
+          dependencyFields,
+          onCreate,
+          onUpdate,
+        )
       }
       `;
     })
