@@ -1,7 +1,6 @@
 import * as fs from "fs";
 import _ from "lodash";
 import * as path from "path";
-import * as prettier from "prettier";
 import { FlamestoreSchema } from "../type";
 import {
   FlamestoreModule,
@@ -11,12 +10,7 @@ import {
   getEmptyCollectionTriggerMap,
   isTriggerDataEmpty,
 } from "./type";
-import {
-  colIterOf,
-  fIterOf,
-  getPascalCollectionName,
-  writePrettyFile,
-} from "./util";
+import { colIterOf, fIterOf, getPascalCollectionName } from "./util";
 
 export default function generate(
   schema: FlamestoreSchema,
@@ -28,19 +22,16 @@ export default function generate(
   _(triggerMap).forEach((colTriggerMap, colName) => {
     const colString = stringOfCollectionTrigger(colName, colTriggerMap);
     const triggerContent = triggerContentOf(schema, colString);
-    const triggerFileContent = prettier.format(triggerContent, {
-      parser: "typescript",
-    });
     if (!fs.existsSync(triggerDir)) {
       fs.mkdirSync(triggerDir);
     }
-    writePrettyFile(path.join(triggerDir, `${colName}.ts`), triggerFileContent);
+    fs.writeFileSync(path.join(triggerDir, `${colName}.ts`), triggerContent);
   });
 
   const indexFileContent = colIterOf(schema)
     .map(({ colName }) => `export * as ${colName} from "./${colName}";`)
     .join("\n");
-  writePrettyFile(path.join(triggerDir, "index.ts"), indexFileContent);
+  fs.writeFileSync(path.join(triggerDir, "index.ts"), indexFileContent);
 }
 
 const triggerContentOf = (schema: FlamestoreSchema, colString: string) => {
@@ -155,11 +146,8 @@ function triggerTemplate(
   .document('/${collectionName}/{documentId}')
   .on${triggerType}(async (${firstParam}${context})=>{
     ${finalPrepareTrigger};
-
     ${refTriggerData.header};
-
     ${dependencyPromises};
-
     ${triggerContent};
     ${batchCommit}
   });

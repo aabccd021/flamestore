@@ -1,5 +1,6 @@
 import { Field, FlamestoreSchema } from "../type";
 import * as path from "path";
+import * as fs from "fs";
 import {
   getPascalCollectionName,
   isTypeString,
@@ -10,7 +11,6 @@ import {
   isTypeCount,
   isTypeDynamicLink,
   isTypeSum,
-  writePrettyFile,
   fIterOf,
   colIterOf,
   isFieldOptional,
@@ -98,7 +98,7 @@ ${schemaContent}
 ${computedSchemaContent}
 `;
   const fileName = path.join(outputFilePath, "models.ts");
-  writePrettyFile(fileName, finalContent);
+  fs.writeFileSync(fileName, finalContent);
 }
 
 function getDataTypeString(field: Field, schema: FlamestoreSchema): string {

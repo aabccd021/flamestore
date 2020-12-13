@@ -1,15 +1,12 @@
-import * as prettier from "prettier";
 import * as path from "path";
 import { FlamestoreSchema } from "../type";
-import { writePrettyFile } from "./util";
+import * as fs from "fs";
 
 export default function generateUtils(
   dir: string,
   schema: FlamestoreSchema
 ): void {
-  const content = utilStringOfSchema(schema);
-  const triggerFileContent = prettier.format(content, { parser: "typescript" });
-  writePrettyFile(path.join(dir, `utils.ts`), triggerFileContent);
+  fs.writeFileSync(path.join(dir, `utils.ts`), utilStringOfSchema(schema));
 }
 
 function utilStringOfSchema(schema: FlamestoreSchema): string {

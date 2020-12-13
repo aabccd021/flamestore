@@ -5,7 +5,6 @@ export const onCreate = functions.firestore
   .document("/likes/{documentId}")
   .onCreate(async (snapshot) => {
     const data = snapshot.data() as Like;
-
     const tweetData = { likesSum: increment(data.likeValue) };
     await update(data.tweet.reference, tweetData);
   });
@@ -15,7 +14,6 @@ export const onUpdate = functions.firestore
   .onUpdate(async (change) => {
     const before = change.before.data() as Like;
     const after = change.after.data() as Like;
-
     const tweetData = {
       likesSum:
         before.likeValue !== after.likeValue
@@ -29,7 +27,6 @@ export const onDelete = functions.firestore
   .document("/likes/{documentId}")
   .onDelete(async (snapshot) => {
     const data = snapshot.data() as Like;
-
     const tweetData = { likesSum: increment(-data.likeValue) };
     await update(data.tweet.reference, tweetData);
   });

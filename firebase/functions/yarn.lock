@@ -1632,7 +1632,6 @@ flamestore@../..:
     firebase-functions "^3.13.0"
     lodash "^4.17.20"
     pluralize "^8.0.0"
-    prettier "^2.2.1"
 
 flat-cache@^3.0.4:
   version "3.0.4"

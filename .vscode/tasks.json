@@ -1,0 +1,10 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "eslint:fix",
+      "command": "cd firebase/functions && yarn lint:fix",
+      "type": "shell"
+    }
+  ]
+}

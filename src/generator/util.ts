@@ -1,6 +1,4 @@
 import pluralize from "pluralize";
-import * as prettier from "prettier";
-import * as fs from "fs";
 import {
   FlamestoreSchema,
   FieldTypes,
@@ -196,11 +194,6 @@ export function isDynamicLinkAttributeFromField(
 export function getPascalCollectionName(collectionName: string): string {
   const singularized = pluralize.singular(collectionName);
   return singularized[0].toUpperCase() + singularized.substring(1);
-}
-
-export function writePrettyFile(fileName: string, content: string): void {
-  const prettyContent = prettier.format(content, { parser: "typescript" });
-  fs.writeFileSync(fileName, prettyContent);
 }
 
 export function fIterOf(colIter: CollectionIteration): FieldIteration[] {

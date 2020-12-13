@@ -18,7 +18,7 @@ export const { onCreate, onUpdate } = computeTweet({
   computeOnCreate: () => {
     return { hotness: 0 };
   },
-  computeOnUpdate: (_, after, context) => {
+  computeOnUpdate: ({ after, context }) => {
     const hotness = computeHotness(after, context);
     return { hotness };
   },

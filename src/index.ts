@@ -145,42 +145,36 @@ export function useFlamestoreUtils(
     T extends Object,
     C extends keyof T,
     D extends keyof Omit<T, C>
-  >({
-    collection,
-    computedFields,
-    dependencyFields,
-    computeOnCreate,
-    computeOnUpdate,
-  }: {
-    collection: string;
-    computedFields: C[];
-    dependencyFields: D[];
-    computeOnCreate: onCreateFn<Omit<T, C>, Pick<T, C>>;
-    computeOnUpdate: onUpdateFn<Pick<Omit<T, C>, D>, Pick<T, C>>;
-  }) {
-    const document = functions.firestore.document(
+  >(
+    collection: string,
+    computedFields: readonly C[],
+    dependencyFields: D[],
+    onCreate: onCreateFn<T, C>,
+    onUpdte: onUpdateFn<T, C, D>
+  ) {
+    const documentPath = functions.firestore.document(
       `/${collection}/{documentId}`
     );
-    const onCreate = document.onCreate(async (snapshot, context) => {
-      const newDocument = _.omit(snapshot.data() as T, computedFields);
-      const result = deepOmitNil(computeOnCreate(newDocument, context));
+    const doOnCreate = documentPath.onCreate(async (snapshot, context) => {
+      const document = _.omit(snapshot.data() as T, computedFields);
+      const result = deepOmitNil(onCreate({ document, context }));
       if (result) {
         await update(snapshot.ref, result);
       }
     });
-    const onUpdate = document.onUpdate(async (change, context) => {
+    const doOnUpdate = documentPath.onUpdate(async (change, context) => {
       const before = _.omit(change.before.data() as T, computedFields);
       const after = _.omit(change.after.data() as T, computedFields);
       const dependencyBefore = _.pick(before, dependencyFields);
       const dependencyAfter = _.pick(after, dependencyFields);
       if (hasDependencyChanged(dependencyBefore, dependencyAfter)) {
-        const result = deepOmitNil(computeOnUpdate(before, after, context));
+        const result = deepOmitNil(onUpdte({ before, after, context }));
         if (result) {
           await update(change.after.ref, result);
         }
       }
     });
-    return { onCreate, onUpdate };
+    return { onCreate: doOnCreate, onUpdate: doOnUpdate };
   }
   function deepOmitNil(obj: any) {
     _.forIn(obj, (value, key) => {
@@ -207,12 +201,19 @@ export function useFlamestoreUtils(
   };
 }
 
-export type onCreateFn<T, V> = (document: T, context: EventContext) => V;
-export type onUpdateFn<T, V> = (
-  before: T,
-  after: T,
-  context: EventContext
-) => V;
+export type onCreateFn<T, C extends keyof T> = (snapshot: {
+  document: Omit<T, C>;
+  context: EventContext;
+}) => Pick<T, C>;
+export type onUpdateFn<
+  T,
+  C extends keyof T,
+  D extends keyof Omit<T, C>
+> = (snapshot: {
+  before: Pick<Omit<T, C>, D>;
+  after: Pick<Omit<T, C>, D>;
+  context: EventContext;
+}) => Pick<T, C>;
 function isSnapshot(
   value: QueryDocumentSnapshot | Change<QueryDocumentSnapshot>
 ): value is QueryDocumentSnapshot {
