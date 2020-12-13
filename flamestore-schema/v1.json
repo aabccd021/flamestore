@@ -85,16 +85,6 @@
         }
       ]
     },
-    "FieldTypes": {
-      "anyOf": [
-        {
-          "$ref": "#/definitions/PrimitiveFieldTypes"
-        },
-        {
-          "$ref": "#/definitions/NonPrimitiveFieldTypes"
-        }
-      ]
-    },
     "FlamestoreSchema": {
       "additionalProperties": false,
       "properties": {
@@ -177,14 +167,6 @@
       ],
       "type": "string"
     },
-    "NonPrimitiveFieldTypes": {
-      "enum": [
-        "sum",
-        "count",
-        "dynamicLink"
-      ],
-      "type": "string"
-    },
     "NormalField": {
       "anyOf": [
         {
@@ -216,7 +198,8 @@
               "$ref": "#/definitions/DynamicLinkAttribute"
             },
             "type": {
-              "$ref": "#/definitions/FieldTypes"
+              "const": "dynamicLink",
+              "type": "string"
             }
           },
           "required": [
@@ -247,7 +230,8 @@
               ]
             },
             "type": {
-              "$ref": "#/definitions/FieldTypes"
+              "const": "string",
+              "type": "string"
             }
           },
           "required": [
@@ -281,7 +265,8 @@
               ]
             },
             "type": {
-              "$ref": "#/definitions/FieldTypes"
+              "const": "float",
+              "type": "string"
             }
           },
           "required": [
@@ -322,7 +307,8 @@
               ]
             },
             "type": {
-              "$ref": "#/definitions/FieldTypes"
+              "const": "path",
+              "type": "string"
             }
           },
           "required": [
@@ -357,7 +343,8 @@
               ]
             },
             "type": {
-              "$ref": "#/definitions/FieldTypes"
+              "const": "int",
+              "type": "string"
             }
           },
           "required": [
@@ -382,7 +369,8 @@
               ]
             },
             "type": {
-              "$ref": "#/definitions/FieldTypes"
+              "const": "timestamp",
+              "type": "string"
             }
           },
           "required": [
@@ -416,7 +404,8 @@
               "type": "string"
             },
             "type": {
-              "$ref": "#/definitions/FieldTypes"
+              "const": "sum",
+              "type": "string"
             }
           },
           "required": [
@@ -450,7 +439,8 @@
               "type": "string"
             },
             "type": {
-              "$ref": "#/definitions/FieldTypes"
+              "const": "count",
+              "type": "string"
             }
           },
           "required": [

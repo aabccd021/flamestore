@@ -70,7 +70,6 @@ export interface ComputedField {
 }
 
 export interface FieldProperty {
-  type: FieldTypes;
   property?: NonComputed[] | NonComputed;
 }
 
