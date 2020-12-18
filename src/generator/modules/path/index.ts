@@ -1,4 +1,3 @@
-import _ from "lodash";
 import { FieldIteration } from "../../../type";
 import {
   addResultPromise,
@@ -7,7 +6,7 @@ import {
   FlamestoreModule,
   TriggerMap,
 } from "../../type";
-import { getPascalCollectionName, isTypeReference } from "../../util";
+import { pascalColName, getSyncFields, isTypeReference } from "../../util";
 
 export const module: FlamestoreModule = {
   isCreatable: ({ field }) => isTypeReference(field),
@@ -23,7 +22,7 @@ export const module: FlamestoreModule = {
   },
   triggerGenerator(
     triggerMap: TriggerMap,
-    { fName, field, colName }: FieldIteration
+    { fName, field, colName, col, schema }: FieldIteration
   ) {
     if (isTypeReference(field) && field.syncField) {
       const colNameToSyncFrom = field.collection;
@@ -39,12 +38,12 @@ export const module: FlamestoreModule = {
           '${colName}',
           '${fName}',
           change.after.ref,
-          ${colName}${getPascalCollectionName(field.collection)}Data
+          ${colName}${pascalColName(field.collection)}Data
           )`
       );
-      const syncFields = _.flatMap([field.syncField]);
+      const syncFields = getSyncFields(field, { col, schema, colName });
       const createAssignment = syncFields
-        .map((f) => `${f}: ref${colNameToSyncFrom}Data.${f}`)
+        .map(({ fName }) => `${fName}: ref${colNameToSyncFrom}Data.${fName}`)
         .join(",\n");
       triggerMap[colName].createTrigger = addTriggerData(
         triggerMap[colName].createTrigger,
@@ -54,11 +53,14 @@ export const module: FlamestoreModule = {
       );
 
       const updateAssignment = syncFields
-        .map((f) => `${f}: after.${f} !== before.${f} ?after.${f}: null`)
+        .map(
+          ({ fName }) =>
+            `${fName}: after.${fName} !== before.${fName} ?after.${fName}: null`
+        )
         .join(",\n");
       triggerMap[colNameToSyncFrom].updateTrigger = addTriggerNonUpdateData(
         triggerMap[colNameToSyncFrom].updateTrigger,
-        `${colName}${getPascalCollectionName(fName)}`,
+        `${colName}${pascalColName(fName)}`,
         `${fName}`,
         `{${updateAssignment}}`
       );

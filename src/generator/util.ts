@@ -18,8 +18,10 @@ import {
   CollectionIteration,
   NormalField,
   ComputedField,
+  RichCollectionIteration,
 } from "../type";
 import _ from "lodash";
+import { FlamestoreModule } from "./type";
 
 export function assertCollectionNameExists(
   collectionName: string,
@@ -191,9 +193,13 @@ export function isDynamicLinkAttributeFromField(
   );
 }
 
-export function getPascalCollectionName(collectionName: string): string {
+export function pascalColName(collectionName: string): string {
   const singularized = pluralize.singular(collectionName);
   return singularized[0].toUpperCase() + singularized.substring(1);
+}
+
+export function getPascal(str: string): string {
+  return str[0].toUpperCase() + str.substring(1);
 }
 
 export function fIterOf(colIter: CollectionIteration): FieldIteration[] {
@@ -210,4 +216,58 @@ export function colIterOf(schema: FlamestoreSchema): CollectionIteration[] {
     colName,
     schema,
   }));
+}
+
+export function richColIterOf(
+  schema: FlamestoreSchema
+): RichCollectionIteration[] {
+  return _.map(schema.collections, function (col, colName) {
+    const singular = pluralize.singular(colName);
+    const pascal = pascalColName(colName);
+    return {
+      singular,
+      pascal,
+      col,
+      colName,
+      schema,
+    };
+  });
+}
+
+export function isFieldRequired(
+  fIter: FieldIteration,
+  modules: FlamestoreModule[]
+) {
+  const { field } = fIter;
+  return !isFieldOptional(field) && isFieldCreatable(fIter, modules);
+}
+
+export function isFieldCreatable(
+  fIter: FieldIteration,
+  modules: FlamestoreModule[]
+) {
+  return (
+    _(modules)
+      .map((module) => module.isCreatable)
+      .compact()
+      .some((isCreatable) => isCreatable(fIter)) &&
+    !_(modules)
+      .map((module) => module.isNotCreatable)
+      .compact()
+      .some((isNotCreatable) => isNotCreatable(fIter))
+  );
+}
+
+export function getSyncFields(
+  field: ReferenceField,
+  colIter: CollectionIteration
+) {
+  const referenceCol = colIter.schema.collections[field.collection];
+  return field.syncField
+    ? _.flatMap([field.syncField]).map((fName) => ({
+        fName,
+        field: referenceCol.fields[fName],
+        ...colIter,
+      }))
+    : [];
 }

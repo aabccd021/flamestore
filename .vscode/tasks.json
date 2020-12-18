@@ -2,9 +2,9 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "eslint:fix",
-      "command": "cd firebase/functions && yarn lint:fix",
+      "label": "format",
+      "command": "cd firebase/functions && yarn lint:fix && cd ../../../flamestore-flutter/example && flutter format .",
       "type": "shell"
-    }
+    },
   ]
 }

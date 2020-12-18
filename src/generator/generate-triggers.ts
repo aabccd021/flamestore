@@ -10,11 +10,11 @@ import {
   getEmptyCollectionTriggerMap,
   isTriggerDataEmpty,
 } from "./type";
-import { colIterOf, fIterOf, getPascalCollectionName } from "./util";
+import { colIterOf, fIterOf, pascalColName } from "./util";
 
 export default function generate(
-  schema: FlamestoreSchema,
   outputFilePath: string,
+  schema: FlamestoreSchema,
   modules: FlamestoreModule[]
 ): void {
   const triggerMap = getCompleteTriggerMap(schema, modules);
@@ -36,7 +36,7 @@ export default function generate(
 
 const triggerContentOf = (schema: FlamestoreSchema, colString: string) => {
   const modelNames = colIterOf(schema)
-    .map(({ colName }) => `${getPascalCollectionName(colName)}`)
+    .map(({ colName }) => `${pascalColName(colName)}`)
     .join(",");
   return `
 import {${modelNames}} from "../models"
@@ -89,9 +89,7 @@ function onCreateTemplate(collectionName: string, refTriggerData: TriggerData) {
     "Create",
     collectionName,
     refTriggerData,
-    `const data = snapshot.data() as ${getPascalCollectionName(
-      collectionName
-    )};`
+    `const data = snapshot.data() as ${pascalColName(collectionName)};`
   );
 }
 
@@ -100,12 +98,8 @@ function onUpdateTemplate(collectionName: string, refTriggerData: TriggerData) {
     "Update",
     collectionName,
     refTriggerData,
-    `const before = change.before.data() as ${getPascalCollectionName(
-      collectionName
-    )};
-    const after = change.after.data() as ${getPascalCollectionName(
-      collectionName
-    )};`
+    `const before = change.before.data() as ${pascalColName(collectionName)};
+    const after = change.after.data() as ${pascalColName(collectionName)};`
   );
 }
 
@@ -114,9 +108,7 @@ function onDeleteTemplate(collectionName: string, refTriggerData: TriggerData) {
     "Delete",
     collectionName,
     refTriggerData,
-    `const data = snapshot.data() as ${getPascalCollectionName(
-      collectionName
-    )};`
+    `const data = snapshot.data() as ${pascalColName(collectionName)};`
   );
 }
 
@@ -168,7 +160,7 @@ function dependencyPromisesToString(triggerData: TriggerData) {
   const dependencyAssignment = _(triggerData.dependencyPromises)
     .map(
       (d, dName) =>
-        `const ${dName} = ${dName}Snapshot.data() as ${getPascalCollectionName(
+        `const ${dName} = ${dName}Snapshot.data() as ${pascalColName(
           d.collection
         )};`
     )

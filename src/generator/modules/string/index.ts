@@ -1,3 +1,4 @@
+import _ from "lodash";
 import { FlamestoreModule } from "../../type";
 import { isTypeString } from "../../util";
 
@@ -13,11 +14,11 @@ export const module: FlamestoreModule = {
         content.push(`${fName} == ${fName}OfDocumentId()`);
       }
       const maxLength = fieldType.maxLength;
-      if (maxLength || maxLength === 0) {
+      if (!_.isNil(maxLength)) {
         content.push(`${fName}.size() <= ${maxLength}`);
       }
       const minLength = fieldType.minLength;
-      if (minLength || minLength === 0) {
+      if (!_.isNil(minLength)) {
         content.push(`${fName}.size() >= ${minLength}`);
       }
     }

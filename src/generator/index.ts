@@ -22,6 +22,7 @@ import { generateSchema } from "./generate-schema";
 import generateUtils from "./generate-utils";
 import { preprocessSchema } from "./preprocess-schema";
 import { FlamestoreModule } from "./type";
+import { generateFlutter } from "./generate-flutter";
 
 const modules: FlamestoreModule[] = [
   pathModule,
@@ -40,31 +41,22 @@ const modules: FlamestoreModule[] = [
   keyModule,
 ];
 
-// validate raw schema
 const schemaJson = fs.readFileSync("../flamestore.json");
 const schemaJsonString = schemaJson.toString();
 const rawSchema = JSON.parse(schemaJsonString);
 // modules.forEach(module => module.validateRaw && module.validateRaw(rawSchema));
-
-// validate schema
 const unprocessedSchema: FlamestoreSchema = rawSchema;
+// TODO: Validate circular reference
 // modules.forEach(module => module.validate && module.validate(schema));
-
 const schema = preprocessSchema(unprocessedSchema, modules);
-
-// generate rule
 const rulePath = schema.ruleOutputPath ?? "firestore/firestore.rules";
-generateRule(schema, rulePath, modules);
-
 const triggerDir = schema.triggerOutputPath ?? "functions/src/triggers";
-// generate schema
+const flutterPath = schema.flutterOutputPath ?? "../flutter/lib/flamestore";
+generateRule(schema, rulePath, modules);
 if (!fs.existsSync(triggerDir)) {
   fs.mkdirSync(triggerDir, { recursive: true });
 }
 generateSchema(triggerDir, schema, modules);
-
-// generate triggers
-generateTrigger(schema, triggerDir, modules);
-
-// generate utils
+generateTrigger(triggerDir, schema, modules);
 generateUtils(triggerDir, schema);
+generateFlutter(flutterPath, schema, modules);

@@ -113,6 +113,9 @@
           },
           "type": "object"
         },
+        "flutterOutputPath": {
+          "type": "string"
+        },
         "project": {
           "additionalProperties": {
             "$ref": "#/definitions/ProjectConfiguration"

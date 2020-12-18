@@ -14,7 +14,7 @@
       "args": [
         "${workspaceRoot}/src/generator/index.ts",
       ],
-      "postDebugTask": "eslint:fix",
+      "postDebugTask": "format",
       "cwd": "${workspaceRoot}/firebase",
       "outputCapture": "std",
       "internalConsoleOptions": "openOnSessionStart",

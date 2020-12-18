@@ -1,5 +1,6 @@
 {
   "$schema": "./flamestore-schema/v1.json",
+  "flutterOutputPath": "../../flamestore-flutter/example/lib/flamestore",
   "region": "asia-southeast2",
   "project": {
     "flamestore": {

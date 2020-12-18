@@ -4,6 +4,7 @@ export interface FlamestoreSchema {
   collections: { [name: string]: Collection };
   ruleOutputPath?: string;
   triggerOutputPath?: string;
+  flutterOutputPath?: string;
   region: Region;
   project: { [name: string]: ProjectConfiguration };
 }
@@ -143,6 +144,11 @@ export interface FloatField {
   min?: number;
   max?: number;
   deleteDocWhen?: number;
+}
+
+export interface RichCollectionIteration extends CollectionIteration {
+  singular: string;
+  pascal: string;
 }
 
 export interface CollectionIteration {

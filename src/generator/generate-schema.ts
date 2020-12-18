@@ -1,8 +1,8 @@
-import { Field, FlamestoreSchema } from "../type";
+import { FieldIteration, FlamestoreSchema } from "../type";
 import * as path from "path";
 import * as fs from "fs";
 import {
-  getPascalCollectionName,
+  pascalColName,
   isTypeString,
   isTypeDatetime,
   isTypeFloat,
@@ -13,9 +13,10 @@ import {
   isTypeSum,
   fIterOf,
   colIterOf,
-  isFieldOptional,
   isFieldComputed,
   isTypeComputed,
+  isFieldRequired,
+  getSyncFields,
 } from "./util";
 import _ from "lodash";
 import { FlamestoreModule } from "./type";
@@ -30,31 +31,20 @@ export function generateSchema(
       const { colName } = colIter;
       const attributes = fIterOf(colIter)
         .map((fIter) => {
-          const { fName, field } = fIter;
-          const mustExists =
-            !isFieldOptional(field) &&
-            _(modules)
-              .map((module) => module.isCreatable)
-              .compact()
-              .some((isCreatable) => isCreatable(fIter)) &&
-            !_(modules)
-              .map((module) => module.isNotCreatable)
-              .compact()
-              .some((isNotCreatable) => isNotCreatable(fIter));
+          const { fName } = fIter;
+          const mustExists = isFieldRequired(fIter, modules);
           const question = mustExists ? "" : "?";
-          return `${fName}${question}: ${getDataTypeString(field, schema)};`;
+          return `${fName}${question}: ${getDataTypeString(fIter)};`;
         })
         .join("\n");
-      return `export interface ${getPascalCollectionName(
-        colName
-      )} {${attributes}}`;
+      return `export interface ${pascalColName(colName)} {${attributes}}`;
     })
     .join("\n\n");
   const computedSchemaContent = colIterOf(schema)
     .filter(({ col }) => _(col.fields).some((f) => isFieldComputed(f)))
     .map((colIter) => {
       const { colName } = colIter;
-      const pascal = getPascalCollectionName(colName);
+      const pascal = pascalColName(colName);
       const computedFields = fIterOf(colIter).filter(({ field }) =>
         isFieldComputed(field)
       );
@@ -96,7 +86,13 @@ ${computedSchemaContent}
   fs.writeFileSync(fileName, finalContent);
 }
 
-function getDataTypeString(field: Field, schema: FlamestoreSchema): string {
+function getDataTypeString({
+  field,
+  col,
+  colName,
+  schema,
+}: FieldIteration): string {
+  const colIter = { col, colName, schema };
   if (isTypeComputed(field)) {
     if (field.compute === "float" || field.compute === "int") {
       return "number";
@@ -125,12 +121,9 @@ function getDataTypeString(field: Field, schema: FlamestoreSchema): string {
   }
   if (isTypeReference(field)) {
     const fieldString =
-      _([field.syncField ?? []])
-        .flatMap()
-        .map((fName) => {
-          const referencedField =
-            schema.collections[field.collection].fields[fName];
-          return `${fName}?:${getDataTypeString(referencedField, schema)};`;
+      getSyncFields(field, colIter)
+        .map((fIter) => {
+          return `${fIter.fName}?:${getDataTypeString(fIter)};`;
         })
         .join("\n") ?? "";
     return `{
