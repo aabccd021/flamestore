@@ -4,4 +4,5 @@ package.json
 test/
 src/
 docs/
+firebase/
 README.md
