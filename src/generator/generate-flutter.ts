@@ -17,7 +17,6 @@ import {
   getSyncFields,
   isDynamicLinkAttributeFromField,
   isFieldCreatable,
-  isFieldRequired,
   isTypeComputed,
   isTypeCount,
   isTypeDatetime,
@@ -28,6 +27,7 @@ import {
   isTypeString,
   isTypeSum,
   richColIterOf,
+  isFlutterFieldRequired,
 } from "./util";
 import _ from "lodash";
 import pluralize from "pluralize";
@@ -219,7 +219,9 @@ function classString(
   const creatableThisField = creatableFields
     .map((fIter) => {
       const { field, fName } = fIter;
-      const required = isFieldRequired(fIter, modules) ? "@required" : "";
+      const required = isFlutterFieldRequired(fIter, modules)
+        ? "@required"
+        : "";
       const prefix = isTypeReference(field)
         ? `${pascalOfCol(field.collection)} `
         : "this.";

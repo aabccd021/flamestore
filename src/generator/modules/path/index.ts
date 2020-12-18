@@ -38,7 +38,7 @@ export const module: FlamestoreModule = {
           '${colName}',
           '${fName}',
           change.after.ref,
-          ${colName}${pascalColName(field.collection)}Data
+          ${colName}${pascalColName(fName)}Data
           )`
       );
       const syncFields = getSyncFields(field, { col, schema, colName });

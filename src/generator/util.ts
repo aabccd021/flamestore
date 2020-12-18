@@ -242,6 +242,14 @@ export function isFieldRequired(
   return !isFieldOptional(field) && isFieldCreatable(fIter, modules);
 }
 
+export function isFlutterFieldRequired(
+  fIter: FieldIteration,
+  modules: FlamestoreModule[]
+) {
+  const { field } = fIter;
+  return !isTypeDynamicLink(field) && isFieldRequired(fIter, modules);
+}
+
 export function isFieldCreatable(
   fIter: FieldIteration,
   modules: FlamestoreModule[]
