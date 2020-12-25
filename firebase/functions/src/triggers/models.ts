@@ -7,12 +7,22 @@ export interface User {
   bio?: string;
   tweetsCount?: number;
   uid: string;
+  image: {
+    url: string;
+    height: number;
+    width: number;
+  };
 }
 
 export interface Tweet {
   user: {
     reference: firestore.DocumentReference;
     userName?: string;
+    image: {
+      url: string;
+      height: number;
+      width: number;
+    };
   };
   tweetText: string;
   likesSum?: number;

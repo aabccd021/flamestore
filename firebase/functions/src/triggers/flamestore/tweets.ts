@@ -5,6 +5,7 @@ import {
   serverTimestamp,
   allSettled,
   update,
+  imageDataOf,
 } from "../utils";
 
 export const onCreate = functions.firestore
@@ -19,6 +20,13 @@ export const onCreate = functions.firestore
       user: { userName: refusersData.userName },
       likesSum: 0,
       creationTime: serverTimestamp(),
+      image: await imageDataOf(
+        "tweets",
+        "image",
+        data.user.reference.id,
+        ["height", "width"],
+        snapshot,
+      ),
     };
     const userData = { tweetsCount: increment(1) };
     await allSettled([

@@ -1,4 +1,7 @@
-import { firestore as defaultFirestore } from "firebase-admin";
+import {
+  firestore as defaultFirestore,
+  storage as defaultStorage,
+} from "firebase-admin";
 import {
   logger,
   Change,
@@ -7,18 +10,94 @@ import {
 } from "firebase-functions";
 import _ from "lodash";
 import { QueryDocumentSnapshot } from "firebase-functions/lib/providers/firestore";
+import sharp from "sharp";
+import path from "path";
 export { ProjectConfiguration } from "./type";
+
+type ImageData = "height" | "width" | "size";
 
 export function useFlamestoreUtils(
   firestore: typeof defaultFirestore,
+  storage: typeof defaultStorage,
   functions: FunctionBuilder
 ) {
   const _firestore = firestore();
+  const _storage = storage();
   const serverTimestamp = firestore.FieldValue.serverTimestamp;
   const increment = firestore.FieldValue.increment;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const projectId: string = JSON.parse(process.env.FIREBASE_CONFIG!).projectId;
   async function allSettled(promises: Promise<unknown>[]): Promise<unknown> {
     return Promise.all(promises.map((p) => p.catch(() => null)));
   }
+
+  async function _imageDataOf(filePath: string, metadata: ImageData[]) {
+    // Get image file
+    const imageFile = _storage.bucket().file(filePath);
+    const [imageExists] = await imageFile.exists();
+    if (!imageExists) return null;
+
+    // Get file metadata
+    const storageMetadata = await imageFile.getMetadata();
+    const token: string =
+      storageMetadata[0].metadata.firebaseStorageDownloadTokens;
+    const size: number | undefined = storageMetadata[0].size;
+    const encodedFilePath = encodeURIComponent(filePath);
+    const url = `https://firebasestorage.googleapis.com/v0/b/${projectId}.appspot.com/o/${encodedFilePath}?alt=media&token=${token}`;
+
+    // Get image metadata
+    const pipeline = sharp();
+    imageFile.createReadStream().pipe(pipeline);
+    const imageMetadata = await pipeline.metadata();
+    const width = imageMetadata.width;
+    const height = imageMetadata.height;
+    const pickedMetadata = _.pick({ height, width, size }, metadata);
+
+    //
+    return { url, ...pickedMetadata };
+  }
+
+  async function imageDataOf(
+    colName: string,
+    fieldName: string,
+    uid: string,
+    metadata: ImageData[],
+    snapshot: QueryDocumentSnapshot
+  ) {
+    const docId = snapshot.id;
+    const filePath = `${colName}/${fieldName}/raw/${uid}_${docId}.png`;
+    return _imageDataOf(filePath, metadata);
+  }
+
+  function useOnImageUploaded(
+    colName: string,
+    fieldName: string,
+    metadata: ImageData[]
+  ) {
+    return functions.storage.object().onFinalize(async (object) => {
+      const filePath = object.name;
+      if (!filePath) {
+        logger.error("file path does not exists");
+        return;
+      }
+      // Only run function if file corrensponds to document
+      if (path.dirname(filePath) !== `${colName}/${fieldName}/raw`) return;
+
+      // Get document reference
+      const fileName = path.basename(filePath, ".png");
+      const docId = fileName.split("_")[1];
+      const ref = _firestore.collection(colName).doc(docId);
+
+      // Only run function if document exists
+      const doc = await ref.get();
+      if (!doc.exists) return;
+
+      // Update document
+      const imageData = _imageDataOf(filePath, metadata);
+      await update(ref, { [fieldName]: imageData });
+    });
+  }
+
   async function update(
     ref: defaultFirestore.DocumentReference,
     rawData: { [fieldName: string]: unknown }
@@ -29,6 +108,7 @@ export function useFlamestoreUtils(
       await ref.set(data, { merge: true });
     }
   }
+
   function hasDependencyChanged<T>(before: T, after: T): boolean {
     for (const key in before) {
       if (!isFieldEqual(before[key], after[key])) {
@@ -105,13 +185,14 @@ export function useFlamestoreUtils(
   async function syncField(
     collection: string,
     referenceField: string,
-    reference: defaultFirestore.DocumentReference,
+    change: Change<QueryDocumentSnapshot>,
     rawData: { [fieldName: string]: unknown }
   ) {
     const data = deepOmitNil(rawData);
     if (!data) {
       return;
     }
+    const reference = change.after.ref;
     const querySnapshot = await _firestore
       .collection(collection)
       .where(`${referenceField}.reference`, "==", reference)
@@ -198,6 +279,8 @@ export function useFlamestoreUtils(
     update,
     serverTimestamp,
     increment,
+    useOnImageUploaded,
+    imageDataOf,
   };
 }
 

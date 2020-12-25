@@ -1,4 +1,4 @@
-import { firestore } from "firebase-admin";
+import { firestore, storage } from "firebase-admin";
 import * as _functions from "firebase-functions";
 import { useFlamestoreUtils } from "flamestore";
 
@@ -11,4 +11,6 @@ export const {
   update,
   serverTimestamp,
   increment,
-} = useFlamestoreUtils(firestore, functions);
+  useOnImageUploaded,
+  imageDataOf,
+} = useFlamestoreUtils(firestore, storage, functions);

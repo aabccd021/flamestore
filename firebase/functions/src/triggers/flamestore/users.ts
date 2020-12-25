@@ -1,11 +1,21 @@
 import { User } from "../models";
-import { foundDuplicate, functions, syncField, update } from "../utils";
+import {
+  foundDuplicate,
+  functions,
+  imageDataOf,
+  syncField,
+  update,
+  useOnImageUploaded,
+} from "../utils";
+// import path from "path";
 
 export const onCreate = functions.firestore
   .document("/users/{documentId}")
   .onCreate(async (snapshot, context) => {
     if (await foundDuplicate("users", "userName", snapshot, context)) return;
-    const snapshotRefData = { tweetsCount: 0 };
+    const snapshotRefData = {
+      tweetsCount: 0,
+    };
     await update(snapshot.ref, snapshotRefData);
   });
 
@@ -20,5 +30,10 @@ export const onUpdate = functions.firestore
         userName: after.userName !== before.userName ? after.userName : null,
       },
     };
-    await syncField("tweets", "user", change.after.ref, tweetsUserData);
+    await syncField("tweets", "user", change, tweetsUserData);
   });
+
+export const onImageUploaded = useOnImageUploaded("users", "image", [
+  "height",
+  "width",
+]);
