@@ -46,8 +46,8 @@ export type PrimitiveFieldTypes =
   | "int"
   | "float"
   | "string"
-  | "path"
-  | "timestamp";
+  | "timestamp"
+  | "path";
 
 export type NonPrimitiveFieldTypes = "sum" | "count" | "dynamicLink";
 
@@ -84,7 +84,8 @@ export type FieldType =
   | IntField
   | DatetimeField
   | SumField
-  | CountField;
+  | CountField
+  | ImageField;
 
 export interface DynamicLinkField {
   type: "dynamicLink";
@@ -102,6 +103,13 @@ export type NonComputed =
   | "isOptional"
   | "isNotCreatable"
   | "isNotUpdatable";
+
+export interface ImageField {
+  type: "image";
+  metadata?: ImageMetadata | ImageMetadata[];
+}
+
+export type ImageMetadata = "height" | "width" | "size";
 
 export interface SumField {
   type: "sum";
@@ -146,18 +154,16 @@ export interface FloatField {
   deleteDocWhen?: number;
 }
 
-export interface RichCollectionIteration extends CollectionIteration {
-  singular: string;
-  pascal: string;
-}
-
 export interface CollectionIteration {
+  pascalColName: string;
+  singularColName: string;
   colName: string;
   col: Collection;
   schema: FlamestoreSchema;
 }
 
 export interface FieldIteration extends CollectionIteration {
+  pascalFName: string;
   fName: string;
   field: Field;
 }

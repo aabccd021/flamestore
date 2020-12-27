@@ -7,7 +7,6 @@ import {
   update,
   imageDataOf,
 } from "../utils";
-
 export const onCreate = functions.firestore
   .document("/tweets/{documentId}")
   .onCreate(async (snapshot) => {
@@ -25,7 +24,7 @@ export const onCreate = functions.firestore
         "image",
         data.user.reference.id,
         ["height", "width"],
-        snapshot,
+        snapshot
       ),
     };
     const userData = { tweetsCount: increment(1) };

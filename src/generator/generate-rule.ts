@@ -8,14 +8,14 @@ import {
   RuleType,
 } from "../type";
 import { FlamestoreModule } from "./type";
-import { colIterOf, fIterOf as fIterOf, isFieldOptional } from "./util";
+import { colItersOf, fItersOf as fItersOf, isFieldOptional } from "./util";
 
 export default function generateRule(
   schema: FlamestoreSchema,
   outputFilePath: string,
   modules: FlamestoreModule[]
 ): void {
-  const colsRule = colIterOf(schema)
+  const colsRule = colItersOf(schema)
     .map((colIter) => colRuleTemplate(modules, colIter))
     .join("\n");
   fs.writeFileSync(outputFilePath, ruleTemplate(colsRule));
@@ -68,7 +68,7 @@ function colRuleTemplate(
     ? getIsUpdateValidFunction(modules, colIter)
     : emptyValidationFunction;
 
-  const fieldIsValidFunctions = fIterOf(colIter)
+  const fieldIsValidFunctions = fItersOf(colIter)
     .filter(
       ({ fName }) =>
         isUpdateValidFunction.usedFields.includes(fName) ||
@@ -139,7 +139,7 @@ function getIsCreateValidFunction(
   modules: FlamestoreModule[],
   colIter: CollectionIteration
 ): ValidationFunction {
-  const creatableFields = fIterOf(colIter).filter(
+  const creatableFields = fItersOf(colIter).filter(
     (fIter) =>
       !_(modules)
         .map((m) => m?.isNotCreatable)
@@ -175,7 +175,7 @@ function getIsUpdateValidFunction(
   modules: FlamestoreModule[],
   colIter: CollectionIteration
 ): ValidationFunction {
-  const updatableFields = fIterOf(colIter).filter(
+  const updatableFields = fItersOf(colIter).filter(
     (fIter) =>
       !_(modules)
         .map((m) => m?.isNotUpdatable)

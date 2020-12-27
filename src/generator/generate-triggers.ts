@@ -1,215 +1,205 @@
-import * as fs from "fs";
-import _ from "lodash";
-import * as path from "path";
-import { FlamestoreSchema } from "../type";
-import {
-  FlamestoreModule,
-  TriggerMap,
-  CollectionTriggerMap,
-  TriggerData,
-  getEmptyCollectionTriggerMap,
-  isTriggerDataEmpty,
-} from "./type";
-import { colIterOf, fIterOf, pascalColName } from "./util";
+// import * as fs from "fs";
+// import _ from "lodash";
+// import * as path from "path";
+// import { CollectionIteration, FlamestoreSchema } from "../type";
+// import {
+//   FlamestoreModule,
+//   TriggerMap,
+//   CollectionTriggerMap,
+//   TriggerData,
+//   getEmptyCollectionTriggerMap,
+//   isTriggerDataEmpty,
+// } from "./type";
+// import { colIterOf, colItersOf, fItersOf } from "./util";
 
-export default function generate(
-  outputFilePath: string,
-  schema: FlamestoreSchema,
-  modules: FlamestoreModule[]
-): void {
-  const triggerMap = getCompleteTriggerMap(schema, modules);
-  const triggerDir = path.join(outputFilePath, "flamestore");
-  _(triggerMap).forEach((colTriggerMap, colName) => {
-    const colString = stringOfCollectionTrigger(colName, colTriggerMap);
-    const triggerContent = triggerContentOf(schema, colString);
-    if (!fs.existsSync(triggerDir)) {
-      fs.mkdirSync(triggerDir);
-    }
-    fs.writeFileSync(path.join(triggerDir, `${colName}.ts`), triggerContent);
-  });
+// import _ from "lodash";
+// import { CollectionIteration } from "../type";
+// import { ColTriggerMap, Trigger } from "./type";
 
-  const indexFileContent = colIterOf(schema)
-    .map(({ colName }) => `export * as ${colName} from "./${colName}";`)
-    .join("\n");
-  fs.writeFileSync(path.join(triggerDir, "index.ts"), indexFileContent);
-}
+// export default function generate(
+//   outputFilePath: string,
+//   schema: FlamestoreSchema,
+//   modules: FlamestoreModule[]
+// ): void {
+//   let triggerMap: TriggerMap = {};
+//   colItersOf(schema).forEach(({ colName }) => {
+//     triggerMap[colName] = getEmptyCollectionTriggerMap();
+//   });
+//   _(modules)
+//     .map((module) => module.triggerGenerator)
+//     .compact()
+//     .forEach((triggerGenerator) => {
+//       colItersOf(schema).forEach((colIter) =>
+//         fItersOf(colIter).forEach((fIter) => {
+//           triggerMap = triggerGenerator(triggerMap, fIter);
+//         })
+//       );
+//     });
+//   const triggerDir = path.join(outputFilePath, "flamestore");
+//   _(triggerMap).forEach((colTriggerMap, colName) => {
+//     const colIter = colIterOf(colName, schema);
+//     const colString = stringOfCollectionTrigger(colIter, colTriggerMap);
+//     const triggerContent = triggerContentOf(schema, colString);
+//     if (!fs.existsSync(triggerDir)) fs.mkdirSync(triggerDir);
+//     fs.writeFileSync(path.join(triggerDir, `${colName}.ts`), triggerContent);
+//   });
 
-const triggerContentOf = (schema: FlamestoreSchema, colString: string) => {
-  const modelNames = colIterOf(schema)
-    .map(({ colName }) => `${pascalColName(colName)}`)
-    .join(",");
-  return `
-import {${modelNames}} from "../models"
-import {foundDuplicate, functions, increment,  serverTimestamp, syncField,  allSettled, update  } from '../utils';
+//   const indexFileContent = colItersOf(schema)
+//     .map(({ colName }) => `export * as ${colName} from "./${colName}";`)
+//     .join("\n");
+//   fs.writeFileSync(path.join(triggerDir, "index.ts"), indexFileContent);
+// }
 
-${colString}
-`;
-};
+// const triggerContentOf = (schema: FlamestoreSchema, colString: string) => {
+//   const modelNames = colItersOf(schema)
+//     .map(({ pascalColName }) => pascalColName)
+//     .join(",");
+//   return `
+// import {${modelNames}} from "../models"
+// import {foundDuplicate,
+// functions,
+// increment,
+// serverTimestamp,
+// syncField,
+// allSettled,
+// update,
+// imageDataOf,
+// } from '../utils';
 
-function getCompleteTriggerMap(
-  schema: FlamestoreSchema,
-  modules: FlamestoreModule[]
-): TriggerMap {
-  let triggerMap: TriggerMap = {};
-  colIterOf(schema).forEach(({ colName }) => {
-    triggerMap[colName] = getEmptyCollectionTriggerMap();
-  });
-  _(modules)
-    .map((module) => module.triggerGenerator)
-    .compact()
-    .forEach((triggerGenerator) => {
-      colIterOf(schema).forEach((colIter) =>
-        fIterOf(colIter).forEach((fIter) => {
-          triggerMap = triggerGenerator(triggerMap, fIter);
-        })
-      );
-    });
-  return triggerMap;
-}
+// ${colString}
+// `;
+// };
 
-function stringOfCollectionTrigger(
-  colName: string,
-  colTriggerMap: CollectionTriggerMap
-): string {
-  let content = "";
-  if (!isTriggerDataEmpty(colTriggerMap.createTrigger)) {
-    content += onCreateTemplate(colName, colTriggerMap.createTrigger);
-  }
-  if (!isTriggerDataEmpty(colTriggerMap.updateTrigger)) {
-    content += onUpdateTemplate(colName, colTriggerMap.updateTrigger);
-  }
-  if (!isTriggerDataEmpty(colTriggerMap.deleteTrigger)) {
-    content += onDeleteTemplate(colName, colTriggerMap.deleteTrigger);
-  }
-  return content;
-}
+// triggerType,
+// collectionName,
+// refTriggerData,
+// prepareTrigger,
+// function stringOfCollectionTrigger(
+//   { colName, pascalColName }: CollectionIteration,
+//   colTriggerMap: ColTriggerMap
+// ): string {
+//   return [
+//     triggerTemplate({
+//       triggerType: "Create",
+//       colName,
+//       refTriggerData: colTriggerMap.create,
+//       prepareTrigger: `const data = snapshot.data() as ${pascalColName};`,
+//     }),
+//     triggerTemplate({
+//       triggerType: "Update",
+//       colName,
+//       refTriggerData: colTriggerMap.update,
+//       prepareTrigger: `const before = change.before.data() as ${pascalColName};
+//                        const after = change.after.data() as ${pascalColName};`,
+//     }),
+//     triggerTemplate({
+//       triggerType: "Delete",
+//       colName,
+//       refTriggerData: colTriggerMap.update,
+//       prepareTrigger: `const data = snapshot.data() as ${pascalColName};`,
+//     }),
+//   ].join("");
+// }
 
-function onCreateTemplate(collectionName: string, refTriggerData: TriggerData) {
-  return triggerTemplate(
-    "Create",
-    collectionName,
-    refTriggerData,
-    `const data = snapshot.data() as ${pascalColName(collectionName)};`
-  );
-}
+// function triggerTemplate({
+//   triggerType,
+//   colName,
+//   refTriggerData,
+//   prepareTrigger,
+// }: {
+//   triggerType: TriggerType;
+//   colName: string;
+//   refTriggerData?: Trigger;
+//   prepareTrigger: string;
+// }): string {
+//   const triggerContent = refTriggerDataToString(refTriggerData);
+//   const dependencyPromises = dependencyPromisesToString(refTriggerData);
+//   const batchCommit = refTriggerDataToBatchCommitString(
+//     refTriggerData,
+//     triggerType
+//   );
 
-function onUpdateTemplate(collectionName: string, refTriggerData: TriggerData) {
-  return triggerTemplate(
-    "Update",
-    collectionName,
-    refTriggerData,
-    `const before = change.before.data() as ${pascalColName(collectionName)};
-    const after = change.after.data() as ${pascalColName(collectionName)};`
-  );
-}
+//   const finalPrepareTrigger =
+//     _.keys(refTriggerData.data).filter((e) => e !== "snapshotRef").length ===
+//       0 && triggerType === "Create"
+//       ? ""
+//       : prepareTrigger;
 
-function onDeleteTemplate(collectionName: string, refTriggerData: TriggerData) {
-  return triggerTemplate(
-    "Delete",
-    collectionName,
-    refTriggerData,
-    `const data = snapshot.data() as ${pascalColName(collectionName)};`
-  );
-}
+//   const firstParam = triggerType === "Update" ? "change" : "snapshot";
+//   const context = refTriggerData.useContext ? ", context" : "";
+//   return `
+//   export const on${triggerType} = functions.firestore
+//   .document('/${colName}/{documentId}')
+//   .on${triggerType}(async (${firstParam}${context})=>{
+//     ${finalPrepareTrigger};
+//     ${refTriggerData.header};
+//     ${dependencyPromises};
+//     ${triggerContent};
+//     ${batchCommit}
+//   });
+//   `;
+// }
 
-function triggerTemplate(
-  triggerType: TriggerType,
-  collectionName: string,
-  refTriggerData: TriggerData,
-  prepareTrigger: string
-) {
-  const triggerContent = refTriggerDataToString(refTriggerData);
-  const dependencyPromises = dependencyPromisesToString(refTriggerData);
-  const batchCommit = refTriggerDataToBatchCommitString(
-    refTriggerData,
-    triggerType
-  );
+// function dependencyPromisesToString(triggerData: TriggerData) {
+//   if (_.isEmpty(triggerData.dependencyPromises)) {
+//     return "";
+//   }
+//   const dependencyNames = _(triggerData.dependencyPromises)
+//     .keys()
+//     .map((d) => `${d}Snapshot`)
+//     .join();
+//   const dependencyPromises = _(triggerData.dependencyPromises)
+//     .map((d) => `${d.promise}`)
+//     .join();
+//   const dependencyAssignment = _(triggerData.dependencyPromises)
+//     .map(
+//       ({ colName }, dName) =>
+//         `const ${dName} = ${dName}Snapshot.data() as ${colName};`
+//     )
+//     .join("\n");
+//   return `const [${dependencyNames}] = await Promise.all([${dependencyPromises}]);${dependencyAssignment}`;
+// }
 
-  const finalPrepareTrigger =
-    _.keys(refTriggerData.data).filter((e) => e !== "snapshotRef").length ===
-      0 && triggerType === "Create"
-      ? ""
-      : prepareTrigger;
+// function refTriggerDataToString(triggerData: TriggerData) {
+//   const data = _(triggerData.data)
+//     .map((refTrigger, refName) => {
+//       const x = _(refTrigger)
+//         .map(({ fieldValue }, fieldName) => `${fieldName}: ${fieldValue}`)
+//         .join(",");
+//       return `const ${refName}Data= {${x}};`;
+//     })
+//     .join("\n");
+//   const nonUpdateData = _(triggerData.nonUpdateData)
+//     .map((refTrigger, refName) => {
+//       const x = _(refTrigger)
+//         .map(({ fieldValue }, fieldName) => `${fieldName}: ${fieldValue}`)
+//         .join(",");
+//       return `const ${refName}Data= {${x}};`;
+//     })
+//     .join("\n");
+//   return data + nonUpdateData;
+// }
 
-  const firstParam = triggerType === "Update" ? "change" : "snapshot";
-  const context = refTriggerData.useContext ? ", context" : "";
-  return `
-  export const on${triggerType} = functions.firestore
-  .document('/${collectionName}/{documentId}')
-  .on${triggerType}(async (${firstParam}${context})=>{
-    ${finalPrepareTrigger};
-    ${refTriggerData.header};
-    ${dependencyPromises};
-    ${triggerContent};
-    ${batchCommit}
-  });
-  `;
-}
-
-function dependencyPromisesToString(triggerData: TriggerData) {
-  if (_.isEmpty(triggerData.dependencyPromises)) {
-    return "";
-  }
-  const dependencyNames = _(triggerData.dependencyPromises)
-    .keys()
-    .map((d) => `${d}Snapshot`)
-    .join();
-  const dependencyPromises = _(triggerData.dependencyPromises)
-    .map((d) => `${d.promise}`)
-    .join();
-  const dependencyAssignment = _(triggerData.dependencyPromises)
-    .map(
-      (d, dName) =>
-        `const ${dName} = ${dName}Snapshot.data() as ${pascalColName(
-          d.collection
-        )};`
-    )
-    .join("\n");
-  return `const [${dependencyNames}] = await Promise.all([${dependencyPromises}]);${dependencyAssignment}`;
-}
-
-function refTriggerDataToString(triggerData: TriggerData) {
-  const data = _(triggerData.data)
-    .map((refTrigger, refName) => {
-      const x = _(refTrigger)
-        .map(({ fieldValue }, fieldName) => `${fieldName}: ${fieldValue}`)
-        .join(",");
-      return `const ${refName}Data= {${x}};`;
-    })
-    .join("\n");
-  const nonUpdateData = _(triggerData.nonUpdateData)
-    .map((refTrigger, refName) => {
-      const x = _(refTrigger)
-        .map(({ fieldValue }, fieldName) => `${fieldName}: ${fieldValue}`)
-        .join(",");
-      return `const ${refName}Data= {${x}};`;
-    })
-    .join("\n");
-  return data + nonUpdateData;
-}
-
-function refTriggerDataToBatchCommitString(
-  triggerData: TriggerData,
-  triggerType: TriggerType
-) {
-  const dataName = triggerType === "Update" ? "after" : "data";
-  const post = triggerType === "Update" ? ".after" : "";
-  const content = _.entries(triggerData.data)
-    .filter(([_, refTrigger]) => refTrigger !== {})
-    .map(([refName, _]) => {
-      const setName =
-        refName === "snapshotRef"
-          ? `snapshot${post}.ref`
-          : `${dataName}.${refName}.reference`;
-      return `update(${setName},${refName}Data)`;
-    });
-  const batchCommit = [...content, ...triggerData.resultPromises];
-  if (batchCommit.length === 1) {
-    return `await ${batchCommit[0]};`;
-  }
-  return `await allSettled([
-       ${batchCommit.join(",")}
-  ]);`;
-}
-
-type TriggerType = "Create" | "Update" | "Delete";
+// function refTriggerDataToBatchCommitString(
+//   triggerData: TriggerData,
+//   triggerType: TriggerType
+// ) {
+//   const dataName = triggerType === "Update" ? "after" : "data";
+//   const post = triggerType === "Update" ? ".after" : "";
+//   const content = _.entries(triggerData.data)
+//     .filter(([_, refTrigger]) => refTrigger !== {})
+//     .map(([refName, _]) => {
+//       const setName =
+//         refName === "snapshotRef"
+//           ? `snapshot${post}.ref`
+//           : `${dataName}.${refName}.reference`;
+//       return `update(${setName},${refName}Data)`;
+//     });
+//   const batchCommit = [...content, ...triggerData.resultPromises];
+//   if (batchCommit.length === 1) {
+//     return `await ${batchCommit[0]};`;
+//   }
+//   return `await allSettled([
+//        ${batchCommit.join(",")}
+//   ]);`;
+// }

@@ -13,8 +13,7 @@ import { QueryDocumentSnapshot } from "firebase-functions/lib/providers/firestor
 import sharp from "sharp";
 import path from "path";
 export { ProjectConfiguration } from "./type";
-
-type ImageData = "height" | "width" | "size";
+import { ImageMetadata } from "./type";
 
 export function useFlamestoreUtils(
   firestore: typeof defaultFirestore,
@@ -31,7 +30,7 @@ export function useFlamestoreUtils(
     return Promise.all(promises.map((p) => p.catch(() => null)));
   }
 
-  async function _imageDataOf(filePath: string, metadata: ImageData[]) {
+  async function _imageDataOf(filePath: string, metadata: ImageMetadata[]) {
     // Get image file
     const imageFile = _storage.bucket().file(filePath);
     const [imageExists] = await imageFile.exists();
@@ -61,7 +60,7 @@ export function useFlamestoreUtils(
     colName: string,
     fieldName: string,
     uid: string,
-    metadata: ImageData[],
+    metadata: ImageMetadata[],
     snapshot: QueryDocumentSnapshot
   ) {
     const docId = snapshot.id;
@@ -72,7 +71,7 @@ export function useFlamestoreUtils(
   function useOnImageUploaded(
     colName: string,
     fieldName: string,
-    metadata: ImageData[]
+    metadata: ImageMetadata[]
   ) {
     return functions.storage.object().onFinalize(async (object) => {
       const filePath = object.name;

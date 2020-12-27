@@ -18,7 +18,8 @@ import {
   CollectionIteration,
   NormalField,
   ComputedField,
-  RichCollectionIteration,
+  ImageField,
+  ImageMetadata,
 } from "../type";
 import _ from "lodash";
 import { FlamestoreModule } from "./type";
@@ -125,6 +126,9 @@ export function isTypeSum(field: Field): field is SumField {
 export function isTypeCount(field: Field): field is CountField {
   return (field as CountField).type === "count";
 }
+export function isTypeImage(field: Field): field is ImageField {
+  return (field as ImageField).type === "image";
+}
 export function isNormalField(field: Field): field is NormalField {
   return (
     isTypeDynamicLink(field) ||
@@ -134,7 +138,8 @@ export function isNormalField(field: Field): field is NormalField {
     isTypeInt(field) ||
     isTypeDatetime(field) ||
     isTypeSum(field) ||
-    isTypeCount(field)
+    isTypeCount(field) ||
+    isTypeImage(field)
   );
 }
 export function isTypeComputed(field: Field): field is ComputedField {
@@ -193,45 +198,33 @@ export function isDynamicLinkAttributeFromField(
   );
 }
 
-export function pascalColName(collectionName: string): string {
-  const singularized = pluralize.singular(collectionName);
-  return singularized[0].toUpperCase() + singularized.substring(1);
-}
-
-export function getPascal(str: string): string {
-  return str[0].toUpperCase() + str.substring(1);
-}
-
-export function fIterOf(colIter: CollectionIteration): FieldIteration[] {
-  return _.map(colIter.col.fields, (field, fName) => ({
-    field,
-    fName,
-    ...colIter,
-  }));
-}
-
-export function colIterOf(schema: FlamestoreSchema): CollectionIteration[] {
-  return _.map(schema.collections, (col, colName) => ({
-    col,
-    colName,
-    schema,
-  }));
-}
-
-export function richColIterOf(
-  schema: FlamestoreSchema
-): RichCollectionIteration[] {
-  return _.map(schema.collections, function (col, colName) {
-    const singular = pluralize.singular(colName);
-    const pascal = pascalColName(colName);
+export function fItersOf(colIter: CollectionIteration): FieldIteration[] {
+  return _.map(colIter.col.fields, (field, fName) => {
+    const pascalFName = toPascal(fName);
     return {
-      singular,
-      pascal,
-      col,
-      colName,
-      schema,
+      pascalFName,
+      field,
+      fName,
+      ...colIter,
     };
   });
+}
+
+export function colIterOf(
+  colName: string,
+  schema: FlamestoreSchema
+): CollectionIteration {
+  const col = schema.collections[colName];
+  const singularColName = pluralize.singular(colName);
+  const pascalColName =
+    singularColName[0].toUpperCase() + singularColName.substring(1);
+  return { col, colName, singularColName, pascalColName, schema };
+}
+
+export function colItersOf(schema: FlamestoreSchema): CollectionIteration[] {
+  return _.keys(schema.collections).map((colName) =>
+    colIterOf(colName, schema)
+  );
 }
 
 export function isFieldRequired(
@@ -266,16 +259,43 @@ export function isFieldCreatable(
   );
 }
 
+export function isFieldUpdatable(
+  fIter: FieldIteration,
+  modules: FlamestoreModule[]
+) {
+  return (
+    _(modules)
+      .map((module) => module.isUpdatable)
+      .compact()
+      .some((isUpdatable) => isUpdatable(fIter)) &&
+    !_(modules)
+      .map((module) => module.isNotUpdatable)
+      .compact()
+      .some((isNotUpdatable) => isNotUpdatable(fIter))
+  );
+}
 export function getSyncFields(
   field: ReferenceField,
-  colIter: CollectionIteration
-) {
-  const referenceCol = colIter.schema.collections[field.collection];
-  return field.syncField
-    ? _.flatMap([field.syncField]).map((fName) => ({
-        fName,
-        field: referenceCol.fields[fName],
-        ...colIter,
-      }))
-    : [];
+  schema: FlamestoreSchema
+): FieldIteration[] {
+  if (!field.syncField) return [];
+  const referenceCol = schema.collections[field.collection];
+  return _.flatMap([field.syncField]).map((fName) => ({
+    fName,
+    pascalFName: toPascal(fName),
+    field: referenceCol.fields[fName],
+    ...colIterOf(field.collection, schema),
+  }));
+}
+
+export function getImageMetadatas(field: ImageField): ImageMetadata[] {
+  if (!field.metadata) return [];
+  return _.flatMap([field.metadata]).map((x) => x);
+}
+
+export function assertNever(x: never): never {
+  throw new Error("Unexpected object: " + x);
+}
+function toPascal(s: string): string {
+  return s[0].toUpperCase() + s.substring(1);
 }

@@ -10,7 +10,7 @@ export default function generateUtils(
 }
 
 function utilStringOfSchema(schema: FlamestoreSchema): string {
-  return `import { firestore } from "firebase-admin";
+  return `import { firestore, storage } from "firebase-admin";
 import * as _functions from "firebase-functions";
 import { useFlamestoreUtils } from "flamestore";
 
@@ -23,6 +23,8 @@ export const {
   update,
   serverTimestamp,
   increment,
-} = useFlamestoreUtils(firestore, functions);
+  useOnImageUploaded,
+  imageDataOf,
+} = useFlamestoreUtils(firestore, storage, functions);
 `;
 }

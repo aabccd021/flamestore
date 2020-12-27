@@ -1,6 +1,5 @@
 import { Like } from "../models";
 import { functions, increment, update } from "../utils";
-
 export const onCreate = functions.firestore
   .document("/likes/{documentId}")
   .onCreate(async (snapshot) => {
@@ -11,9 +10,9 @@ export const onCreate = functions.firestore
 
 export const onUpdate = functions.firestore
   .document("/likes/{documentId}")
-  .onUpdate(async (change) => {
-    const before = change.before.data() as Like;
-    const after = change.after.data() as Like;
+  .onUpdate(async (snapshot) => {
+    const before = snapshot.before.data() as Like;
+    const after = snapshot.after.data() as Like;
     const tweetData = {
       likesSum:
         before.likeValue !== after.likeValue

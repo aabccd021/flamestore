@@ -161,6 +161,14 @@
       ],
       "type": "object"
     },
+    "ImageData": {
+      "enum": [
+        "height",
+        "width",
+        "size"
+      ],
+      "type": "string"
+    },
     "NonComputed": {
       "enum": [
         "isUnique",
@@ -449,6 +457,45 @@
           "required": [
             "collection",
             "reference",
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "metadata": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/ImageData"
+                },
+                {
+                  "items": {
+                    "$ref": "#/definitions/ImageData"
+                  },
+                  "type": "array"
+                }
+              ]
+            },
+            "property": {
+              "anyOf": [
+                {
+                  "items": {
+                    "$ref": "#/definitions/NonComputed"
+                  },
+                  "type": "array"
+                },
+                {
+                  "$ref": "#/definitions/NonComputed"
+                }
+              ]
+            },
+            "type": {
+              "const": "image",
+              "type": "string"
+            }
+          },
+          "required": [
             "type"
           ],
           "type": "object"

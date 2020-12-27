@@ -66,6 +66,13 @@
         "hotness": {
           "compute": "float"
         },
+        "image": {
+          "type": "image",
+          "metadata": [
+            "height",
+            "width"
+          ]
+        },
         "dynamicLink": {
           "type": "dynamicLink",
           "isSuffixShort": true,

@@ -1,33 +1,31 @@
 import {
-  Collection,
   CollectionIteration,
-  DynamicLinkAttribute,
+  Field,
   FieldIteration,
   FlamestoreSchema,
+  ImageField,
+  PrimitiveFieldTypes,
   ReferenceField,
 } from "../type";
 import { FlamestoreModule } from "./type";
 import path from "path";
 import * as fs from "fs";
 import {
-  colIterOf,
-  fIterOf,
-  getPascal,
-  pascalColName as pascalOfCol,
-  getSyncFields,
-  isDynamicLinkAttributeFromField,
+  colItersOf,
+  fItersOf,
   isFieldCreatable,
-  isTypeComputed,
   isTypeCount,
-  isTypeDatetime,
   isTypeDynamicLink,
   isTypeFloat,
   isTypeInt,
   isTypeReference,
   isTypeString,
   isTypeSum,
-  richColIterOf,
   isFlutterFieldRequired,
+  isTypeImage,
+  isFieldUpdatable,
+  isTypeDatetime,
+  assertNever,
 } from "./util";
 import _ from "lodash";
 import pluralize from "pluralize";
@@ -39,7 +37,7 @@ export function generateFlutter(
 ) {
   const content =
     imports +
-    colIterOf(schema)
+    colItersOf(schema)
       .map((colIter) => classString(colIter, modules))
       .join("") +
     projectString(schema);
@@ -47,8 +45,8 @@ export function generateFlutter(
 }
 
 function projectString(schema: FlamestoreSchema) {
-  const colsWithDynamicLink = richColIterOf(schema).filter((colIter) =>
-    fIterOf(colIter).some(({ field }) => isTypeDynamicLink(field))
+  const colsWithDynamicLink = colItersOf(schema).filter((colIter) =>
+    fItersOf(colIter).some(({ field }) => isTypeDynamicLink(field))
   );
   return `
   final config = FlamestoreConfig(
@@ -68,13 +66,16 @@ function projectString(schema: FlamestoreSchema) {
         .join("")}
     },
     collectionClassMap: {
-      ${richColIterOf(schema)
-        .map(({ colName, pascal }) => `${pascal}: '${colName}',`)
+      ${colItersOf(schema)
+        .map(({ colName, pascalColName }) => `${pascalColName}: '${colName}',`)
         .join("")}
     },
     documentDefinitions: {
-      ${richColIterOf(schema)
-        .map(({ colName, singular }) => `'${colName}':${singular}Definition,`)
+      ${colItersOf(schema)
+        .map(
+          ({ colName, singularColName }) =>
+            `'${colName}':${singularColName}Definition,`
+        )
         .join("")}
     },
   );
@@ -82,16 +83,16 @@ function projectString(schema: FlamestoreSchema) {
   Map<String, Widget Function(Document)> dynamicLinkBuilders({
     ${colsWithDynamicLink
       .map(
-        ({ singular, pascal }) =>
-          `@required Widget Function(${pascal} ${singular}) ${singular}Builder,`
+        ({ singularColName, pascalColName }) =>
+          `@required Widget Function(${pascalColName} ${singularColName}) ${singularColName}Builder,`
       )
       .join("")}
   }) {
     return {
     ${colsWithDynamicLink
       .map(
-        ({ colName, singular, pascal }) =>
-          `'${colName}': (document) => ${singular}Builder(document as ${pascal}),`
+        ({ colName, singularColName, pascalColName }) =>
+          `'${colName}': (document) => ${singularColName}Builder(document as ${pascalColName}),`
       )
       .join("")}
     };
@@ -106,228 +107,40 @@ import 'package:flamestore/flamestore.dart';
 import 'package:flutter/widgets.dart';
 `;
 
+// function refClassString(): string {}
+
+function isFlutterCreatable(
+  fIter: FieldIteration,
+  modules: FlamestoreModule[]
+) {
+  const { field } = fIter;
+  return isFieldCreatable(fIter, modules) && !isTypeDynamicLink(field);
+}
+
 function classString(
   colIter: CollectionIteration,
   modules: FlamestoreModule[]
-) {
-  const { colName, schema, col } = colIter;
-  const pascal = pascalOfCol(colName);
-  const singular = pluralize.singular(colName);
-  const fields = fIterOf(colIter);
-  const thisField = fields.map(({ fName }) => `this.${fName},`).join("");
-  const colDoc = `final ${singular}Doc = doc as ${pascal};`;
+): string {
+  const { colName, schema, col, pascalColName } = colIter;
+  const fields = fItersOf(colIter);
 
-  const referenceClasses = _(fields)
-    .map((fIter) => {
-      const { fName, field } = fIter;
-      if (!isTypeReference(field)) {
-        return null;
-      }
-      const syncFields = getSyncFields(field, colIter);
-      const finalTypeField = syncFields
-        .map((fIter) => `final ${dataTypeString(fIter)} ${fIter.fName};`)
-        .join("");
-      const thisField = syncFields
-        .map(({ fName }) => `@required this.${fName},`)
-        .join("");
-      const privateAssign = syncFields
-        .map(({ fName: syncFName }) => `,${syncFName}= ${fName}.${syncFName}`)
-        .join("");
-      const typeField = syncFields
-        .map((fIter) => `${dataTypeString(fIter)} ${fIter.fName},`)
-        .join("");
-      const fieldFieldThisField = syncFields
-        .map(({ fName }) => `${fName}: ${fName} ?? this.${fName},`)
-        .join("");
-      const dataMap = syncFields
-        .map(({ fName }) => `'${fName}': ${fName},`)
-        .join("");
-      const fromMap = syncFields
-        .map(({ fName }) => `,${fName}= map['${fName}']`)
-        .join("");
-      const refPascal = pascalOfCol(field.collection);
-      return `class _${pascal}${getPascal(fName)}{
-        _${pascal}${getPascal(fName)}({
-          @required this.reference,
-          ${thisField}
-        });
-
-        _${pascal}${getPascal(fName)}.from${refPascal}({
-          @required ${refPascal} ${fName},
-        }): reference = ${fName}.reference
-          ${privateAssign};
-
-        _${pascal}${getPascal(fName)}.fromMap(
-          Map<String, dynamic> map,
-        ): reference = map['reference']
-        ${fromMap};
-
-        final DocumentReference reference;
-        ${finalTypeField}
-
-        Map<String, dynamic> toDataMap(){
-          return {
-            'reference': reference,
-            ${dataMap}
-          };
-        }
-
-        _${pascal}${getPascal(fName)} copyWith({
-          DocumentReference reference,
-          ${typeField}
-        }) {
-          return _${pascal}${getPascal(fName)}(
-            reference: reference ?? this.reference,
-            ${fieldFieldThisField}
-          );
-        }
-      }`;
-    })
-    .compact()
-    .join("");
-  const finalField = fields
-    .map((fIter) =>
-      isFieldCreatable(fIter, modules)
-        ? `final ${dataTypeString(fIter)} ${fIter.fName};`
-        : `${dataTypeString(fIter)} ${fIter.fName};`
-    )
-    .join("");
-  function fieldFromMap(fIter: FieldIteration) {
-    const { fName, field } = fIter;
-    if (isTypeReference(field)) {
-      return `${dataTypeString(fIter)}.fromMap(data['${fName}'])`;
-    }
-    if (isTypeDatetime(field) || field === "serverTimestamp") {
-      return `data['${fName}'] is DateTime ? data['${fName}'] : data['${fName}']?.toDate()`;
-    }
-    if (isTypeFloat(field)) {
-      return `data['${fName}']?.toDouble()`;
-    }
-    if (isTypeComputed(field)) {
-      if (field.compute === "float") {
-        return `data['${fName}']?.toDouble()`;
-      }
-    }
-    return `data['${fName}']`;
-  }
-  const fieldDataField = fields
-    .map((fIter) => `${fIter.fName}: ${fieldFromMap(fIter)},`)
-    .join("");
-  const creatableFields = fields.filter((fIter) =>
-    isFieldCreatable(fIter, modules)
+  const creatableFields = fields.filter((f) => isFlutterCreatable(f, modules));
+  const nonCreatableFields = fields.filter(
+    (f) => !isFlutterCreatable(f, modules)
+  );
+  const updatableFields = fields.filter((fIter) =>
+    isFieldUpdatable(fIter, modules)
   );
   const creatableThisField = creatableFields
     .map((fIter) => {
-      const { field, fName } = fIter;
+      const { fName } = fIter;
       const required = isFlutterFieldRequired(fIter, modules)
         ? "@required"
         : "";
-      const prefix = isTypeReference(field)
-        ? `${pascalOfCol(field.collection)} `
-        : "this.";
-      return `${required} ${prefix}${fName},`;
+      return `${required} this.${fName},`;
     })
     .join("");
-  function getDLAttributeString(attr: DynamicLinkAttribute) {
-    if (isDynamicLinkAttributeFromField(attr)) {
-      return `${singular}Doc.${attr.field}`;
-    }
-    return `"${attr}"`;
-  }
-  function getDefaultValueString(fIter: FieldIteration) {
-    const { field, fName } = fIter;
-    const prefix = `'${fName}':`;
-    if (isTypeCount(field) || isTypeSum(field)) {
-      return `${prefix}0`;
-    }
-    if (field === "serverTimestamp") {
-      return `${prefix}DateTime.now()`;
-    }
-    if (isTypeDynamicLink(field)) {
-      const { title, description, imageURL, isSuffixShort } = field;
-      const titleString = title ? `title: ${getDLAttributeString(title)},` : "";
-      const descString = description
-        ? `description: ${getDLAttributeString(description)},`
-        : "";
-      const imgUrlString = imageURL
-        ? `imageUrl: ${getDLAttributeString(imageURL)},`
-        : "";
-      const shortSuffix = isSuffixShort
-        ? `isSuffixShort : ${isSuffixShort},`
-        : "";
 
-      return `${prefix}DynamicLinkField(
-        ${titleString}
-        ${descString}
-        ${imgUrlString}
-        ${shortSuffix})`;
-    }
-    return null;
-  }
-  const defaultValueMap = _(fields)
-    .map((fIter) => getDefaultValueString(fIter))
-    .compact()
-    .map((x) => `${x},`)
-    .join("");
-  const dataMap = fields
-    .map(({ fName, field }) => {
-      const suffix = isTypeReference(field) ? `.toDataMap()` : "";
-      return `'${fName}': ${singular}Doc.${fName}${suffix},`;
-    })
-    .join("");
-  const firestoreCreateFields = creatableFields
-    .map(({ fName }) => `'${fName}',`)
-    .join("");
-  const sums = _(colIterOf(schema))
-    .map((colIter) =>
-      fIterOf(colIter).map(function ({ fName: sumFName, field }) {
-        if (isTypeSum(field) && field.collection === colName) {
-          const refFieldName = field.reference;
-          return `Sum(
-          field: '${field.field}',
-          sumDocCol: '${colNameOfRefFieldName(refFieldName)}',
-          sumDocRef: ${singular}Doc.${refFieldName}.reference,
-          sumField: '${sumFName}',),`;
-        }
-      })
-    )
-    .flatMap()
-    .compact()
-    .join("");
-
-  function colNameOfRefFieldName(refFieldName: string) {
-    const refField = col.fields[refFieldName] as ReferenceField;
-    return refField.collection;
-  }
-
-  const counts = _(colIterOf(schema))
-    .map((colIter) =>
-      fIterOf(colIter).map(({ fName: countFName, field }) => {
-        if (isTypeCount(field) && field.collection === colName) {
-          const refFieldName = field.reference;
-          return `Count(
-          countDocCol: '${colNameOfRefFieldName(refFieldName)}',
-          countDocRef: ${singular}Doc.${refFieldName}.reference,
-          countField: '${countFName}',),`;
-        }
-      })
-    )
-    .flatMap()
-    .compact()
-    .join("");
-  const shouldBeDeletedCondition = _(fields)
-    .map(function ({ fName, field }) {
-      if (
-        (isTypeFloat(field) || isTypeInt(field)) &&
-        !_.isNil(field.deleteDocWhen)
-      ) {
-        return `${singular}Doc.${fName} == ${field.deleteDocWhen}`;
-      }
-    })
-    .compact()
-    .join("&&");
-  const shouldBeDeleted =
-    shouldBeDeletedCondition !== "" ? shouldBeDeletedCondition : "false";
   const keys =
     schema.authentication?.userCollection === colName
       ? `${schema.authentication.uidField}`
@@ -335,156 +148,184 @@ function classString(
           ?.map((keyFName) => `${keyFName}.reference?.id,`)
           .join("") ?? "";
 
-  function assignFromRef(fIter: {
-    field: ReferenceField;
-    fName: string;
-    col: Collection;
-    colName: string;
-    schema: FlamestoreSchema;
-  }) {
-    return `${dataTypeString(fIter)}.from${pascalOfCol(fIter.field.collection)}(
-            ${fIter.fName}:${fIter.fName})`;
-  }
-
-  const assignReference = _(fields)
-    .map((fIter) =>
-      isTypeReference(fIter.field)
-        ? `${fIter.fName}= ${assignFromRef({
-            ...fIter,
-            field: fIter.field,
-          })}`
-        : null
-    )
-    .compact()
-    .join(",");
-
-  const copyWithParam = creatableFields
-    .map(
-      (fIter) =>
-        `${
-          isTypeReference(fIter.field)
-            ? pascalOfCol(fIter.field.collection)
-            : dataTypeString(fIter)
-        } ${fIter.fName},`
-    )
-    .join("");
-  const copyWithAssign = creatableFields
-    .map((fIter) =>
-      isTypeReference(fIter.field)
-        ? `${fIter.fName}: ${fIter.fName} != null ? ${assignFromRef({
-            ...fIter,
-            field: fIter.field,
-          })} : this.${fIter.fName},`
-        : `${fIter.fName}: ${fIter.fName} ?? this.${fIter.fName},`
-    )
-    .join("");
-  const finalAssignReference =
-    assignReference === "" ? "" : `:${assignReference}`;
   return `
 
-  ${referenceClasses}
-  class ${pascal} extends Document {
-    ${pascal}({
+  class ${pascalColName} extends Document {
+
+    ${pascalColName}({
       ${creatableThisField}
-    })${finalAssignReference};
-    ${pascal}._({
-      ${thisField}
-    });
-   ${finalField}
-   ${pascal} copyWith({
-     ${copyWithParam}
+    }): ${nonCreatableFields
+      .map((f) => `${f.fName}= ${defaultValue(f)},`)
+      .join("")}
+    super(null);
+
+    ${pascalColName}._fromMap(Map<String, dynamic> data)
+        : ${fields.map((f) => `${f.fName} = ${fromMap(f)},`).join("")}
+        super(data['reference']);
+
+    ${pascalColName}._({
+      ${fields.map(({ fName }) => `@required this.${fName},`).join("")}
+      @required DocumentReference reference,
+    }):super(reference);
+   ${pascalColName} copyWith({
+     ${updatableFields.map((f) => `${typeOf(f)} ${f.fName},`).join("")}
    }){
-     return ${pascal}._(
-      ${copyWithAssign}
+     return ${pascalColName}._(
+       ${fields
+         .map((f) => `${f.fName}: ${copyWithAssign(f, modules)},`)
+         .join("")}
+       reference: this.reference,
      );
    }
+   ${fields.map((fIter) => `final ${typeOf(fIter)} ${fIter.fName};`).join("")}
 
    @override
    String get colName => "${colName}";
 
    @override
-   List<String> get keys => [${keys}];
+   List<String> get keys {
+     return [${keys}];
+   }
   }
 
 
   final ${pluralize.singular(
     colName
-  )}Definition = DocumentDefinition<${pascal}>(
-    mapToDoc: (data) =>
-      ${pascal}._(
-        ${fieldDataField}
-      ),
-    defaultValueMap: (doc){
-      ${colDoc}
-      return {
-        ${defaultValueMap}
-      };
-    },
+  )}Definition = DocumentDefinition<${pascalColName}>(
+    mapToDoc: (data) => ${pascalColName}._fromMap(data),
     docToMap:(doc){
-      ${colDoc}
       return {
-        ${dataMap}
+        ${fields.map((f) => `'${f.fName}': ${docToMap(f)},`).join("")}
       };
     },
-    creatableFields:() => [
-      ${firestoreCreateFields}
+    creatableFields: [
+      ${creatableFields.map(({ fName }) => `'${fName}',`).join("")}
     ],
-    sums:(doc){
-      ${colDoc}
-      return [
-        ${sums}
-      ];
-    },
-    counts:(doc) {
-      ${colDoc}
-      return [
-        ${counts}
-      ];
-    },
-    docShouldBeDeleted:(doc){
-      ${colDoc}
-      return ${shouldBeDeleted};
-    },
+    updatableFields: [
+      ${updatableFields.map(({ fName }) => `'${fName}',`).join("")}
+    ],
   );
   `;
 }
 
-function dataTypeString({ fName, field, colName }: FieldIteration): string {
-  if (isTypeString(field)) {
-    return "String";
-  }
-  if (isTypeCount(field) || isTypeInt(field) || isTypeSum(field)) {
-    return "int";
-  }
-  if (isTypeFloat(field)) {
-    return "double";
-  }
+function fromMap(fIter: FieldIteration): string {
+  const { fName } = fIter;
+  return `${fromMapFieldName(fIter)}Field.fromMap(data['${fName}']).value`;
+}
+
+function docToMap(fIter: FieldIteration): string {
+  const { fName } = fIter;
+  return `${fromMapFieldName(fIter)}Field(doc.${fName})`;
+}
+
+// function assignFromRef(fIter: {
+//   field: ReferenceField;
+//   fName: string;
+//   col: Collection;
+//   colName: string;
+//   schema: FlamestoreSchema;
+// }) {
+//   return `${typeOf(fIter)}.from${pascalOfCol(fIter.field.collection)}(
+//             ${fIter.fName}:${fIter.fName})`;
+// }
+
+function defaultValue(fIter: FieldIteration): string {
+  const { field } = fIter;
+  if (isTypeReference(field)) return "zzzz";
+  if (isTypeCount(field) || isTypeSum(field)) return "0";
+  return "null";
+}
+function copyWithAssign(
+  fIter: FieldIteration,
+  modules: FlamestoreModule[]
+): string {
+  const { fName } = fIter;
+  const thisFname = `this.${fName}`;
+  return isFieldUpdatable(fIter, modules)
+    ? `${fName} ??${thisFname}`
+    : thisFname;
+}
+
+type primitiveTypes =
+  | "String"
+  | "int"
+  | "double"
+  | "DateTime"
+  | "DocumentReference";
+
+function typeOf(fIter: FieldIteration): string {
+  const { field } = fIter;
   if (isTypeReference(field)) {
-    return `_${pascalOfCol(colName)}${getPascal(fName)}`;
+    return "_HA";
   }
-  if (field === "serverTimestamp") {
-    return "DateTime";
+  return typeOfPrimitive(field);
+}
+
+function typeOfPrimitive(
+  field: Exclude<Field, ReferenceField>
+): primitiveTypes {
+  if (field === "serverTimestamp") return "DateTime";
+  if (isTypeString(field)) return "String";
+  if (isTypeInt(field)) return "int";
+  if (isTypeFloat(field)) return "double";
+  if (isTypeCount(field)) return "int";
+  if (isTypeSum(field)) return "double";
+  if (isTypeDatetime(field)) return "DateTime";
+  if (isTypeDynamicLink(field)) return "String";
+  if (isTypeImage(field)) return "String";
+  return typeOfComputed(field.compute);
+}
+
+function typeOfComputed(compute: PrimitiveFieldTypes): primitiveTypes {
+  if (compute === "float") return "double";
+  if (compute === "int") return "int";
+  if (compute === "path") return "DocumentReference";
+  if (compute === "timestamp") return "DateTime";
+  if (compute === "string") return "String";
+  throw Error(`${compute}`);
+}
+type primitiveFieldName =
+  | "String"
+  | "Int"
+  | "Float"
+  | "Timestamp"
+  | "Sum"
+  | "Count"
+  | "DynamicLink"
+  | "Reference";
+
+function fromMapFieldName(fIter: FieldIteration): string {
+  const { field, pascalColName, pascalFName } = fIter;
+  if (isTypeReference(field)) {
+    return "b";
   }
-  if (isTypeComputed(field)) {
-    if (field.compute === "float") {
-      return "double";
-    }
-    if (field.compute === "int") {
-      return "int";
-    }
-    if (field.compute === "path") {
-      return "DocumentReference";
-    }
-    if (field.compute === "timestamp") {
-      return "DateTime";
-    }
-    if (field.compute === "string") {
-      return "String";
-    }
+  if (isTypeImage(field)) {
+    return `_${pascalColName}${pascalFName}`;
   }
-  if (isTypeDynamicLink(field)) {
-    return "String";
-  }
-  console.log(field);
-  throw Error();
+  return fromMapFieldNamePrimitive(field);
+}
+
+function fromMapFieldNamePrimitive(
+  field: Exclude<Field, ReferenceField | ImageField>
+): primitiveFieldName {
+  if (isTypeString(field)) return "String";
+  if (isTypeCount(field)) return "Count";
+  if (isTypeSum(field)) return "Sum";
+  if (isTypeFloat(field)) return "Float";
+  if (isTypeInt(field)) return "Int";
+  if (isTypeDatetime(field)) return "Timestamp";
+  if (isTypeDynamicLink(field)) return "DynamicLink";
+  if (field === "serverTimestamp") return "Timestamp";
+  return fromMapComputedFieldName(field.compute);
+}
+
+function fromMapComputedFieldName(
+  compute: PrimitiveFieldTypes
+): primitiveFieldName {
+  if (compute === "float") return "Float";
+  if (compute === "int") return "Int";
+  if (compute === "timestamp") return "Timestamp";
+  if (compute === "string") return "String";
+  if (compute === "path") return "Reference";
+  assertNever(compute);
 }
