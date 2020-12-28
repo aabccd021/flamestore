@@ -8,29 +8,21 @@ export function pathTriggerGenerator(
   field: ReferenceField,
   fIter: FieldIteration
 ): Trigger[] {
+  //
   const { pascalFName, fName, colName, schema, singularColName } = fIter;
   const syncFields = getSyncFields(field, schema);
   if (syncFields.length === 0) return [];
 
-  // get collection name to sync from
-  const {
-    pascalColName: pascalColNameToSyncFrom,
-    colName: colNameToSyncFrom,
-  } = colIterOf(field.collection, schema);
-
-  // dataname
-  const refDataStr = `${singularColName}${pascalColNameToSyncFrom}Data`;
-
-  // data assignment
+  //
+  const { colName: colNameToSyncFrom } = colIterOf(field.collection, schema);
+  const refDataStr = `${singularColName}${pascalFName}Data`;
   const onCreateData = syncFields.map(
     ({ fName }) => `${fName}:${refDataStr}.${fName}`
   );
+  // TODO: change "!==" depends on type, use isEqual for timestamp and reference
   const onUpdateData = syncFields.map(
-    ({ fName }) =>
-      `${fName}: before.${fName} !== after.${fName} ? after.${fName}: null`
+    ({ fName: f }) => `${f}: before.${f} !== after.${f} ? after.${f}: null`
   );
-
-  // sync fields
   const dataName = `${colName}${pascalFName}Data`;
   const syncField = `${syncFieldStr}('${colName}','${fName}',snapshot,${dataName})`;
 

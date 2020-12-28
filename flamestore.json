@@ -34,7 +34,7 @@
         "tweetsCount": {
           "type": "count",
           "collection": "tweets",
-          "reference": "user"
+          "reference": "owner"
         }
       }
     },
@@ -44,9 +44,9 @@
       "rule:create": "owner",
       "rule:update": "owner",
       "rule:delete": "owner",
-      "ownerField": "user",
+      "ownerField": "owner",
       "fields": {
-        "user": {
+        "owner": {
           "type": "path",
           "collection": "users",
           "syncField": "userName"

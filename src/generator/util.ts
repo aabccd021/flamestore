@@ -210,7 +210,7 @@ export function fItersOf(
   colIter: CollectionIteration
 ): _.Collection<FieldIteration> {
   return _(colIter.col.fields).map((field, fName) => {
-    const pascalFName = toPascal(fName);
+    const pascalFName = _.upperFirst(fName);
     return {
       pascalFName,
       field,
@@ -226,8 +226,7 @@ export function colIterOf(
 ): CollectionIteration {
   const col = schema.collections[colName];
   const singularColName = pluralize.singular(colName);
-  const pascalColName =
-    singularColName[0].toUpperCase() + singularColName.substring(1);
+  const pascalColName = _.upperFirst(singularColName);
   return { col, colName, singularColName, pascalColName, schema };
 }
 
@@ -249,7 +248,7 @@ export function getSyncFields(
     .flatMap()
     .map((fName) => ({
       fName,
-      pascalFName: toPascal(fName),
+      pascalFName: _.upperFirst(fName),
       field: referenceCol.fields[fName],
       ...colIterOf(field.collection, schema),
     }))
@@ -263,9 +262,6 @@ export function getImageMetadatas(field: ImageField): ImageMetadata[] {
 
 export function assertNever(x: never): never {
   throw new Error("Unexpected object: " + x);
-}
-function toPascal(s: string): string {
-  return s[0].toUpperCase() + s.substring(1);
 }
 
 export function flatten<T>(array: ArrayOr<T>) {

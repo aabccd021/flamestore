@@ -14,6 +14,7 @@ import sharp from "sharp";
 import path from "path";
 export { ProjectConfiguration } from "./type";
 import { ImageMetadata } from "./type";
+import { assertNever } from "./generator/util";
 
 export function useFlamestoreUtils(
   firestore: typeof defaultFirestore,
@@ -108,7 +109,7 @@ export function useFlamestoreUtils(
     }
   }
 
-  function hasDependencyChanged<T>(before: T, after: T): boolean {
+  function hasDependencyChanged(before: Document, after: Document): boolean {
     for (const key in before) {
       if (!isFieldEqual(before[key], after[key])) {
         return true;
@@ -117,34 +118,64 @@ export function useFlamestoreUtils(
     return false;
   }
 
-  function isFieldEqual<T>(before: T, after: T): boolean {
-    if (
-      before instanceof firestore.Timestamp &&
-      after instanceof firestore.Timestamp
-    ) {
-      return before.isEqual(after);
+  type Document = { [key: string]: Field };
+
+  interface ImageField {
+    url?: string;
+    width?: number;
+    height?: number;
+    size?: number;
+  }
+
+  type Field =
+    | defaultFirestore.Timestamp
+    | defaultFirestore.DocumentReference
+    | number
+    | string
+    | ImageField
+    | Document;
+
+  function isFieldEqual(before?: Field, after?: Field): boolean {
+    if (_.isNil(before)) return _.isNil(after);
+    if (before instanceof firestore.Timestamp) {
+      if (after instanceof firestore.Timestamp) return before.isEqual(after);
+      return false;
     }
-    if (
-      before instanceof firestore.DocumentReference &&
-      after instanceof firestore.DocumentReference
-    ) {
-      return before.isEqual(after);
+    if (before instanceof firestore.DocumentReference) {
+      if (after instanceof firestore.DocumentReference) before.isEqual(after);
+      return false;
     }
-    if (isReference(before) && isReference(after)) {
-      for (const key in before) {
-        if (isFieldEqual(before[key], after[key])) {
-          return true;
-        }
+    if (typeof before === "string") {
+      if (typeof after === "string") return before === after;
+      return false;
+    }
+    if (typeof before === "number") {
+      if (typeof after === "number") return before === after;
+      return false;
+    }
+    if (isImage(before)) {
+      if (isImage(after)) return _.isEqual(before, after);
+      return false;
+    }
+    if (isReference(before)) {
+      if (isReference(after)) {
+        return _(before)
+          .keys()
+          .every((key) => isFieldEqual(before[key], after[key]));
       }
       return false;
     }
-    if (!before && !after) {
-      return false;
-    }
-    return before === after;
+    assertNever(before);
   }
 
-  function isReference(field: unknown): boolean {
+  function isImage(field: unknown): field is ImageField {
+    return (
+      Object.prototype.hasOwnProperty.call(field, "url") &&
+      !Object.prototype.hasOwnProperty.call(field, "reference")
+    );
+  }
+
+  function isReference(field: unknown): field is { [key: string]: Field } {
     return Object.prototype.hasOwnProperty.call(field, "reference");
   }
 

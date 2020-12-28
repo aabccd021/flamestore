@@ -45,6 +45,7 @@ export function getTriggerStr(
     useContext,
   } = dataOfTriggers(triggers, schema);
 
+  // prepare easy variables
   const suffixType = suffixStrOfType(triggerType);
   const snapshotType = snapshotStrOf(triggerType);
   const promiseCallStr = getPromiseCallStr(dependencies);
@@ -68,7 +69,7 @@ export function getTriggerStr(
     ...resultCommits,
   ]);
 
-  // get trigger content string
+  // get all contents string
   const contents: string[] = [
     headerStr,
     promiseCallStr,
@@ -79,10 +80,9 @@ export function getTriggerStr(
   ];
   const contentStr = contents.join("");
 
-  // return if content empty
+  // return if content empty, no need to add trigger prepare string
   if (contentStr === "") return "";
 
-  // return complete trigger content
   const prepareStr = getTriggerPrepareStr({
     triggerType,
     pascalColName,

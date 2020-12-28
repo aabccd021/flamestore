@@ -10,7 +10,7 @@ export interface User {
 }
 
 export interface Tweet {
-  user: {
+  owner: {
     reference: firestore.DocumentReference;
     userName?: string;
   };

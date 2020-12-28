@@ -10,24 +10,20 @@ export default function generateTrigger(
   outputFilePath: string,
   schema: FlamestoreSchema
 ): void {
-  // create directory if not exists
   const triggerDir = path.join(outputFilePath, "flamestore");
   if (!fs.existsSync(triggerDir)) fs.mkdirSync(triggerDir);
-
-  // generate triggers
   const triggers = fieldsOfSchema(schema).map(toTrigger).flatMap();
-
-  // generate string and write to file for each collections
   colsOf(schema).forEach((colIter) => {
     const { colName } = colIter;
-
-    // generate and merge trigger strings
     const triggerStr = triggerTypes
       .map((triggerType) => getTriggerStr(colIter, triggerType, triggers))
       .join("");
-    const colTriggerStr =
+    const triggerWithImportStr =
       getModelImportsStr(schema) + utilImports + "\n" + triggerStr;
 
-    fs.writeFileSync(path.join(triggerDir, `${colName}.ts`), colTriggerStr);
+    fs.writeFileSync(
+      path.join(triggerDir, `${colName}.ts`),
+      triggerWithImportStr
+    );
   });
 }

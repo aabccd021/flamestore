@@ -12,26 +12,26 @@ export const onCreate = functions.firestore
   .document("/tweets/{documentId}")
   .onCreate(async (snapshot) => {
     const data = snapshot.data() as Tweet;
-    const [tweetUserDataSnapshot] = await Promise.all([
-      data.user.reference.get(),
+    const [tweetOwnerDataSnapshot] = await Promise.all([
+      data.owner.reference.get(),
     ]);
-    const tweetUserData = tweetUserDataSnapshot.data() as User;
+    const tweetOwnerData = tweetOwnerDataSnapshot.data() as User;
     const tweetData = {
-      user: { userName: tweetUserData.userName },
+      owner: { userName: tweetOwnerData.userName },
       likesSum: 0,
       creationTime: serverTimestamp(),
       image: await imageDataOf(
         "tweets",
         "image",
-        data.user.reference.id,
+        data.owner.reference.id,
         ["height", "width"],
         snapshot
       ),
     };
-    const userData = { tweetsCount: increment(1) };
+    const ownerData = { tweetsCount: increment(1) };
     await allSettled([
       update(snapshot.ref, tweetData),
-      update(data.user.reference, userData),
+      update(data.owner.reference, ownerData),
     ]);
   });
 
@@ -39,6 +39,6 @@ export const onDelete = functions.firestore
   .document("/tweets/{documentId}")
   .onDelete(async (snapshot) => {
     const data = snapshot.data() as Tweet;
-    const userData = { tweetsCount: increment(-1) };
-    await update(data.user.reference, userData);
+    const ownerData = { tweetsCount: increment(-1) };
+    await update(data.owner.reference, ownerData);
   });

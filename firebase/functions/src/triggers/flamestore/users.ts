@@ -15,10 +15,10 @@ export const onUpdate = functions.firestore
     const before = snapshot.before.data() as User;
     const after = snapshot.after.data() as User;
     if (await foundDuplicate("users", "userName", snapshot, context)) return;
-    const tweetsUserData = {
-      user: {
+    const tweetsOwnerData = {
+      owner: {
         userName: before.userName !== after.userName ? after.userName : null,
       },
     };
-    await syncField("tweets", "user", snapshot, tweetsUserData);
+    await syncField("tweets", "owner", snapshot, tweetsOwnerData);
   });

@@ -12,6 +12,8 @@ const rawSchema = JSON.parse(schemaJsonString);
 // modules.forEach(module => module.validateRaw && module.validateRaw(rawSchema));
 const unprocessedSchema: FlamestoreSchema = rawSchema;
 // TODO: Validate circular reference
+// TODO: reference field
+// TODO: document has owner if want to upload image
 // modules.forEach(module => module.validate && module.validate(schema));
 const schema = preprocessSchema(unprocessedSchema);
 // const rulePath = schema.ruleOutputPath ?? "firestore/firestore.rules";
