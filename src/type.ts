@@ -167,3 +167,5 @@ export interface FieldIteration extends CollectionIteration {
   fName: string;
   field: Field;
 }
+
+export type ArrayOr<T> = T | T[];

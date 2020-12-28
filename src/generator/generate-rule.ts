@@ -8,14 +8,14 @@ import {
   RuleType,
 } from "../type";
 import { FlamestoreModule } from "./type";
-import { colItersOf, fItersOf as fItersOf, isFieldOptional } from "./util";
+import { colsOf, fItersOf as fItersOf, isFieldOptional } from "./util";
 
 export default function generateRule(
   schema: FlamestoreSchema,
   outputFilePath: string,
   modules: FlamestoreModule[]
 ): void {
-  const colsRule = colItersOf(schema)
+  const colsRule = colsOf(schema)
     .map((colIter) => colRuleTemplate(modules, colIter))
     .join("\n");
   fs.writeFileSync(outputFilePath, ruleTemplate(colsRule));

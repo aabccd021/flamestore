@@ -4,10 +4,10 @@ import {
   FlamestoreSchema as Schema,
 } from "../../type";
 import _ from "lodash";
-import { colItersOf, fItersOf, isFieldComputed } from "../util";
+import { colsOf, fItersOf, isFieldComputed } from "../util";
 
 export function getComputedSchemaString(schema: Schema): string {
-  return colItersOf(schema)
+  return colsOf(schema)
     .filter(filterComputed)
     .map(getComputedSchemaColString)
     .join("");

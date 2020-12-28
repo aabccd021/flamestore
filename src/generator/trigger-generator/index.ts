@@ -1,30 +1,31 @@
 import * as path from "path";
 import * as fs from "fs";
-import _ from "lodash";
 import { FlamestoreSchema } from "../../type";
-import { colItersOf, fItersOf } from "../util";
-import { getTriggerMap } from "./field-trigger-generator";
-import { Trigger } from "./type";
-import { getColTriggerString } from "./generate-col-trigger";
+import { colsOf, fieldsOfSchema } from "../util";
+import { triggerTypes } from "./type";
+import { getTriggerStr, toTrigger } from "./trigger-util";
+import { modelImportsT, utilImports } from "./templates";
 
 export default function generateTrigger(
   outputFilePath: string,
   schema: FlamestoreSchema
 ): void {
-  const triggers: Trigger[] = _.flatMap(
-    colItersOf(schema).map((colIter) =>
-      _.flatMap(fItersOf(colIter).map(getTriggerMap))
-    )
-  );
+  // create directory if not exists
   const triggerDir = path.join(outputFilePath, "flamestore");
-  colItersOf(schema).forEach((colIter) => {
-    const { colName } = colIter;
-    const colTriggers = triggers.filter(
-      (trigger) => trigger.colName === colName
-    );
-    const triggerContent = getColTriggerString(colIter, colTriggers);
+  if (!fs.existsSync(triggerDir)) fs.mkdirSync(triggerDir);
 
-    if (!fs.existsSync(triggerDir)) fs.mkdirSync(triggerDir);
-    fs.writeFileSync(path.join(triggerDir, `${colName}.ts`), triggerContent);
+  // generate triggers
+  const triggers = fieldsOfSchema(schema).map(toTrigger).flatMap().value();
+
+  colsOf(schema).forEach((colIter) => {
+    const { colName } = colIter;
+
+    // generate and merge trigger strings
+    const triggerStr = triggerTypes
+      .map((triggerType) => getTriggerStr(colIter, triggerType, triggers))
+      .join("");
+    const colTriggerStr = modelImportsT(schema) + utilImports + triggerStr;
+
+    fs.writeFileSync(path.join(triggerDir, `${colName}.ts`), colTriggerStr);
   });
 }

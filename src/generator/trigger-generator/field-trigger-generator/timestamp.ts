@@ -1,4 +1,5 @@
 import { FieldIteration } from "../../../type";
+import { serverTimestampStr } from "../constants";
 import { Trigger } from "../type";
 
 export function timestampTriggerGenerator(
@@ -9,12 +10,10 @@ export function timestampTriggerGenerator(
     {
       colName,
       triggerType: "Create",
-      thisData: [
-        {
-          fName,
-          fValue: "serverTimestamp()",
-        },
-      ],
+      thisData: {
+        fName,
+        fValue: `${serverTimestampStr}()`,
+      },
     },
   ];
 }

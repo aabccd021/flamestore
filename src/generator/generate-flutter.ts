@@ -11,7 +11,7 @@ import { FlamestoreModule } from "./type";
 import path from "path";
 import * as fs from "fs";
 import {
-  colItersOf,
+  colsOf,
   fItersOf,
   isFieldCreatable,
   isTypeCount,
@@ -37,7 +37,7 @@ export function generateFlutter(
 ) {
   const content =
     imports +
-    colItersOf(schema)
+    colsOf(schema)
       .map((colIter) => classString(colIter, modules))
       .join("") +
     projectString(schema);
@@ -45,7 +45,7 @@ export function generateFlutter(
 }
 
 function projectString(schema: FlamestoreSchema) {
-  const colsWithDynamicLink = colItersOf(schema).filter((colIter) =>
+  const colsWithDynamicLink = colsOf(schema).filter((colIter) =>
     fItersOf(colIter).some(({ field }) => isTypeDynamicLink(field))
   );
   return `
@@ -66,12 +66,12 @@ function projectString(schema: FlamestoreSchema) {
         .join("")}
     },
     collectionClassMap: {
-      ${colItersOf(schema)
+      ${colsOf(schema)
         .map(({ colName, pascalColName }) => `${pascalColName}: '${colName}',`)
         .join("")}
     },
     documentDefinitions: {
-      ${colItersOf(schema)
+      ${colsOf(schema)
         .map(
           ({ colName, singularColName }) =>
             `'${colName}':${singularColName}Definition,`

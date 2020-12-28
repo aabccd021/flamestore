@@ -20,9 +20,9 @@ import {
   ComputedField,
   ImageField,
   ImageMetadata,
+  ArrayOr,
 } from "../type";
 import _ from "lodash";
-import { FlamestoreModule } from "./type";
 
 export function assertCollectionNameExists(
   collectionName: string,
@@ -198,8 +198,18 @@ export function isDynamicLinkAttributeFromField(
   );
 }
 
-export function fItersOf(colIter: CollectionIteration): FieldIteration[] {
-  return _.map(colIter.col.fields, (field, fName) => {
+export function fieldsOfSchema(
+  schema: FlamestoreSchema
+): _.Collection<FieldIteration> {
+  return colsOf(schema)
+    .map((colIter) => fItersOf(colIter).value())
+    .flatMap();
+}
+
+export function fItersOf(
+  colIter: CollectionIteration
+): _.Collection<FieldIteration> {
+  return _(colIter.col.fields).map((field, fName) => {
     const pascalFName = toPascal(fName);
     return {
       pascalFName,
@@ -221,76 +231,34 @@ export function colIterOf(
   return { col, colName, singularColName, pascalColName, schema };
 }
 
-export function colItersOf(schema: FlamestoreSchema): CollectionIteration[] {
-  return _.keys(schema.collections).map((colName) =>
-    colIterOf(colName, schema)
-  );
+export function colsOf(
+  schema: FlamestoreSchema
+): _.Collection<CollectionIteration> {
+  return _(schema.collections)
+    .keys()
+    .map((colName) => colIterOf(colName, schema));
 }
 
-export function isFieldRequired(
-  fIter: FieldIteration,
-  modules: FlamestoreModule[]
-) {
-  const { field } = fIter;
-  return !isFieldOptional(field) && isFieldCreatable(fIter, modules);
-}
-
-export function isFlutterFieldRequired(
-  fIter: FieldIteration,
-  modules: FlamestoreModule[]
-) {
-  const { field } = fIter;
-  return !isTypeDynamicLink(field) && isFieldRequired(fIter, modules);
-}
-
-export function isFieldCreatable(
-  fIter: FieldIteration,
-  modules: FlamestoreModule[]
-) {
-  return (
-    _(modules)
-      .map((module) => module.isCreatable)
-      .compact()
-      .some((isCreatable) => isCreatable(fIter)) &&
-    !_(modules)
-      .map((module) => module.isNotCreatable)
-      .compact()
-      .some((isNotCreatable) => isNotCreatable(fIter))
-  );
-}
-
-export function isFieldUpdatable(
-  fIter: FieldIteration,
-  modules: FlamestoreModule[]
-) {
-  return (
-    _(modules)
-      .map((module) => module.isUpdatable)
-      .compact()
-      .some((isUpdatable) => isUpdatable(fIter)) &&
-    !_(modules)
-      .map((module) => module.isNotUpdatable)
-      .compact()
-      .some((isNotUpdatable) => isNotUpdatable(fIter))
-  );
-}
 export function getSyncFields(
   field: ReferenceField,
   schema: FlamestoreSchema
 ): FieldIteration[] {
   if (!field.syncField) return [];
   const referenceCol = schema.collections[field.collection];
-  return _.flatMap([field.syncField]).map((fName) => ({
-    fName,
-    pascalFName: toPascal(fName),
-    field: referenceCol.fields[fName],
-    ...colIterOf(field.collection, schema),
-  }));
+  return _([field.syncField])
+    .flatMap()
+    .map((fName) => ({
+      fName,
+      pascalFName: toPascal(fName),
+      field: referenceCol.fields[fName],
+      ...colIterOf(field.collection, schema),
+    }))
+    .value();
 }
 
 export function getImageMetadatas(field: ImageField): ImageMetadata[] {
   if (!field.metadata) return [];
-  return _.flatMap([field.metadata]).map((x) => x);
+  return _([field.metadata]).flatMap().value();
 }
 
 export function assertNever(x: never): never {
@@ -298,4 +266,8 @@ export function assertNever(x: never): never {
 }
 function toPascal(s: string): string {
   return s[0].toUpperCase() + s.substring(1);
+}
+
+export function flatten<T>(array: ArrayOr<T>) {
+  return _([array]).flatMap().value();
 }

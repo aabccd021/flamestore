@@ -1,5 +1,6 @@
 import { FieldIteration, ImageField } from "../../../type";
 import { getImageMetadatas } from "../../util";
+import { imageDataT, ownerRefIdT } from "../templates";
 import { Trigger } from "../type";
 
 export function imageTriggerGenerator(
@@ -7,25 +8,20 @@ export function imageTriggerGenerator(
   fIter: FieldIteration
 ): Trigger[] {
   const { colName, fName, col } = fIter;
-  const value = `
-    await imageDataOf(
-      "${colName}",
-      "${fName}",
-      data.${col.ownerField}.reference.id,
-      [${getImageMetadatas(field).map((x) => `"${x}"`)}],
-      snapshot,
-    )`;
+  const { ownerField } = col;
+  if (!ownerField) throw Error("ownerField required for image upload");
+
+  const id = ownerRefIdT({ ownerField });
+  const metadatas = getImageMetadatas(field);
   return [
     {
       colName,
       triggerType: "Create",
       useThisData: true,
-      thisData: [
-        {
-          fName: fName,
-          fValue: value,
-        },
-      ],
+      thisData: {
+        fName: fName,
+        fValue: imageDataT({ colName, fName, id, metadatas }),
+      },
     },
   ];
 }

@@ -1,5 +1,5 @@
 import { FlamestoreSchema, ReferenceField } from "../type";
-import { colItersOf } from "./util";
+import { colsOf } from "./util";
 
 export function preprocessSchema(schema: FlamestoreSchema): FlamestoreSchema {
   if (schema.authentication) {
@@ -7,7 +7,7 @@ export function preprocessSchema(schema: FlamestoreSchema): FlamestoreSchema {
     schema.collections[auth.userCollection].fields[auth.uidField] = {
       type: "string",
     };
-    colItersOf(schema).forEach(({ colName, col }) => {
+    colsOf(schema).forEach(({ colName, col }) => {
       if (col.ownerField) {
         if (col.fields[col.ownerField]) {
           (schema.collections[colName].fields[

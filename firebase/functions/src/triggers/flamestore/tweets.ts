@@ -11,12 +11,12 @@ export const onCreate = functions.firestore
   .document("/tweets/{documentId}")
   .onCreate(async (snapshot) => {
     const data = snapshot.data() as Tweet;
-    const [refusersDataSnapshot] = await Promise.all([
+    const [tweetUserDataSnapshot] = await Promise.all([
       data.user.reference.get(),
     ]);
-    const refusersData = refusersDataSnapshot.data() as User;
-    const snapshotRefData = {
-      user: { userName: refusersData.userName },
+    const tweetUserData = tweetUserDataSnapshot.data() as User;
+    const tweetData = {
+      user: { userName: tweetUserData.userName },
       likesSum: 0,
       creationTime: serverTimestamp(),
       image: await imageDataOf(
@@ -29,7 +29,7 @@ export const onCreate = functions.firestore
     };
     const userData = { tweetsCount: increment(1) };
     await allSettled([
-      update(snapshot.ref, snapshotRefData),
+      update(snapshot.ref, tweetData),
       update(data.user.reference, userData),
     ]);
   });

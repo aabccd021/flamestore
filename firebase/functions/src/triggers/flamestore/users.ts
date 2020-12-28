@@ -4,8 +4,8 @@ export const onCreate = functions.firestore
   .document("/users/{documentId}")
   .onCreate(async (snapshot, context) => {
     if (await foundDuplicate("users", "userName", snapshot, context)) return;
-    const snapshotRefData = { tweetsCount: 0 };
-    await update(snapshot.ref, snapshotRefData);
+    const userData = { tweetsCount: 0 };
+    await update(snapshot.ref, userData);
   });
 
 export const onUpdate = functions.firestore
@@ -16,7 +16,7 @@ export const onUpdate = functions.firestore
     if (await foundDuplicate("users", "userName", snapshot, context)) return;
     const tweetsUserData = {
       user: {
-        userName: after.userName !== before.userName ? after.userName : null,
+        userName: before.userName !== after.userName ? after.userName : null,
       },
     };
     await syncField("tweets", "user", snapshot, tweetsUserData);

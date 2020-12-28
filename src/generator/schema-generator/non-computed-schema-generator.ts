@@ -5,7 +5,7 @@ import {
   FlamestoreSchema as Schema,
 } from "../../type";
 import {
-  colItersOf,
+  colsOf,
   fItersOf,
   isFieldComputed,
   isFieldNotCreatable,
@@ -20,7 +20,7 @@ import {
 import { typeOf } from "./utils";
 
 export function getNonComputedSchemaString(schema: Schema): string {
-  return colItersOf(schema).map(getNonComputedSchemaColString).join("\n\n");
+  return colsOf(schema).map(getNonComputedSchemaColString).join("\n\n");
 }
 
 function getNonComputedSchemaColString(colIter: CIter): string {

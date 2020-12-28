@@ -1,49 +1,75 @@
 import { CollectionIteration, FlamestoreSchema } from "../../type";
-import { assertNever, colItersOf } from "../util";
-import { TriggerType } from "./type";
+import { assertNever, colsOf } from "../util";
+import {
+  incrementStr,
+  imageDataStr,
+  updateStr,
+  foundDuplicateStr,
+  serverTimestampStr,
+  syncFieldStr,
+  allSettledStr,
+} from "./constants";
+import { FieldTuple, TriggerData, TriggerType } from "./type";
 
-const foundDuplicateString = "foundDuplicate";
-const functionsString = "functions";
-const incrementString = "increment";
-const serverTimestampString = "serverTimestamp";
-const syncFieldString = "syncField";
-const allSettledString = "allSettled";
-const updateString = "update";
-const imageDataOfString = "imageDataOf";
-const thisDataNameString = "snapshotRef";
-
-export function updateThisData(suffix: DataSuffix): string {
-  return _updateData(`snapshot${suffix}.ref`, thisDataNameString);
+export const functionsString = "functions";
+export function dataFieldT(fName: string): string {
+  return `data.${fName}`;
 }
-export function updateData(dataType: DataName, dataName: string): string {
-  return _updateData(`${dataType}.${dataName}.reference`, dataName);
+export function promiseT(fName: string): string {
+  return `data.${fName}.reference.get()`;
+}
+export function ownerRefIdT({ ownerField }: { ownerField: string }) {
+  return `data.${ownerField}.reference.id`;
 }
 
-function _updateData(reference: string, dataName: string): string {
-  return `${updateString}(${reference}, ${dataString(dataName)})`;
+export function imageDataT({
+  colName,
+  fName,
+  id,
+  metadatas,
+}: {
+  colName: string;
+  fName: string;
+  id: string;
+  metadatas: string[];
+}): string {
+  const metadatasString = metadatas.map((x) => `"${x}"`);
+  return (
+    `await ${imageDataStr}("${colName}","${fName}",${id},[${metadatasString}]` +
+    `,snapshot)`
+  );
 }
 
-export function dataString(dataName: string): string {
+export function updateDataT(
+  snapshotDataName: SnapshotDataName,
+  dataName: string
+): string {
+  const dataStr = dataStringT(dataName);
+  const referenceStr = `${snapshotDataName}.${dataName}.reference`;
+  return `${updateStr}(${referenceStr}, ${dataStr})`;
+}
+
+function dataStringT(dataName: string): string {
   return `${dataName}Data`;
 }
-export function snapshotString(dataName: string): string {
+export function snapshotStringT(dataName: string): string {
   return `${dataName}Snapshot`;
 }
 
 export const utilImports = `
   import {
-  ${foundDuplicateString},
+  ${foundDuplicateStr},
   ${functionsString},
-  ${incrementString},
-  ${serverTimestampString},
-  ${syncFieldString},
-  ${allSettledString},
-  ${updateString},
-  ${imageDataOfString},
+  ${incrementStr},
+  ${serverTimestampStr},
+  ${syncFieldStr},
+  ${allSettledStr},
+  ${updateStr},
+  ${imageDataStr},
   } from '../utils';`;
 
-type DataName = "after" | "data";
-export function dataNameOfTriggerType(triggerType: TriggerType): DataName {
+type SnapshotDataName = "after" | "data";
+export function snapshotNameOf(triggerType: TriggerType): SnapshotDataName {
   if (triggerType === "Create") return "data";
   if (triggerType === "Delete") return "data";
   if (triggerType === "Update") return "after";
@@ -51,20 +77,23 @@ export function dataNameOfTriggerType(triggerType: TriggerType): DataName {
 }
 
 type DataSuffix = ".after" | "";
-export function dataSuffixOfTriggerType(triggerType: TriggerType): DataSuffix {
+export function suffixStrOfType(triggerType: TriggerType): DataSuffix {
   if (triggerType === "Create") return "";
   if (triggerType === "Delete") return "";
   if (triggerType === "Update") return ".after";
   assertNever(triggerType);
 }
 
-export function triggerPrepareString({
+export function triggerPrepareT({
   triggerType,
   pascalColName,
+  useThisData,
 }: {
   triggerType: TriggerType;
   pascalColName: string;
+  useThisData: boolean;
 }): string {
+  if (!useThisData) return "";
   if (triggerType === "Create" || triggerType === "Delete") {
     return `const data = snapshot.data() as ${pascalColName};`;
   }
@@ -75,38 +104,51 @@ export function triggerPrepareString({
   assertNever(triggerType);
 }
 
-export function getBatchCommitString({
-  commits,
-}: {
-  commits: string[];
-}): string {
+export function batchCommitT({ commits }: { commits: string[] }): string {
   if (commits.length === 0) return "";
   if (commits.length === 1) return `await ${commits[0]};`;
-  return `await ${allSettledString}([${commits.join(",")}]);`;
+  return `await ${allSettledStr}([${commits.join(",")}]);`;
 }
 
-export function thisDataAssignment({
-  fields,
-}: {
-  fields: { fName: string; fValue: string }[];
-}): string {
-  return dataAssignment({ dataName: thisDataNameString, fields });
+export function updateThisDataT(
+  { singularColName }: CollectionIteration,
+  suffix: DataSuffix,
+  fields: FieldTuple[]
+): string[] {
+  if (fields.length === 0) return [];
+  const dataName = dataStringT(singularColName);
+  return [`${updateStr}(snapshot${suffix}.ref, ${dataName})`];
 }
 
-export function dataAssignment({
-  dataName,
-  fields,
-}: {
-  dataName: string;
-  fields: { fName: string; fValue: string }[];
-}): string {
+export function thisDataAssignStrOf(
+  { singularColName }: CollectionIteration,
+  fields: FieldTuple[]
+): string {
+  if (fields.length === 0) return "";
   const dataContent = fields
     .map(({ fName, fValue }) => `${fName}: ${fValue}`)
     .join(",");
-  return `const ${dataString(dataName)} = {${dataContent}};`;
+  const dataName = dataStringT(singularColName);
+  return `const ${dataName} = {${dataContent}};`;
 }
 
-export function triggerTemplate({
+export function toNonUpdateDataAssignStr(triggerData: TriggerData): string {
+  const { fields, dataName } = triggerData;
+  const dataContent = fields
+    .map(({ fName, fValue }) => `${fName}: ${fValue}`)
+    .join(",");
+  return `const ${dataName} = {${dataContent}};`;
+}
+
+export function toDataAssignStr(triggerData: TriggerData): string {
+  const { fields, dataName } = triggerData;
+  const dataContent = fields
+    .map(({ fName, fValue }) => `${fName}: ${fValue}`)
+    .join(",");
+  return `const ${dataStringT(dataName)} = {${dataContent}};`;
+}
+
+export function triggerT({
   useContext = false,
   colName,
   triggerType,
@@ -128,14 +170,14 @@ export function triggerTemplate({
   `;
 }
 
-export function modelImports(schema: FlamestoreSchema): string {
-  const modelNames = colItersOf(schema)
+export function modelImportsT(schema: FlamestoreSchema): string {
+  const modelNames = colsOf(schema)
     .map(({ pascalColName }) => pascalColName)
     .join(",");
   return `import {${modelNames}} from "../models"`;
 }
 
-export function getPromisesString(
+export function promisesT(
   dependencies?: {
     key: string;
     colIter: CollectionIteration;
@@ -144,12 +186,12 @@ export function getPromisesString(
 ): string {
   if (!dependencies) return "";
   if (dependencies.length === 0) return "";
-  const names = dependencies.map(({ key }) => snapshotString(key)).join();
+  const names = dependencies.map(({ key }) => snapshotStringT(key)).join();
   const promises = dependencies.map(({ promise }) => promise).join();
   const assignments = dependencies
     .map(
       ({ colIter, key }) =>
-        `const ${key} = ${snapshotString(key)}.data() as ${
+        `const ${key} = ${snapshotStringT(key)}.data() as ${
           colIter.pascalColName
         };`
     )
