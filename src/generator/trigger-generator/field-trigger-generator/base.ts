@@ -1,5 +1,6 @@
 import { FieldIteration } from "../../../type";
 import { isFieldUnique } from "../../util";
+import { foundDuplicateStr } from "../constants";
 import { Trigger } from "../type";
 
 export function baseTriggerGenerator({
@@ -8,22 +9,20 @@ export function baseTriggerGenerator({
   colName,
 }: FieldIteration): Trigger[] {
   if (isFieldUnique(field)) {
-    const foundDuplicateString =
-      `if (await foundDuplicate( '${colName}','${fName}', snapshot, context))` +
-      ` return;`;
+    const handleDuplicateStr = `if (await ${foundDuplicateStr}( '${colName}','${fName}', snapshot, context)) return;`;
     return [
       {
         colName,
-        triggerType: "Create",
+        type: "Create",
         useContext: true,
-        header: [foundDuplicateString],
+        header: [handleDuplicateStr],
       },
 
       {
         colName,
-        triggerType: "Update",
+        type: "Update",
         useContext: true,
-        header: [foundDuplicateString],
+        header: [handleDuplicateStr],
       },
     ];
   }

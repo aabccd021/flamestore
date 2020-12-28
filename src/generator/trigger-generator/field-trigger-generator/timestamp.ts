@@ -9,8 +9,8 @@ export function timestampTriggerGenerator(
   return [
     {
       colName,
-      triggerType: "Create",
-      thisData: {
+      type: "Create",
+      selfDocData: {
         fName,
         fValue: `${serverTimestampStr}()`,
       },

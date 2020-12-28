@@ -4,7 +4,7 @@ import { FlamestoreSchema } from "../../type";
 import { colsOf, fieldsOfSchema } from "../util";
 import { triggerTypes } from "./type";
 import { getTriggerStr, toTrigger } from "./trigger-util";
-import { modelImportsT, utilImports } from "./templates";
+import { getModelImportsStr, utilImports } from "./templates";
 
 export default function generateTrigger(
   outputFilePath: string,
@@ -17,6 +17,7 @@ export default function generateTrigger(
   // generate triggers
   const triggers = fieldsOfSchema(schema).map(toTrigger).flatMap().value();
 
+  // generate string and write to file for each collections
   colsOf(schema).forEach((colIter) => {
     const { colName } = colIter;
 
@@ -24,7 +25,7 @@ export default function generateTrigger(
     const triggerStr = triggerTypes
       .map((triggerType) => getTriggerStr(colIter, triggerType, triggers))
       .join("");
-    const colTriggerStr = modelImportsT(schema) + utilImports + triggerStr;
+    const colTriggerStr = getModelImportsStr(schema) + utilImports + triggerStr;
 
     fs.writeFileSync(path.join(triggerDir, `${colName}.ts`), colTriggerStr);
   });

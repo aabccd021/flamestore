@@ -1,6 +1,6 @@
 import { FieldIteration, SumField } from "../../../type";
 import { incrementStr } from "../constants";
-import { dataFieldT } from "../templates";
+import { getDataFieldStr } from "../templates";
 import { Trigger } from "../type";
 
 export function sumTriggerGenerator(
@@ -9,30 +9,30 @@ export function sumTriggerGenerator(
 ): Trigger[] {
   const targetRef = field.reference;
   const incField = field.field;
-  const dataField = dataFieldT(incField);
+  const dataField = getDataFieldStr(incField);
   return [
     {
       colName,
-      triggerType: "Create",
-      thisData: {
+      type: "Create",
+      selfDocData: {
         fName,
         fValue: "0",
       },
     },
     {
       colName: field.collection,
-      triggerType: "Create",
-      useThisData: true,
-      data: {
+      type: "Create",
+      useSelfDocData: true,
+      updatedData: {
         dataName: targetRef,
         fields: [{ fName, fValue: `${incrementStr}(${dataField})` }],
       },
     },
     {
       colName: field.collection,
-      triggerType: "Update",
-      useThisData: true,
-      data: {
+      type: "Update",
+      useSelfDocData: true,
+      updatedData: {
         dataName: targetRef,
         fields: [
           {
@@ -47,9 +47,9 @@ export function sumTriggerGenerator(
     },
     {
       colName: field.collection,
-      triggerType: "Delete",
-      useThisData: true,
-      data: {
+      type: "Delete",
+      useSelfDocData: true,
+      updatedData: {
         dataName: targetRef,
         fields: [{ fName, fValue: `${incrementStr}(-${dataField})` }],
       },

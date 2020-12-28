@@ -8,17 +8,17 @@ import { pathTriggerGenerator } from "./field-trigger-generator/path";
 import { sumTriggerGenerator } from "./field-trigger-generator/sum";
 import { timestampTriggerGenerator } from "./field-trigger-generator/timestamp";
 import {
-  batchCommitT,
-  promisesT,
-  triggerPrepareT,
-  triggerT,
-  updateDataT as getUpdateData,
-  updateThisDataT,
+  getBatchCommitStr,
+  getPromiseCallStr,
+  getTriggerPrepareStr,
+  getUpdateUpdateDataStr,
+  getUpdateSelfDocDataStr,
   toNonUpdateDataAssignStr,
   suffixStrOfType,
-  toDataAssignStr,
-  thisDataAssignStrOf,
+  toUpdateDataAssignStr,
+  getSelfDocDataAssignStr,
   snapshotNameOf,
+  getTriggerFunctionStr,
 } from "./templates";
 import { Trigger, TriggerType } from "./type";
 import { dataOfTriggers, filterTrigger } from "./utils";
@@ -35,37 +35,41 @@ export function getTriggerStr(
 
   // extract data from triggers
   const {
-    data,
-    nonUpdateData,
-    thisData,
-    promiseCommits,
+    updatedData: data,
+    nonUpdatedData: nonUpdateData,
+    selfDocData: thisData,
+    commits: promiseCommits,
     header,
     dependencies,
-    useThisData,
+    useSelfDocData: useThisData,
     useContext,
   } = dataOfTriggers(triggers, schema);
 
   const suffix = suffixStrOfType(triggerType);
-  const dataString = data.map(toDataAssignStr);
+  const dataString = data.map(toUpdateDataAssignStr);
   const nonUpdateDataString = nonUpdateData.map(toNonUpdateDataAssignStr);
-  const thisDataString = thisDataAssignStrOf(colIter, thisData);
-  const thisDataCommits = updateThisDataT(colIter, suffix, thisData);
+  const thisDataString = getSelfDocDataAssignStr(colIter, thisData);
+  const thisDataCommits = getUpdateSelfDocDataStr(colIter, suffix, thisData);
   const snapshotDataName = snapshotNameOf(triggerType);
   const dataCommits = data.map(({ dataName }) =>
-    getUpdateData(snapshotDataName, dataName)
+    getUpdateUpdateDataStr(snapshotDataName, dataName)
   );
   const commits = [...thisDataCommits, ...dataCommits, ...promiseCommits];
   const contentWOPrepare = [
     header,
-    promisesT(dependencies),
+    getPromiseCallStr(dependencies),
     thisDataString,
     dataString,
     nonUpdateDataString,
-    batchCommitT({ commits }),
+    getBatchCommitStr({ commits }),
   ].join("");
-  const prepare = triggerPrepareT({ triggerType, pascalColName, useThisData });
+  const prepare = getTriggerPrepareStr({
+    triggerType,
+    pascalColName,
+    useThisData,
+  });
   const content = contentWOPrepare === "" ? "" : prepare + contentWOPrepare;
-  return triggerT({ useContext, colName, triggerType, content });
+  return getTriggerFunctionStr({ useContext, colName, triggerType, content });
 }
 
 export function toTrigger(fIter: FieldIteration): Trigger[] {

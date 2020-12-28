@@ -1,7 +1,7 @@
 import { FieldIteration, ReferenceField } from "../../../type";
 import { colIterOf, getSyncFields } from "../../util";
 import { syncFieldStr } from "../constants";
-import { promiseT } from "../templates";
+import { getPromiseStr } from "../templates";
 import { Trigger } from "../type";
 
 export function pathTriggerGenerator(
@@ -28,26 +28,26 @@ export function pathTriggerGenerator(
   return [
     {
       colName,
-      triggerType: "Create",
-      thisData: {
+      type: "Create",
+      selfDocData: {
         fName,
         fValue: `{${onCreateData}}`,
       },
-      dependencies: {
+      dependency: {
         key: refDataStr,
-        promise: promiseT(fName),
+        promise: getPromiseStr(fName),
         colName: colNameToSyncFrom,
       },
     },
     {
       colName: colNameToSyncFrom,
-      triggerType: "Update",
-      useThisData: true,
-      nonUpdateData: {
+      type: "Update",
+      useSelfDocData: true,
+      nonUpdatedData: {
         dataName,
         fields: [{ fName, fValue: `{${onUpdateData}}` }],
       },
-      resultPromises: `${syncFieldStr}('${colName}','${fName}',snapshot,${dataName})`,
+      resultPromise: `${syncFieldStr}('${colName}','${fName}',snapshot,${dataName})`,
     },
   ];
 }
