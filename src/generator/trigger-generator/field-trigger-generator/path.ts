@@ -12,11 +12,16 @@ export function pathTriggerGenerator(
   const syncFields = getSyncFields(field, schema);
   if (syncFields.length === 0) return [];
 
+  // get collection name to sync from
   const {
     pascalColName: pascalColNameToSyncFrom,
     colName: colNameToSyncFrom,
   } = colIterOf(field.collection, schema);
+
+  // dataname
   const refDataStr = `${singularColName}${pascalColNameToSyncFrom}Data`;
+
+  // data assignment
   const onCreateData = syncFields.map(
     ({ fName }) => `${fName}:${refDataStr}.${fName}`
   );
@@ -24,15 +29,16 @@ export function pathTriggerGenerator(
     ({ fName }) =>
       `${fName}: before.${fName} !== after.${fName} ? after.${fName}: null`
   );
+
+  // sync fields
   const dataName = `${colName}${pascalFName}Data`;
+  const syncField = `${syncFieldStr}('${colName}','${fName}',snapshot,${dataName})`;
+
   return [
     {
       colName,
       type: "Create",
-      selfDocData: {
-        fName,
-        fValue: `{${onCreateData}}`,
-      },
+      docData: { fName, fValue: `{${onCreateData}}` },
       dependency: {
         key: refDataStr,
         promise: getPromiseStr(fName),
@@ -42,12 +48,12 @@ export function pathTriggerGenerator(
     {
       colName: colNameToSyncFrom,
       type: "Update",
-      useSelfDocData: true,
+      useDocData: true,
+      resultPromise: syncField,
       nonUpdatedData: {
         dataName,
-        fields: [{ fName, fValue: `{${onUpdateData}}` }],
+        field: { fName, fValue: `{${onUpdateData}}` },
       },
-      resultPromise: `${syncFieldStr}('${colName}','${fName}',snapshot,${dataName})`,
     },
   ];
 }

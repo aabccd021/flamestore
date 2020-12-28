@@ -6,13 +6,13 @@ export type TriggerType = typeof triggerTypes[number];
 export interface Trigger {
   colName: string;
   type: TriggerType;
-  useSelfDocData?: boolean;
+  useDocData?: boolean;
   useContext?: boolean;
   header?: ArrayOr<string>;
   resultPromise?: ArrayOr<string>;
   updatedData?: ArrayOr<TriggerData>;
   nonUpdatedData?: ArrayOr<TriggerData>;
-  selfDocData?: ArrayOr<FieldTuple>;
+  docData?: ArrayOr<FieldTuple>;
   dependency?: ArrayOr<TriggerDependency>;
 }
 
@@ -23,7 +23,7 @@ export interface FieldTuple {
 
 export interface TriggerData {
   dataName: string;
-  fields: FieldTuple[];
+  field: ArrayOr<FieldTuple>;
 }
 
 export interface TriggerDependency {

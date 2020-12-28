@@ -14,27 +14,24 @@ export function countTriggerGenerator({
     {
       colName,
       type: "Create",
-      selfDocData: {
-        fName,
-        fValue: "0",
-      },
+      docData: { fName, fValue: "0" },
     },
     {
       colName: field.collection,
       type: "Create",
-      useSelfDocData: true,
+      useDocData: true,
       updatedData: {
         dataName: field.reference,
-        fields: [{ fName, fValue: `${incrementStr}(1)` }],
+        field: { fName, fValue: `${incrementStr}(1)` },
       },
     },
     {
       colName: field.collection,
       type: "Delete",
-      useSelfDocData: true,
+      useDocData: true,
       updatedData: {
         dataName: field.reference,
-        fields: [{ fName, fValue: `${incrementStr}(-1)` }],
+        field: { fName, fValue: `${incrementStr}(-1)` },
       },
     },
   ];

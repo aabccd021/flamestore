@@ -1,5 +1,6 @@
 import { Like } from "../models";
 import { functions, increment, update } from "../utils";
+
 export const onCreate = functions.firestore
   .document("/likes/{documentId}")
   .onCreate(async (snapshot) => {

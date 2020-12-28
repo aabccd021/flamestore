@@ -21,8 +21,8 @@ export function dataOfTriggers(
   useContext: boolean;
   updatedData: TriggerData[];
   nonUpdatedData: TriggerData[];
-  selfDocData: FieldTuple[];
-  commits: string[];
+  docData: FieldTuple[];
+  resultCommits: string[];
   header: string[];
   dependencies: {
     key: string;
@@ -30,7 +30,7 @@ export function dataOfTriggers(
     colIter: CollectionIteration;
   }[];
 } {
-  const useSelfDocData = triggers.some(({ useSelfDocData }) => useSelfDocData);
+  const useSelfDocData = triggers.some(({ useDocData }) => useDocData);
   const useContext = triggers.some(({ useContext }) => useContext);
   const dependencies = _(triggers)
     .map(({ dependency }) => dependency)
@@ -52,7 +52,7 @@ export function dataOfTriggers(
     .compact()
     .flatMap()
     .value();
-  const commits = _(triggers)
+  const resultCommits = _(triggers)
     .map(({ resultPromise }) => resultPromise)
     .compact()
     .flatMap()
@@ -67,8 +67,8 @@ export function dataOfTriggers(
     .compact()
     .flatMap()
     .value();
-  const selfDocData = _(triggers)
-    .map(({ selfDocData }) => selfDocData)
+  const docData = _(triggers)
+    .map(({ docData }) => docData)
     .compact()
     .flatMap()
     .value();
@@ -77,9 +77,9 @@ export function dataOfTriggers(
     useContext,
     dependencies,
     header,
-    commits,
+    resultCommits,
     updatedData,
     nonUpdatedData,
-    selfDocData,
+    docData,
   };
 }

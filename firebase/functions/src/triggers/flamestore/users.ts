@@ -1,5 +1,6 @@
 import { User } from "../models";
 import { foundDuplicate, functions, syncField, update } from "../utils";
+
 export const onCreate = functions.firestore
   .document("/users/{documentId}")
   .onCreate(async (snapshot, context) => {

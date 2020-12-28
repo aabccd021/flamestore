@@ -7,6 +7,7 @@ import {
   update,
   imageDataOf,
 } from "../utils";
+
 export const onCreate = functions.firestore
   .document("/tweets/{documentId}")
   .onCreate(async (snapshot) => {

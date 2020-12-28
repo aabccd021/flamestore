@@ -14,44 +14,39 @@ export function sumTriggerGenerator(
     {
       colName,
       type: "Create",
-      selfDocData: {
-        fName,
-        fValue: "0",
-      },
+      docData: { fName, fValue: "0" },
     },
     {
       colName: field.collection,
       type: "Create",
-      useSelfDocData: true,
+      useDocData: true,
       updatedData: {
         dataName: targetRef,
-        fields: [{ fName, fValue: `${incrementStr}(${dataField})` }],
+        field: { fName, fValue: `${incrementStr}(${dataField})` },
       },
     },
     {
       colName: field.collection,
       type: "Update",
-      useSelfDocData: true,
+      useDocData: true,
       updatedData: {
         dataName: targetRef,
-        fields: [
-          {
-            fName,
-            fValue:
-              `before.${incField} !== after.${incField}` +
-              `? ${incrementStr}(after.${incField} - before.${incField})` +
-              ": null",
-          },
-        ],
+        field: {
+          fName,
+          fValue:
+            `before.${incField} !== after.${incField}` +
+            `? ${incrementStr}(after.${incField} - before.${incField})` +
+            `: null`,
+        },
       },
     },
     {
       colName: field.collection,
       type: "Delete",
-      useSelfDocData: true,
+      useDocData: true,
       updatedData: {
         dataName: targetRef,
-        fields: [{ fName, fValue: `${incrementStr}(-${dataField})` }],
+        field: { fName, fValue: `${incrementStr}(-${dataField})` },
       },
     },
   ];

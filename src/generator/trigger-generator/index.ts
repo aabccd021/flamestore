@@ -25,7 +25,8 @@ export default function generateTrigger(
     const triggerStr = triggerTypes
       .map((triggerType) => getTriggerStr(colIter, triggerType, triggers))
       .join("");
-    const colTriggerStr = getModelImportsStr(schema) + utilImports + triggerStr;
+    const colTriggerStr =
+      getModelImportsStr(schema) + utilImports + "\n" + triggerStr;
 
     fs.writeFileSync(path.join(triggerDir, `${colName}.ts`), colTriggerStr);
   });

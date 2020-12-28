@@ -23,8 +23,8 @@ export function imageTriggerGenerator(
     {
       colName,
       type: "Create",
-      useSelfDocData: true,
-      selfDocData: { fName: fName, fValue: imageDataCallStr },
+      useDocData: true,
+      docData: { fName: fName, fValue: imageDataCallStr },
     },
   ];
 }

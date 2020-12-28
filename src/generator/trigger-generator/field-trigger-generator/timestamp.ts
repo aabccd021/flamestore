@@ -10,10 +10,7 @@ export function timestampTriggerGenerator(
     {
       colName,
       type: "Create",
-      selfDocData: {
-        fName,
-        fValue: `${serverTimestampStr}()`,
-      },
+      docData: { fName, fValue: `${serverTimestampStr}()` },
     },
   ];
 }

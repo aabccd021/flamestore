@@ -8,23 +8,21 @@ export function baseTriggerGenerator({
   fName,
   colName,
 }: FieldIteration): Trigger[] {
+  const triggers: Trigger[] = [];
   if (isFieldUnique(field)) {
     const handleDuplicateStr = `if (await ${foundDuplicateStr}( '${colName}','${fName}', snapshot, context)) return;`;
-    return [
-      {
-        colName,
-        type: "Create",
-        useContext: true,
-        header: [handleDuplicateStr],
-      },
-
-      {
-        colName,
-        type: "Update",
-        useContext: true,
-        header: [handleDuplicateStr],
-      },
-    ];
+    triggers.push({
+      colName,
+      type: "Create",
+      useContext: true,
+      header: handleDuplicateStr,
+    });
+    triggers.push({
+      colName,
+      type: "Update",
+      useContext: true,
+      header: handleDuplicateStr,
+    });
   }
-  return [];
+  return triggers;
 }

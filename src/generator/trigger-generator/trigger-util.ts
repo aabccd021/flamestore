@@ -11,14 +11,14 @@ import {
   getBatchCommitStr,
   getPromiseCallStr,
   getTriggerPrepareStr,
-  getUpdateUpdateDataStr,
-  getUpdateSelfDocDataStr,
-  toNonUpdateDataAssignStr,
+  toNonUpdatedDataAssignStr,
   suffixStrOfType,
-  toUpdateDataAssignStr,
-  getSelfDocDataAssignStr,
-  snapshotNameOf,
+  toUpdatedDataAssignStr,
+  getDocDataAssignStr,
+  snapshotStrOf,
   getTriggerFunctionStr,
+  getDocDataCommits,
+  getUpdateUpdatedDataStr,
 } from "./templates";
 import { Trigger, TriggerType } from "./type";
 import { dataOfTriggers, filterTrigger } from "./utils";
@@ -35,41 +35,57 @@ export function getTriggerStr(
 
   // extract data from triggers
   const {
-    updatedData: data,
-    nonUpdatedData: nonUpdateData,
-    selfDocData: thisData,
-    commits: promiseCommits,
+    updatedData,
+    nonUpdatedData,
+    docData,
+    resultCommits,
     header,
     dependencies,
-    useSelfDocData: useThisData,
+    useSelfDocData,
     useContext,
   } = dataOfTriggers(triggers, schema);
 
   const suffix = suffixStrOfType(triggerType);
-  const dataString = data.map(toUpdateDataAssignStr);
-  const nonUpdateDataString = nonUpdateData.map(toNonUpdateDataAssignStr);
-  const thisDataString = getSelfDocDataAssignStr(colIter, thisData);
-  const thisDataCommits = getUpdateSelfDocDataStr(colIter, suffix, thisData);
-  const snapshotDataName = snapshotNameOf(triggerType);
-  const dataCommits = data.map(({ dataName }) =>
-    getUpdateUpdateDataStr(snapshotDataName, dataName)
+  const snapshotStr = snapshotStrOf(triggerType);
+  const promiseCallStr = getPromiseCallStr(dependencies);
+
+  // get data strings
+  const updatedDataStr = updatedData.map(toUpdatedDataAssignStr);
+  const nonUpdatedDataStr = nonUpdatedData.map(toNonUpdatedDataAssignStr);
+  const docDataStr = getDocDataAssignStr(colIter, docData);
+
+  // commits
+  const docDataCommits = getDocDataCommits(colIter, suffix, docData);
+  const updatedDataCommits = updatedData.map(({ dataName }) =>
+    getUpdateUpdatedDataStr(snapshotStr, dataName)
   );
-  const commits = [...thisDataCommits, ...dataCommits, ...promiseCommits];
-  const contentWOPrepare = [
+  const batchCommitStr = getBatchCommitStr([
+    ...docDataCommits,
+    ...updatedDataCommits,
+    ...resultCommits,
+  ]);
+
+  const contentStr = [
     header,
-    getPromiseCallStr(dependencies),
-    thisDataString,
-    dataString,
-    nonUpdateDataString,
-    getBatchCommitStr({ commits }),
+    promiseCallStr,
+    docDataStr,
+    updatedDataStr,
+    nonUpdatedDataStr,
+    batchCommitStr,
   ].join("");
-  const prepare = getTriggerPrepareStr({
+  if (contentStr === "") return "";
+
+  const prepareStr = getTriggerPrepareStr({
     triggerType,
     pascalColName,
-    useThisData,
+    useDocData: useSelfDocData,
   });
-  const content = contentWOPrepare === "" ? "" : prepare + contentWOPrepare;
-  return getTriggerFunctionStr({ useContext, colName, triggerType, content });
+  return getTriggerFunctionStr({
+    useContext,
+    colName,
+    triggerType,
+    contentStr: prepareStr + contentStr,
+  });
 }
 
 export function toTrigger(fIter: FieldIteration): Trigger[] {
