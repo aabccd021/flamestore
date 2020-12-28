@@ -271,3 +271,10 @@ function toPascal(s: string): string {
 export function flatten<T>(array: ArrayOr<T>) {
   return _([array]).flatMap().value();
 }
+
+export function mapPick<T, V extends keyof T>(
+  array: _.Collection<T> | T[],
+  key: V
+): _.Collection<T[V]> {
+  return _(array).map(key);
+}

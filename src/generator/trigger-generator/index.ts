@@ -15,7 +15,7 @@ export default function generateTrigger(
   if (!fs.existsSync(triggerDir)) fs.mkdirSync(triggerDir);
 
   // generate triggers
-  const triggers = fieldsOfSchema(schema).map(toTrigger).flatMap().value();
+  const triggers = fieldsOfSchema(schema).map(toTrigger).flatMap();
 
   // generate string and write to file for each collections
   colsOf(schema).forEach((colIter) => {

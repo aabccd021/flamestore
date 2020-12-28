@@ -10,7 +10,10 @@ export function baseTriggerGenerator({
 }: FieldIteration): Trigger[] {
   const triggers: Trigger[] = [];
   if (isFieldUnique(field)) {
-    const handleDuplicateStr = `if (await ${foundDuplicateStr}( '${colName}','${fName}', snapshot, context)) return;`;
+    const handleDuplicateStr =
+      `if (await ${foundDuplicateStr}` +
+      `('${colName}','${fName}', snapshot, context))` +
+      `return;`;
     triggers.push({
       colName,
       type: "Create",

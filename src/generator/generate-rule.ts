@@ -8,7 +8,7 @@ import {
   RuleType,
 } from "../type";
 import { FlamestoreModule } from "./type";
-import { colsOf, fItersOf as fItersOf, isFieldOptional } from "./util";
+import { colsOf, fItersOf as fItersOf, isFieldOptional, mapPick } from "./util";
 
 export default function generateRule(
   schema: FlamestoreSchema,
@@ -199,7 +199,7 @@ function getIsUpdateValidFunction(
   const hasOnlies = updatableFields.map(({ fName }) => `'${fName}'`);
 
   return {
-    usedFields: updatableFields.map(({ fName }) => fName),
+    usedFields: mapPick(updatableFields, "fName").value(),
     content: `
       function isUpdateValid(){
         return updatedKeys().hasOnly([${hasOnlies}])${isValids};

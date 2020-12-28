@@ -26,7 +26,7 @@ import { dataOfTriggers, filterTrigger } from "./utils";
 export function getTriggerStr(
   colIter: CollectionIteration,
   triggerType: TriggerType,
-  allTriggers: Trigger[]
+  allTriggers: _.Collection<Trigger>
 ): string {
   const { pascalColName, colName, schema } = colIter;
 
@@ -39,25 +39,28 @@ export function getTriggerStr(
     nonUpdatedData,
     docData,
     resultCommits,
-    header,
+    headers,
     dependencies,
-    useSelfDocData,
+    useDocData,
     useContext,
   } = dataOfTriggers(triggers, schema);
 
-  const suffix = suffixStrOfType(triggerType);
-  const snapshotStr = snapshotStrOf(triggerType);
+  const suffixType = suffixStrOfType(triggerType);
+  const snapshotType = snapshotStrOf(triggerType);
   const promiseCallStr = getPromiseCallStr(dependencies);
+  const headerStr = headers.join("");
 
-  // get data strings
-  const updatedDataStr = updatedData.map(toUpdatedDataAssignStr);
-  const nonUpdatedDataStr = nonUpdatedData.map(toNonUpdatedDataAssignStr);
+  // get datas string
+  const updatedDataStr = updatedData.map(toUpdatedDataAssignStr).join("");
+  const nonUpdatedDataStr = nonUpdatedData
+    .map(toNonUpdatedDataAssignStr)
+    .join("");
   const docDataStr = getDocDataAssignStr(colIter, docData);
 
-  // commits
-  const docDataCommits = getDocDataCommits(colIter, suffix, docData);
+  // get commits string
+  const docDataCommits = getDocDataCommits(colIter, suffixType, docData);
   const updatedDataCommits = updatedData.map(({ dataName }) =>
-    getUpdateUpdatedDataStr(snapshotStr, dataName)
+    getUpdateUpdatedDataStr(snapshotType, dataName)
   );
   const batchCommitStr = getBatchCommitStr([
     ...docDataCommits,
@@ -65,26 +68,31 @@ export function getTriggerStr(
     ...resultCommits,
   ]);
 
-  const contentStr = [
-    header,
+  // get trigger content string
+  const contents: string[] = [
+    headerStr,
     promiseCallStr,
     docDataStr,
     updatedDataStr,
     nonUpdatedDataStr,
     batchCommitStr,
-  ].join("");
+  ];
+  const contentStr = contents.join("");
+
+  // return if content empty
   if (contentStr === "") return "";
 
+  // return complete trigger content
   const prepareStr = getTriggerPrepareStr({
     triggerType,
     pascalColName,
-    useDocData: useSelfDocData,
+    useDocData,
   });
   return getTriggerFunctionStr({
     useContext,
     colName,
     triggerType,
-    contentStr: prepareStr + contentStr,
+    triggerContentStr: prepareStr + contentStr,
   });
 }
 

@@ -71,7 +71,7 @@ export interface ComputedField {
 }
 
 export interface FieldProperty {
-  property?: NonComputed[] | NonComputed;
+  property?: ArrayOr<NonComputed>;
 }
 
 export type NormalField = FieldProperty & FieldType;
@@ -106,7 +106,7 @@ export type NonComputed =
 
 export interface ImageField {
   type: "image";
-  metadata?: ImageMetadata | ImageMetadata[];
+  metadata?: ArrayOr<ImageMetadata>;
 }
 
 export type ImageMetadata = "height" | "width" | "size";
@@ -137,7 +137,7 @@ export interface DatetimeField {
 export interface ReferenceField {
   type: "path";
   collection: string;
-  syncField?: string[] | string;
+  syncField?: ArrayOr<string>;
 }
 
 export interface IntField {

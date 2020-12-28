@@ -1,39 +1,52 @@
 import _ from "lodash";
 import { FlamestoreSchema, CollectionIteration } from "../../type";
-import { colIterOf } from "../util";
+import { colIterOf, mapPick } from "../util";
 import { Trigger, TriggerType, TriggerData, FieldTuple } from "./type";
 
 export function filterTrigger(
-  triggers: Trigger[],
+  triggers: _.Collection<Trigger>,
   colName: string,
   triggerType: TriggerType
-): Trigger[] {
+): _.Collection<Trigger> {
   return triggers
     .filter((trigger) => trigger.colName === colName)
     .filter((trigger) => trigger.type === triggerType);
 }
 
 export function dataOfTriggers(
-  triggers: Trigger[],
+  triggers: _.Collection<Trigger>,
   schema: FlamestoreSchema
 ): {
-  useSelfDocData: boolean;
+  useDocData: boolean;
   useContext: boolean;
   updatedData: TriggerData[];
   nonUpdatedData: TriggerData[];
   docData: FieldTuple[];
   resultCommits: string[];
-  header: string[];
+  headers: string[];
   dependencies: {
     key: string;
     promise: string;
     colIter: CollectionIteration;
   }[];
 } {
-  const useSelfDocData = triggers.some(({ useDocData }) => useDocData);
-  const useContext = triggers.some(({ useContext }) => useContext);
-  const dependencies = _(triggers)
-    .map(({ dependency }) => dependency)
+  const useDocData = triggers.some(({ useDocData }) => useDocData ?? false);
+  const useContext = triggers.some(({ useContext }) => useContext ?? false);
+  const headers = mapPick(triggers, "header").compact().flatMap().value();
+  const docData = mapPick(triggers, "docData").compact().flatMap().value();
+  const resultCommits = mapPick(triggers, "resultPromise")
+    .compact()
+    .flatMap()
+    .value();
+  const updatedData = mapPick(triggers, "updatedData")
+    .compact()
+    .flatMap()
+    .value();
+  const nonUpdatedData = mapPick(triggers, "nonUpdatedData")
+    .compact()
+    .flatMap()
+    .value();
+  const dependencies = mapPick(triggers, "dependency")
     .compact()
     .map((deps) =>
       _([deps])
@@ -47,36 +60,12 @@ export function dataOfTriggers(
     )
     .flatMap()
     .value();
-  const header = _(triggers)
-    .map(({ header }) => header)
-    .compact()
-    .flatMap()
-    .value();
-  const resultCommits = _(triggers)
-    .map(({ resultPromise }) => resultPromise)
-    .compact()
-    .flatMap()
-    .value();
-  const updatedData = _(triggers)
-    .map(({ updatedData }) => updatedData)
-    .compact()
-    .flatMap()
-    .value();
-  const nonUpdatedData = _(triggers)
-    .map(({ nonUpdatedData }) => nonUpdatedData)
-    .compact()
-    .flatMap()
-    .value();
-  const docData = _(triggers)
-    .map(({ docData }) => docData)
-    .compact()
-    .flatMap()
-    .value();
+
   return {
-    useSelfDocData,
+    useDocData,
     useContext,
     dependencies,
-    header,
+    headers,
     resultCommits,
     updatedData,
     nonUpdatedData,

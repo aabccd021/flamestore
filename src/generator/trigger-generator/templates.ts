@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { CollectionIteration, FlamestoreSchema } from "../../type";
-import { assertNever, colsOf } from "../util";
+import { assertNever, colsOf, mapPick } from "../util";
 import {
   incrementStr,
   imageDataStr,
@@ -26,9 +26,7 @@ export const utilImports = `
   ${imageDataStr},
   } from '../utils';`;
 export function getModelImportsStr(schema: FlamestoreSchema): string {
-  const modelNames = colsOf(schema)
-    .map(({ pascalColName }) => pascalColName)
-    .join(",");
+  const modelNames = mapPick(colsOf(schema), "pascalColName");
   return `import {${modelNames}} from "../models"`;
 }
 
@@ -108,7 +106,7 @@ export function getTriggerPrepareStr(param: {
 export function getBatchCommitStr(commits: string[]): string {
   if (commits.length === 0) return "";
   if (commits.length === 1) return `await ${commits[0]};`;
-  return `await ${allSettledStr}([${commits.join(",")}]);`;
+  return `await ${allSettledStr}([${commits}]);`;
 }
 
 // assign data
@@ -117,9 +115,7 @@ export function getDocDataAssignStr(
   fields: FieldTuple[]
 ): string {
   if (fields.length === 0) return "";
-  const dataContent = fields
-    .map(({ fName, fValue }) => `${fName}: ${fValue}`)
-    .join(",");
+  const dataContent = fields.map(({ fName, fValue }) => `${fName}: ${fValue}`);
   const dataName = getDataStr(singularColName);
   return `const ${dataName} = {${dataContent}};`;
 }
@@ -127,16 +123,14 @@ export function toNonUpdatedDataAssignStr(triggerData: TriggerData): string {
   const { field, dataName } = triggerData;
   const dataContent = _([field])
     .flatMap()
-    .map(({ fName, fValue }) => `${fName}: ${fValue}`)
-    .join(",");
+    .map(({ fName, fValue }) => `${fName}: ${fValue}`);
   return `const ${dataName} = {${dataContent}};`;
 }
 export function toUpdatedDataAssignStr(triggerData: TriggerData): string {
   const { field, dataName } = triggerData;
   const dataContent = _([field])
     .flatMap()
-    .map(({ fName, fValue }) => `${fName}: ${fValue}`)
-    .join(",");
+    .map(({ fName, fValue }) => `${fName}: ${fValue}`);
   return `const ${getDataStr(dataName)} = {${dataContent}};`;
 }
 
@@ -145,36 +139,36 @@ export function getTriggerFunctionStr(param: {
   useContext: boolean;
   colName: string;
   triggerType: TriggerType;
-  contentStr: string;
+  triggerContentStr: string;
 }): string {
-  const { useContext = false, colName, triggerType, contentStr } = param;
-  if (contentStr === "") return "";
+  const { useContext = false, colName, triggerType, triggerContentStr } = param;
+  if (triggerContentStr === "") return "";
   const context = useContext ? ", context" : "";
   return `
   export const on${triggerType} = ${functionsString}.firestore
   .document('/${colName}/{documentId}')
   .on${triggerType}(async (snapshot${context})=>{
-    ${contentStr}
+    ${triggerContentStr}
   });
   `;
 }
 
 // promise
 export function getPromiseCallStr(
-  dependencies?: {
+  dependencies: {
     key: string;
     colIter: CollectionIteration;
     promise: string;
   }[]
 ): string {
-  if (!dependencies) return "";
   if (dependencies.length === 0) return "";
   const names = dependencies.map(({ key }) => getSnapshotStr(key)).join();
-  const promises = dependencies.map(({ promise }) => promise).join();
+  const promises = mapPick(dependencies, "promise").join();
   const assignments = dependencies
     .map(({ colIter, key }) => {
+      const { pascalColName } = colIter;
       const snapshotStr = getSnapshotStr(key);
-      return `const ${key} = ${snapshotStr}.data() as ${colIter.pascalColName};`;
+      return `const ${key} = ${snapshotStr}.data() as ${pascalColName};`;
     })
     .join("");
   return `const [${names}] = await Promise.all([${promises}]);${assignments}`;
