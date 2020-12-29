@@ -1,7 +1,7 @@
-import { FlamestoreSchema, PathField } from "../type";
+import { FlameSchema, PathField } from "../type";
 import { colsOf } from "./utils";
 
-export function preprocessSchema(schema: FlamestoreSchema): FlamestoreSchema {
+export function preprocessSchema(schema: FlameSchema): FlameSchema {
   if (schema.authentication) {
     const auth = schema.authentication;
     schema.collections[auth.userCollection].fields[auth.uidField] = {

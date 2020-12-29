@@ -1,4 +1,4 @@
-export interface FlamestoreSchema {
+export interface FlameSchema {
   $schema: string;
   authentication?: { userCollection: string; uidField: string };
   collections: { [name: string]: Collection };
@@ -157,7 +157,6 @@ export interface FloatField {
 export interface CollectionIteration {
   colName: string;
   col: Collection;
-  schema: FlamestoreSchema;
 }
 
 export interface FieldIteration extends CollectionIteration {

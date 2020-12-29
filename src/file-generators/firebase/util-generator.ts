@@ -1,10 +1,10 @@
 import * as path from "path";
-import { FlamestoreSchema } from "../../type";
+import { FlameSchema } from "../../type";
 import * as fs from "fs";
 
 export default function generateFirebaseUtil(
   dir: string,
-  schema: FlamestoreSchema
+  schema: FlameSchema
 ): void {
   const content = `import { firestore, storage } from "firebase-admin";
     import * as _functions from "firebase-functions";

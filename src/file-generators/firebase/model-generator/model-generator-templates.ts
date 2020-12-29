@@ -1,13 +1,13 @@
 import {
   CollectionIteration,
   Field,
-  FlamestoreSchema,
+  FlameSchema,
   ImageField,
   PathField,
 } from "../../../type";
 import {
   assertNever,
-  fItersOf,
+  fieldsOfCol,
   getImageMetadatas,
   getSyncFields,
   isFieldComputed,
@@ -21,13 +21,13 @@ import {
   isTypeSum,
   toPascalColName,
 } from "../../utils";
-import { valueOfFieldStr } from "./model-generator-utis";
+import { valueOfFieldStr } from "./model-generator-utils";
 
 export function toComputedModelStr(
   colIter: CollectionIteration
 ): string | null {
   const { colName } = colIter;
-  const computedFields = fItersOf(colIter)
+  const computedFields = fieldsOfCol(colIter)
     .filter(({ field }) => isFieldComputed(field))
     .map(({ fName }) => `"${fName}"`);
   if (computedFields.isEmpty()) return null;
@@ -50,17 +50,17 @@ export function toComputedModelStr(
     }`;
 }
 
-export const schemaImportsStr = `import { firestore } from 'firebase-admin';
+export const modelImportsStr = `import { firestore } from 'firebase-admin';
 import { onCreateFn, onUpdateFn } from "flamestore/lib";
 import {computeDocument} from "./utils";`;
 
 export function getNonComputedInterfaceStr(param: {
   colName: string;
-  interfaceContent: string;
+  modelContentStr: string;
 }) {
-  const { colName, interfaceContent } = param;
+  const { colName, modelContentStr } = param;
   const pascalColName = toPascalColName(colName);
-  return `export interface ${pascalColName} {${interfaceContent}}`;
+  return `export interface ${pascalColName} {${modelContentStr}}`;
 }
 export function getNonComputedFieldStr(param: {
   fName: string;
@@ -84,13 +84,17 @@ export function getTypeOfImageStr(field: ImageField): string {
 
 export function getTypeOfPathStr(
   field: PathField,
-  schema: FlamestoreSchema
+  schema: FlameSchema
 ): string {
+  const syncFieldsStr = getSyncFields(field, schema)
+      .map(({fName, field}) => {
+        const fieldValueStr = valueOfFieldStr({ field, schema });
+        return `${fName}?:${fieldValueStr};`;
+      })
+      .join("\n");
   return `{
     reference: firestore.DocumentReference;
-    ${getSyncFields(field, schema)
-      .map((fIter) => `${fIter.fName}?:${valueOfFieldStr(fIter)};`)
-      .join("\n")}
+    ${syncFieldsStr}
   }`;
 }
 

@@ -1,41 +1,39 @@
-import { FlamestoreSchema } from "../../../type";
+import { FlameSchema } from "../../../type";
 import * as path from "path";
 import * as fs from "fs";
 import {
   getNonComputedInterfaceStr,
   getNonComputedFieldStr,
-  schemaImportsStr,
+  modelImportsStr,
   toComputedModelStr,
 } from "./model-generator-templates";
-import { colsOf, fItersOf } from "../../utils";
-import { getIsFieldRequired, valueOfFieldStr } from "./model-generator-utis";
+import { colsOf, fieldsOfCol } from "../../utils";
+import { getIsFieldRequired, valueOfFieldStr } from "./model-generator-utils";
 
 export function generateFirebaseModel(
   outputFilePath: string,
-  schema: FlamestoreSchema
+  schema: FlameSchema
 ): void {
   const cols = colsOf(schema);
   const computedModelStr = cols.map(toComputedModelStr).join("");
   const nonComputedModelStr = cols
-    .map((colIter) => {
-      const { colName } = colIter;
-      const interfaceContent = fItersOf(colIter)
-        .map((fIter) => {
-          const { field } = fIter;
+    .map(({colName, col}) => {
+      const modelContentStr = fieldsOfCol({colName, col})
+        .map(({ field, fName }) => {
           const isFieldRequired = getIsFieldRequired(field);
           const fieldValueStr = valueOfFieldStr({ field, schema });
           return getNonComputedFieldStr({
             isFieldRequired,
             fieldValueStr,
-            ...fIter,
+            fName
           });
         })
         .join("");
-      return getNonComputedInterfaceStr({ colName, interfaceContent });
+      return getNonComputedInterfaceStr({ colName, modelContentStr });
     })
     .join("\n\n");
   const modelFileStr = [
-    schemaImportsStr,
+    modelImportsStr,
     nonComputedModelStr,
     computedModelStr,
   ].join("\n\n");

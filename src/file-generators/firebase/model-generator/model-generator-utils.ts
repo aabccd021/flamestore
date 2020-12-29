@@ -1,4 +1,4 @@
-import { CollectionIteration, Field, FlamestoreSchema } from "../../../type";
+import { Field, FlameSchema } from "../../../type";
 import {
   isFieldComputed,
   isFieldNotCreatable,
@@ -12,17 +12,11 @@ import {
   isTypeString,
 } from "../../utils";
 import {
-  getNonComputedInterfaceStr,
-  getTypeOfImageStr as valueOfImageField,
+  getTypeOfImageStr,
   getTypeOfPrimStr,
-  getTypeOfPathStr as valueOfPathField,
+  getTypeOfPathStr,
 } from "./model-generator-templates";
 
-export function toNonComputedSchemaStr(colIter: CollectionIteration): string {
-  const { colName } = colIter;
-  const interfaceContent = "";
-  return getNonComputedInterfaceStr({ colName, interfaceContent });
-}
 
 export function getIsFieldRequired(field: Field): boolean {
   if (isFieldOptional(field)) return false;
@@ -37,12 +31,9 @@ export function getIsFieldRequired(field: Field): boolean {
   return false;
 }
 
-export function valueOfFieldStr(param: {
-  field: Field;
-  schema: FlamestoreSchema;
-}): string {
+export function valueOfFieldStr(param: {field: Field;schema: FlameSchema;}): string {
   const { field, schema } = param;
-  if (isTypeImage(field)) return valueOfImageField(field);
-  if (isTypePath(field)) return valueOfPathField(field, schema);
+  if (isTypeImage(field)) return getTypeOfImageStr(field);
+  if (isTypePath(field)) return getTypeOfPathStr(field, schema);
   return getTypeOfPrimStr(field);
 }

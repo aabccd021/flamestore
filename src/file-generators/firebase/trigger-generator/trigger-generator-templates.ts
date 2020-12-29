@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { FlamestoreSchema } from "../../../type";
+import { FlameSchema } from "../../../type";
 import {
   assertNever,
   colsOf,
@@ -36,7 +36,7 @@ export const utilImports = `
   ${updateStr},
   ${imageDataStr},
   } from '../utils';`;
-export function getModelImportsStr(schema: FlamestoreSchema): string {
+export function getModelImportsStr(schema: FlameSchema): string {
   const modelNames = mapPick(colsOf(schema), "colName").map(toPascalColName);
   return `import {${modelNames}} from "../models"`;
 }

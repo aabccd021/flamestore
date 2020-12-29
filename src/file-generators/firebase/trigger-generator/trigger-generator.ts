@@ -1,6 +1,6 @@
 import * as path from "path";
 import * as fs from "fs";
-import { FlamestoreSchema } from "../../../type";
+import { FlameSchema } from "../../../type";
 import { colsOf, fieldsOfSchema, mapPick } from "../../utils";
 import { triggerTypes } from "./trigger-generator-types";
 import {
@@ -17,7 +17,7 @@ import {
 
 export function generateFirebaseTrigger(
   outputFilePath: string,
-  schema: FlamestoreSchema
+  schema: FlameSchema
 ): void {
   // create dir
   const triggerDir = path.join(outputFilePath, "flamestore");

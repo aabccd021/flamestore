@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import * as fs from "fs";
-import { FlamestoreSchema } from "../type";
+import { FlameSchema } from "../type";
 import { preprocessSchema } from "./preprocess-schema";
 import { generateFirebaseTrigger } from "./firebase/trigger-generator/trigger-generator";
 import { generateFirebaseModel } from "./firebase/model-generator/model-generator";
@@ -11,7 +11,7 @@ const schemaJson = fs.readFileSync("../flamestore.json");
 const schemaJsonString = schemaJson.toString();
 const rawSchema = JSON.parse(schemaJsonString);
 // modules.forEach(module => module.validateRaw && module.validateRaw(rawSchema));
-const unprocessedSchema: FlamestoreSchema = rawSchema;
+const unprocessedSchema: FlameSchema = rawSchema;
 // TODO: Validate circular reference
 // TODO: reference field
 // TODO: document has owner if want to upload image

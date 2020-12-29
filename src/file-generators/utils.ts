@@ -1,6 +1,6 @@
 import pluralize from "pluralize";
 import {
-  FlamestoreSchema,
+  FlameSchema,
   FieldTypes,
   StringField,
   PathField,
@@ -26,7 +26,7 @@ import _ from "lodash";
 
 export function assertCollectionNameExists(
   collectionName: string,
-  schema: FlamestoreSchema,
+  schema: FlameSchema,
   stackTrace: string
 ): void {
   if (!_.keys(schema.collections).includes(collectionName)) {
@@ -39,7 +39,7 @@ export function assertCollectionNameExists(
 function assertFieldExists(
   collectionName: string,
   fieldName: string,
-  schema: FlamestoreSchema,
+  schema: FlameSchema,
   stackTrace: string
 ) {
   assertCollectionNameExists(collectionName, schema, stackTrace);
@@ -54,7 +54,7 @@ function throwFieldTypeError(
   fieldType: FieldTypes,
   collectionName: string,
   fieldName: string,
-  schema: FlamestoreSchema,
+  schema: FlameSchema,
   stackTrace: string
 ) {
   throw Error(
@@ -66,7 +66,7 @@ export function assertFieldHasTypeOf(
   collectionName: string,
   fieldName: string,
   fieldType: FieldTypes,
-  schema: FlamestoreSchema,
+  schema: FlameSchema,
   stackTrace: string
 ): void {
   assertFieldExists(collectionName, fieldName, schema, stackTrace);
@@ -199,58 +199,35 @@ export function isDynamicLinkAttributeFromField(
 }
 
 export function fieldsOfSchema(
-  schema: FlamestoreSchema
+  schema: FlameSchema
 ): _.Collection<FieldIteration> {
   return colsOf(schema)
-    .map((colIter) => fItersOf(colIter).value())
+    .map((colIter) => fieldsOfCol(colIter).value())
     .flatMap();
 }
 
-export function fItersOf(
+export function fieldsOfCol(
   colIter: CollectionIteration
 ): _.Collection<FieldIteration> {
   return _(colIter.col.fields).map((field, fName) => {
-    const pascalFName = _.upperFirst(fName);
-    return {
-      pascalFName,
-      field,
-      fName,
-      ...colIter,
-    };
+    return { field, fName, ...colIter };
   });
 }
 
-export function colIterOf(
-  colName: string,
-  schema: FlamestoreSchema
-): CollectionIteration {
-  const col = schema.collections[colName];
-  const singularColName = pluralize.singular(colName);
-  const pascalColName = _.upperFirst(singularColName);
-  return { col, colName, singularColName, pascalColName, schema };
-}
-
-export function colsOf(
-  schema: FlamestoreSchema
-): _.Collection<CollectionIteration> {
-  return _(schema.collections)
-    .keys()
-    .map((colName) => colIterOf(colName, schema));
+export function colsOf(schema: FlameSchema): _.Collection<CollectionIteration> {
+  return _(schema.collections).map((col, colName) => ({ col, colName }));
 }
 
 export function getSyncFields(
   field: PathField,
-  schema: FlamestoreSchema
+  schema: FlameSchema
 ): FieldIteration[] {
   if (!field.syncField) return [];
-  const referenceCol = schema.collections[field.collection];
+  const colName = field.collection;
+  const col = schema.collections[colName];
   return _([field.syncField])
     .flatMap()
-    .map((fName) => ({
-      fName,
-      field: referenceCol.fields[fName],
-      ...colIterOf(field.collection, schema),
-    }))
+    .map((fName) => ({ fName, field: col.fields[fName], col, colName }))
     .value();
 }
 

@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { FieldIteration, FlamestoreSchema } from "../../../type";
+import { FieldIteration, FlameSchema } from "../../../type";
 import { FlamestoreModule } from "../../type";
 import {
   getDynamicLinkDomain,
@@ -13,7 +13,7 @@ export const module: FlamestoreModule = {
   validate,
 };
 
-function validate(schema: FlamestoreSchema): void {
+function validate(schema: FlameSchema): void {
   _.entries(schema.collections).forEach(([collectionName, collection]) => {
     _.entries(collection.fields).forEach(([fieldName, dl]) => {
       if (isTypeDynamicLink(dl)) {
