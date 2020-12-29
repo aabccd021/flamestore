@@ -1,4 +1,4 @@
-import { ArrayOr } from "../../type";
+import { ArrayOr } from "../../../type";
 
 export const triggerTypes = ["Create", "Update", "Delete"] as const;
 export type TriggerType = typeof triggerTypes[number];

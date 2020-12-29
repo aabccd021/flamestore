@@ -1,4 +1,4 @@
-import { CountField } from "../../../type";
+import { CountField } from "../../../../type";
 import { getIncrementStr } from "../trigger-generator-templates";
 import { Trigger } from "../trigger-generator-types";
 

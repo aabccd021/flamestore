@@ -1,12 +1,12 @@
 import _ from "lodash";
-import { FlamestoreSchema } from "../../type";
+import { FlamestoreSchema } from "../../../type";
 import {
   assertNever,
   colsOf,
   mapPick,
   toPascalColName,
   toSingularColName,
-} from "../utils";
+} from "../../utils";
 import {
   FieldTuple,
   TriggerData,
@@ -212,4 +212,9 @@ export function getImageDataStr(
 }
 export function getServerTimestampStr(): string {
   return `${serverTimestampStr}()`;
+}
+
+// index file exports
+export function toIndexFileExportStr(colName: string): string {
+  return `export * as ${colName} from "./${colName}";`;
 }

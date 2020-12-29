@@ -1,6 +1,6 @@
 import _ from "lodash";
-import { PathField } from "../../../type";
-import { toSingularColName } from "../../utils";
+import { PathField } from "../../../../type";
+import { toSingularColName } from "../../../utils";
 import { getSyncFieldStr } from "../trigger-generator-templates";
 import { Trigger } from "../trigger-generator-types";
 

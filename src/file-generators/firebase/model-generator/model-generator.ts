@@ -1,4 +1,4 @@
-import { FlamestoreSchema } from "../../type";
+import { FlamestoreSchema } from "../../../type";
 import * as path from "path";
 import * as fs from "fs";
 import {
@@ -7,7 +7,7 @@ import {
   schemaImportsStr,
   toComputedModelStr,
 } from "./model-generator-templates";
-import { colsOf, fItersOf } from "../utils";
+import { colsOf, fItersOf } from "../../utils";
 import { getIsFieldRequired, valueOfFieldStr } from "./model-generator-utis";
 
 export function generateFirebaseModel(

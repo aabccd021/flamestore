@@ -3,8 +3,9 @@
 import * as fs from "fs";
 import { FlamestoreSchema } from "../type";
 import { preprocessSchema } from "./preprocess-schema";
-import { generateFirebaseTrigger } from "./firebase-trigger-generator/trigger-generator";
-import { generateFirebaseModel } from "./firebase-model-generator/model-generator";
+import { generateFirebaseTrigger } from "./firebase/trigger-generator/trigger-generator";
+import { generateFirebaseModel } from "./firebase/model-generator/model-generator";
+import generateFirebaseUtil from "./firebase/util-generator";
 
 const schemaJson = fs.readFileSync("../flamestore.json");
 const schemaJsonString = schemaJson.toString();
@@ -25,5 +26,5 @@ if (!fs.existsSync(triggerDir)) {
 }
 generateFirebaseModel(triggerDir, schema);
 generateFirebaseTrigger(triggerDir, schema);
-// generateUtils(triggerDir, schema);
+generateFirebaseUtil(triggerDir, schema);
 // generateFlutter(flutterPath, schema, modules);

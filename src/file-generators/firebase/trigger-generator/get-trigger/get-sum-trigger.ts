@@ -1,4 +1,4 @@
-import { SumField } from "../../../type";
+import { SumField } from "../../../../type";
 import {
   getDataFieldStr,
   getIncrementStr,

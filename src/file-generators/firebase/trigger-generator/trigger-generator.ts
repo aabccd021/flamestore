@@ -1,7 +1,7 @@
 import * as path from "path";
 import * as fs from "fs";
-import { FlamestoreSchema } from "../../type";
-import { colsOf, fieldsOfSchema } from "../utils";
+import { FlamestoreSchema } from "../../../type";
+import { colsOf, fieldsOfSchema, mapPick } from "../../utils";
 import { triggerTypes } from "./trigger-generator-types";
 import {
   dataOfTriggers as processTriggers,
@@ -9,7 +9,11 @@ import {
   getTriggerStr,
   toTriggers as fieldToTriggers,
 } from "./trigger-generator-utils";
-import { getModelImportsStr, utilImports } from "./trigger-generator-templates";
+import {
+  getModelImportsStr,
+  toIndexFileExportStr,
+  utilImports,
+} from "./trigger-generator-templates";
 
 export function generateFirebaseTrigger(
   outputFilePath: string,
@@ -22,8 +26,9 @@ export function generateFirebaseTrigger(
   // create triggers
   const triggers = fieldsOfSchema(schema).map(fieldToTriggers).flatMap();
 
+  const collections = colsOf(schema);
   // generate triggers
-  colsOf(schema).forEach(({ colName }) => {
+  collections.forEach(({ colName }) => {
     // triggers to string
     const triggerStr = triggerTypes
       .map((triggerType) => {
@@ -35,7 +40,11 @@ export function generateFirebaseTrigger(
     const modelImportsStr = getModelImportsStr(schema);
     const triggerFileStr = `${modelImportsStr}${utilImports}\n${triggerStr}`;
 
-    // write out
+    // write collection trigger
     fs.writeFileSync(path.join(triggerDir, `${colName}.ts`), triggerFileStr);
   });
+  const indexFileContent = mapPick(collections, "colName")
+    .map(toIndexFileExportStr)
+    .join("");
+  fs.writeFileSync(path.join(triggerDir, `index.ts`), indexFileContent);
 }

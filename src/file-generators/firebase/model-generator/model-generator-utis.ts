@@ -1,4 +1,4 @@
-import { CollectionIteration, Field, FlamestoreSchema } from "../../type";
+import { CollectionIteration, Field, FlamestoreSchema } from "../../../type";
 import {
   isFieldComputed,
   isFieldNotCreatable,
@@ -10,7 +10,7 @@ import {
   isTypeInt,
   isTypePath,
   isTypeString,
-} from "../utils";
+} from "../../utils";
 import {
   getNonComputedInterfaceStr,
   getTypeOfImageStr as valueOfImageField,

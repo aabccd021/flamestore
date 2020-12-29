@@ -4,7 +4,7 @@ import {
   FlamestoreSchema,
   ImageField,
   PathField,
-} from "../../type";
+} from "../../../type";
 import {
   assertNever,
   fItersOf,
@@ -20,7 +20,7 @@ import {
   isTypeString,
   isTypeSum,
   toPascalColName,
-} from "../utils";
+} from "../../utils";
 import { valueOfFieldStr } from "./model-generator-utis";
 
 export function toComputedModelStr(

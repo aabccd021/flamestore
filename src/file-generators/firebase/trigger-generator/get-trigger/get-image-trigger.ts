@@ -1,5 +1,5 @@
-import { Collection, ImageField } from "../../../type";
-import { getImageMetadatas } from "../../utils";
+import { Collection, ImageField } from "../../../../type";
+import { getImageMetadatas } from "../../../utils";
 import {
   getImageDataStr,
   getOwnerRefIdStr,

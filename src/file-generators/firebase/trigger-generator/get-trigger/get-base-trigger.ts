@@ -1,5 +1,5 @@
-import { Field } from "../../../type";
-import { isFieldUnique } from "../../utils";
+import { Field } from "../../../../type";
+import { isFieldUnique } from "../../../utils";
 import { getFoundDuplicateStr } from "../trigger-generator-templates";
 import { Trigger } from "../trigger-generator-types";
 

@@ -1,12 +1,12 @@
 import _ from "lodash";
-import { ArrayOr, FieldIteration } from "../../type";
+import { ArrayOr, FieldIteration } from "../../../type";
 import {
   isTypePath,
   isTypeCount,
   isTypeImage,
   isTypeSum,
   mapPick,
-} from "../utils";
+} from "../../utils";
 import { getBaseTrigger } from "./get-trigger/get-base-trigger";
 import { getCountTrigger } from "./get-trigger/get-count-trigger";
 import { getImageTrigger } from "./get-trigger/get-image-trigger";
