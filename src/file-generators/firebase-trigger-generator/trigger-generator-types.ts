@@ -23,7 +23,7 @@ export interface ProcessedTrigger {
   nonUpdatedData: TriggerData[];
   docData: FieldTuple[];
   resultCommits: string[];
-  headers: string[];
+  headerStrs: string[];
   dependencies: TriggerDependencyIteration[];
 }
 

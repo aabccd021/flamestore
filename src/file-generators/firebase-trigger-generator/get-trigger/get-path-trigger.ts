@@ -1,9 +1,9 @@
 import { FieldIteration, ReferenceField } from "../../../type";
 import { colIterOf, getSyncFields } from "../../util";
-import { getSyncFieldStr } from "../templates";
-import { Trigger } from "../types";
+import { getSyncFieldStr } from "../trigger-generator-templates";
+import { Trigger } from "../trigger-generator-types";
 
-export function pathTriggerGenerator(
+export function getPathTrigger(
   field: ReferenceField,
   fIter: FieldIteration
 ): Trigger[] {

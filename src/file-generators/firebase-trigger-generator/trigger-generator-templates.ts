@@ -6,7 +6,7 @@ import {
   FieldTuple,
   TriggerData,
   TriggerType,
-} from "./types";
+} from "./trigger-generator-types";
 
 // constants
 export const functionsString = "functions";

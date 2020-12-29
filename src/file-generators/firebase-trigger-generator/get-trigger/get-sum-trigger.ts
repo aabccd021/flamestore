@@ -1,8 +1,11 @@
 import { FieldIteration, SumField } from "../../../type";
-import { getDataFieldStr, getIncrementStr } from "../templates";
-import { Trigger } from "../types";
+import {
+  getDataFieldStr,
+  getIncrementStr,
+} from "../trigger-generator-templates";
+import { Trigger } from "../trigger-generator-types";
 
-export function sumTriggerGenerator(
+export function getSumTrigger(
   field: SumField,
   { fName, colName }: FieldIteration
 ): Trigger[] {

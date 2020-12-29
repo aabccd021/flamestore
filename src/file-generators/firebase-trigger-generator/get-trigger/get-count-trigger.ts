@@ -1,8 +1,8 @@
 import { CountField, FieldIteration } from "../../../type";
-import { getIncrementStr } from "../templates";
-import { Trigger } from "../types";
+import { getIncrementStr } from "../trigger-generator-templates";
+import { Trigger } from "../trigger-generator-types";
 
-export function countTriggerGenerator(
+export function getCountTrigger(
   field: CountField,
   fIter: FieldIteration
 ): Trigger[] {

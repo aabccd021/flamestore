@@ -1,8 +1,8 @@
 import { FieldIteration } from "../../../type";
-import { getServerTimestampStr } from "../templates";
-import { Trigger } from "../types";
+import { getServerTimestampStr } from "../trigger-generator-templates";
+import { Trigger } from "../trigger-generator-types";
 
-export function timestampTriggerGenerator(
+export function getTimestampTrigger(
   _: "serverTimestamp",
   { fName, colName }: FieldIteration
 ): Trigger[] {

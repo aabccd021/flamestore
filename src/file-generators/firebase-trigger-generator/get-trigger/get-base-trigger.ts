@@ -1,9 +1,9 @@
 import { FieldIteration } from "../../../type";
 import { isFieldUnique } from "../../util";
-import { getFoundDuplicateStr } from "../templates";
-import { Trigger } from "../types";
+import { getFoundDuplicateStr } from "../trigger-generator-templates";
+import { Trigger } from "../trigger-generator-types";
 
-export function baseTriggerGenerator({
+export function getBaseTrigger({
   field,
   fName,
   colName,

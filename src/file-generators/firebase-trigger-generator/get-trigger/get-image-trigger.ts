@@ -1,9 +1,12 @@
 import { FieldIteration, ImageField } from "../../../type";
 import { getImageMetadatas } from "../../util";
-import { getImageDataStr, getOwnerRefIdStr } from "../templates";
-import { Trigger } from "../types";
+import {
+  getImageDataStr,
+  getOwnerRefIdStr,
+} from "../trigger-generator-templates";
+import { Trigger } from "../trigger-generator-types";
 
-export function imageTriggerGenerator(
+export function getImageTrigger(
   field: ImageField,
   fIter: FieldIteration
 ): Trigger[] {

@@ -2,14 +2,14 @@ import * as path from "path";
 import * as fs from "fs";
 import { FlamestoreSchema } from "../../type";
 import { colsOf, fieldsOfSchema } from "../util";
-import { triggerTypes } from "./types";
+import { triggerTypes } from "./trigger-generator-types";
 import {
   dataOfTriggers as processTriggers,
   filterTrigger,
   getTriggerStr,
-  toTriggers,
-} from "./generate-trigger-utils";
-import { getModelImportsStr, utilImports } from "./templates";
+  toTriggers as fieldToTriggers,
+} from "./trigger-generator-utils";
+import { getModelImportsStr, utilImports } from "./trigger-generator-templates";
 
 export default function generateTrigger(
   outputFilePath: string,
@@ -20,7 +20,7 @@ export default function generateTrigger(
   if (!fs.existsSync(triggerDir)) fs.mkdirSync(triggerDir);
 
   // create triggers
-  const triggers = fieldsOfSchema(schema).map(toTriggers).flatMap();
+  const triggers = fieldsOfSchema(schema).map(fieldToTriggers).flatMap();
 
   // generate triggers
   colsOf(schema).forEach(({ colName, pascalColName, singularColName }) => {
@@ -28,9 +28,6 @@ export default function generateTrigger(
     // triggers to string
     const triggerStr = triggerTypes
       .map((triggerType) => {
-        console.log(colName);
-        console.log(triggerType);
-        console.log();
         const filteredTriggers = filterTrigger(triggers, colName, triggerType);
         const processedTrigger = processTriggers(filteredTriggers, schema);
         return getTriggerStr({ triggerType, processedTrigger, ...colNames });

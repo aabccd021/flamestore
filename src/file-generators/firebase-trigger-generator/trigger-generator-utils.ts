@@ -8,12 +8,12 @@ import {
   colIterOf,
   mapPick,
 } from "../util";
-import { baseTriggerGenerator } from "./field-trigger/base";
-import { countTriggerGenerator } from "./field-trigger/count";
-import { imageTriggerGenerator } from "./field-trigger/image";
-import { pathTriggerGenerator } from "./field-trigger/path";
-import { sumTriggerGenerator } from "./field-trigger/sum";
-import { timestampTriggerGenerator } from "./field-trigger/timestamp";
+import { getBaseTrigger } from "./get-trigger/get-base-trigger";
+import { getCountTrigger } from "./get-trigger/get-count-trigger";
+import { getImageTrigger } from "./get-trigger/get-image-trigger";
+import { getPathTrigger } from "./get-trigger/get-path-trigger";
+import { getSumTrigger } from "./get-trigger/get-sum-trigger";
+import { getTimestampTrigger } from "./get-trigger/get-timestamp-trigger";
 import {
   getBatchCommitStr,
   getPromiseCallStr,
@@ -26,8 +26,12 @@ import {
   getTriggerFunctionStr,
   getDocDataCommits,
   getUpdateUpdatedDataStr,
-} from "./templates";
-import { ProcessedTrigger, Trigger, TriggerType } from "./types";
+} from "./trigger-generator-templates";
+import {
+  ProcessedTrigger,
+  Trigger,
+  TriggerType,
+} from "./trigger-generator-types";
 
 export function getTriggerStr(param: {
   colName: string;
@@ -48,25 +52,19 @@ export function getTriggerStr(param: {
     nonUpdatedData,
     docData,
     resultCommits,
-    headers,
+    headerStrs,
     dependencies,
     useDocData,
     useContext,
   } = trigger;
-
   // prepare easy variables
   const suffix = suffixStrOfType(triggerType);
   const snapshotType = snapshotStrOf(triggerType);
   const promiseCallStr = getPromiseCallStr(dependencies);
-  const headerStr = headers.join("");
-
   // get datas string
-  const updatedDataStr = updatedData.map(toUpdatedDataAssignStr).join("");
-  const nonUpdatedDataStr = nonUpdatedData
-    .map(toNonUpdatedDataAssignStr)
-    .join("");
+  const updatedDataStrs = updatedData.map(toUpdatedDataAssignStr);
+  const nonUpdatedDataStrs = nonUpdatedData.map(toNonUpdatedDataAssignStr);
   const docDataStr = getDocDataAssignStr({ singularColName, docData });
-
   // get commits string
   const docDataCommits = getDocDataCommits({
     singularColName,
@@ -81,21 +79,19 @@ export function getTriggerStr(param: {
     ...updatedDataCommits,
     ...resultCommits,
   ]);
-
   // get all contents string
   const contents: string[] = [
-    headerStr,
+    ...headerStrs,
     promiseCallStr,
     docDataStr,
-    updatedDataStr,
-    nonUpdatedDataStr,
+    ...updatedDataStrs,
+    ...nonUpdatedDataStrs,
     batchCommitStr,
   ];
   const contentStr = contents.join("");
-
   // return if content empty, no need to add trigger prepare string
   if (contentStr === "") return "";
-
+  // return final trigger string
   const prepareStr = getTriggerPrepareStr({
     triggerType,
     pascalColName,
@@ -111,22 +107,13 @@ export function getTriggerStr(param: {
 
 export function toTriggers(fIter: FieldIteration): Trigger[] {
   const { field } = fIter;
-  const triggers: Trigger[][] = [baseTriggerGenerator(fIter)];
-  if (isTypeReference(field)) {
-    triggers.push(pathTriggerGenerator(field, fIter));
-  }
-  if (isTypeCount(field)) {
-    triggers.push(countTriggerGenerator(field, fIter));
-  }
-  if (isTypeSum(field)) {
-    triggers.push(sumTriggerGenerator(field, fIter));
-  }
-  if (isTypeImage(field)) {
-    triggers.push(imageTriggerGenerator(field, fIter));
-  }
-  if (field === "serverTimestamp") {
-    triggers.push(timestampTriggerGenerator(field, fIter));
-  }
+  const triggers: Trigger[][] = [getBaseTrigger(fIter)];
+  if (isTypeReference(field)) triggers.push(getPathTrigger(field, fIter));
+  if (isTypeCount(field)) triggers.push(getCountTrigger(field, fIter));
+  if (isTypeSum(field)) triggers.push(getSumTrigger(field, fIter));
+  if (isTypeImage(field)) triggers.push(getImageTrigger(field, fIter));
+  if (field === "serverTimestamp")
+    triggers.push(getTimestampTrigger(field, fIter));
   return _.flatMap(triggers);
 }
 
@@ -169,7 +156,7 @@ export function dataOfTriggers(
     useDocData,
     useContext,
     dependencies,
-    headers,
+    headerStrs: headers,
     resultCommits,
     updatedData,
     nonUpdatedData,
