@@ -80,7 +80,7 @@ export type FieldType =
   | DynamicLinkField
   | StringField
   | FloatField
-  | ReferenceField
+  | PathField
   | IntField
   | DatetimeField
   | SumField
@@ -134,7 +134,7 @@ export interface DatetimeField {
   type: "timestamp";
 }
 
-export interface ReferenceField {
+export interface PathField {
   type: "path";
   collection: string;
   syncField?: ArrayOr<string>;
@@ -155,15 +155,12 @@ export interface FloatField {
 }
 
 export interface CollectionIteration {
-  pascalColName: string;
-  singularColName: string;
   colName: string;
   col: Collection;
   schema: FlamestoreSchema;
 }
 
 export interface FieldIteration extends CollectionIteration {
-  pascalFName: string;
   fName: string;
   field: Field;
 }

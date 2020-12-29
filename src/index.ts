@@ -14,7 +14,7 @@ import sharp from "sharp";
 import path from "path";
 export { ProjectConfiguration } from "./type";
 import { ImageMetadata } from "./type";
-import { assertNever } from "./file-generators/util";
+import { assertNever } from "./file-generators/utils";
 
 export function useFlamestoreUtils(
   firestore: typeof defaultFirestore,

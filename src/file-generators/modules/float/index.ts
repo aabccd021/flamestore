@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { FlamestoreModule } from "../../type";
-import { isTypeFloat } from "../../util";
+import { isTypeFloat } from "../../utils";
 
 export const module: FlamestoreModule = {
   isCreatable: ({ field }) => isTypeFloat(field),

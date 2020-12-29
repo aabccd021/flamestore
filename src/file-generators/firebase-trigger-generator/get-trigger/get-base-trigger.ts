@@ -1,13 +1,14 @@
-import { FieldIteration } from "../../../type";
-import { isFieldUnique } from "../../util";
+import { Field } from "../../../type";
+import { isFieldUnique } from "../../utils";
 import { getFoundDuplicateStr } from "../trigger-generator-templates";
 import { Trigger } from "../trigger-generator-types";
 
-export function getBaseTrigger({
-  field,
-  fName,
-  colName,
-}: FieldIteration): Trigger[] {
+export function getBaseTrigger(param: {
+  field: Field;
+  fName: string;
+  colName: string;
+}): Trigger[] {
+  const { field, fName, colName } = param;
   const triggers: Trigger[] = [];
   if (isFieldUnique(field)) {
     const foundDuplicateStr = getFoundDuplicateStr(

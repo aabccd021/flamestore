@@ -12,7 +12,7 @@
         "ts-node/register/transpile-only"
       ],
       "args": [
-        "${workspaceRoot}/src/generator/index.ts",
+        "${workspaceRoot}/src/file-generators/index.ts",
       ],
       "postDebugTask": "format",
       "cwd": "${workspaceRoot}/firebase",

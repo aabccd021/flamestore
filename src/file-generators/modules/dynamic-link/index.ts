@@ -5,7 +5,7 @@ import {
   getDynamicLinkDomain,
   isDynamicLinkAttributeFromField,
   isTypeDynamicLink,
-} from "../../util";
+} from "../../utils";
 
 export const module: FlamestoreModule = {
   isCreatable: ({ field }) => isTypeDynamicLink(field),

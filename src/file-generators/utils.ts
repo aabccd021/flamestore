@@ -3,7 +3,7 @@ import {
   FlamestoreSchema,
   FieldTypes,
   StringField,
-  ReferenceField,
+  PathField,
   FloatField,
   SumField,
   CountField,
@@ -88,7 +88,7 @@ export function assertFieldHasTypeOf(
       stackTrace
     );
   }
-  if (fieldType === "path" && !isTypeReference(type)) {
+  if (fieldType === "path" && !isTypePath(type)) {
     throwFieldTypeError("path", collectionName, fieldName, schema, stackTrace);
   }
   if (fieldType === "timestamp" && !isTypeDatetime(type)) {
@@ -111,8 +111,8 @@ export function isTypeString(field: Field): field is StringField {
 export function isTypeFloat(field: Field): field is FloatField {
   return (field as FloatField).type === "float";
 }
-export function isTypeReference(field: Field): field is ReferenceField {
-  return (field as ReferenceField).type === "path";
+export function isTypePath(field: Field): field is PathField {
+  return (field as PathField).type === "path";
 }
 export function isTypeInt(field: Field): field is IntField {
   return (field as IntField).type === "int";
@@ -134,7 +134,7 @@ export function isNormalField(field: Field): field is NormalField {
     isTypeDynamicLink(field) ||
     isTypeString(field) ||
     isTypeFloat(field) ||
-    isTypeReference(field) ||
+    isTypePath(field) ||
     isTypeInt(field) ||
     isTypeDatetime(field) ||
     isTypeSum(field) ||
@@ -239,7 +239,7 @@ export function colsOf(
 }
 
 export function getSyncFields(
-  field: ReferenceField,
+  field: PathField,
   schema: FlamestoreSchema
 ): FieldIteration[] {
   if (!field.syncField) return [];
@@ -248,7 +248,6 @@ export function getSyncFields(
     .flatMap()
     .map((fName) => ({
       fName,
-      pascalFName: _.upperFirst(fName),
       field: referenceCol.fields[fName],
       ...colIterOf(field.collection, schema),
     }))
@@ -273,4 +272,11 @@ export function mapPick<T, V extends keyof T>(
   key: V
 ): _.Collection<T[V]> {
   return _(array).map(key);
+}
+
+export function toSingularColName(colName: string): string {
+  return pluralize.singular(colName);
+}
+export function toPascalColName(colName: string): string {
+  return _.upperFirst(toSingularColName(colName));
 }

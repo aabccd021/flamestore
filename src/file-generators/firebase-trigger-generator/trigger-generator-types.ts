@@ -1,4 +1,4 @@
-import { ArrayOr, CollectionIteration } from "../../type";
+import { ArrayOr } from "../../type";
 
 export const triggerTypes = ["Create", "Update", "Delete"] as const;
 export type TriggerType = typeof triggerTypes[number];
@@ -24,7 +24,7 @@ export interface ProcessedTrigger {
   docData: FieldTuple[];
   resultCommits: string[];
   headerStrs: string[];
-  dependencies: TriggerDependencyIteration[];
+  dependencies: TriggerDependency[];
 }
 
 export interface FieldTuple {
@@ -37,15 +37,8 @@ export interface TriggerData {
   field: ArrayOr<FieldTuple>;
 }
 
-interface _TriggerDependency {
+export interface TriggerDependency {
   key: string;
   fName: string;
-}
-
-export interface TriggerDependency extends _TriggerDependency {
   colName: string;
-}
-
-export interface TriggerDependencyIteration extends _TriggerDependency {
-  colIter: CollectionIteration;
 }

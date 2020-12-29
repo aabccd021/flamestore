@@ -1,6 +1,6 @@
 import { Trigger } from "../../../generators/trigger-generator/types";
 import { FieldIteration, ImageField } from "../../../type";
-import { getImageMetadatas } from "../../util";
+import { getImageMetadatas } from "../../utils";
 import { getImageDataStr, getOwnerRefIdStr } from "../templates";
 
 export function imageTriggerGenerator(

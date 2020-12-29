@@ -1,13 +1,12 @@
 import _ from "lodash";
-import { ArrayOr, FieldIteration, FlamestoreSchema } from "../../type";
+import { ArrayOr, FieldIteration } from "../../type";
 import {
-  isTypeReference,
+  isTypePath,
   isTypeCount,
   isTypeImage,
   isTypeSum,
-  colIterOf,
   mapPick,
-} from "../util";
+} from "../utils";
 import { getBaseTrigger } from "./get-trigger/get-base-trigger";
 import { getCountTrigger } from "./get-trigger/get-count-trigger";
 import { getImageTrigger } from "./get-trigger/get-image-trigger";
@@ -35,18 +34,10 @@ import {
 
 export function getTriggerStr(param: {
   colName: string;
-  pascalColName: string;
-  singularColName: string;
   triggerType: TriggerType;
   processedTrigger: ProcessedTrigger;
 }): string {
-  const {
-    colName,
-    pascalColName,
-    singularColName,
-    triggerType,
-    processedTrigger: trigger,
-  } = param;
+  const { colName, triggerType, processedTrigger: trigger } = param;
   const {
     updatedData,
     nonUpdatedData,
@@ -64,10 +55,10 @@ export function getTriggerStr(param: {
   // get datas string
   const updatedDataStrs = updatedData.map(toUpdatedDataAssignStr);
   const nonUpdatedDataStrs = nonUpdatedData.map(toNonUpdatedDataAssignStr);
-  const docDataStr = getDocDataAssignStr({ singularColName, docData });
+  const docDataStr = getDocDataAssignStr({ colName, docData });
   // get commits string
   const docDataCommits = getDocDataCommits({
-    singularColName,
+    colName,
     suffix,
     docData,
   });
@@ -94,7 +85,7 @@ export function getTriggerStr(param: {
   // return final trigger string
   const prepareStr = getTriggerPrepareStr({
     triggerType,
-    pascalColName,
+    colName,
     useDocData,
   });
   return getTriggerFunctionStr({
@@ -108,7 +99,7 @@ export function getTriggerStr(param: {
 export function toTriggers(fIter: FieldIteration): Trigger[] {
   const { field } = fIter;
   const triggers: Trigger[][] = [getBaseTrigger(fIter)];
-  if (isTypeReference(field)) triggers.push(getPathTrigger(field, fIter));
+  if (isTypePath(field)) triggers.push(getPathTrigger(field, fIter));
   if (isTypeCount(field)) triggers.push(getCountTrigger(field, fIter));
   if (isTypeSum(field)) triggers.push(getSumTrigger(field, fIter));
   if (isTypeImage(field)) triggers.push(getImageTrigger(field, fIter));
@@ -128,8 +119,7 @@ export function filterTrigger(
 }
 
 export function dataOfTriggers(
-  triggers: _.Collection<Trigger>,
-  schema: FlamestoreSchema
+  triggers: _.Collection<Trigger>
 ): ProcessedTrigger {
   const useDocData = triggers.some(({ useDocData }) => useDocData ?? false);
   const useContext = triggers.some(({ useContext }) => useContext ?? false);
@@ -138,20 +128,7 @@ export function dataOfTriggers(
   const resultCommits = flatCompact(triggers, "resultPromise");
   const updatedData = flatCompact(triggers, "updatedData");
   const nonUpdatedData = flatCompact(triggers, "nonUpdatedData");
-  const dependencies = mapPick(triggers, "dependency")
-    .compact()
-    .map((deps) =>
-      _([deps])
-        .flatMap()
-        .map(({ key, colName, fName }) => ({
-          key,
-          fName,
-          colIter: colIterOf(colName, schema),
-        }))
-        .value()
-    )
-    .flatMap()
-    .value();
+  const dependencies = flatCompact(triggers, "dependency");
   return {
     useDocData,
     useContext,

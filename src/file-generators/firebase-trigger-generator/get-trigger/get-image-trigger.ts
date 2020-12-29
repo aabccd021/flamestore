@@ -1,5 +1,5 @@
-import { FieldIteration, ImageField } from "../../../type";
-import { getImageMetadatas } from "../../util";
+import { Collection, ImageField } from "../../../type";
+import { getImageMetadatas } from "../../utils";
 import {
   getImageDataStr,
   getOwnerRefIdStr,
@@ -8,11 +8,9 @@ import { Trigger } from "../trigger-generator-types";
 
 export function getImageTrigger(
   field: ImageField,
-  fIter: FieldIteration
+  { fName, colName, col }: { fName: string; colName: string; col: Collection }
 ): Trigger[] {
-  const { colName, fName, col } = fIter;
   const { ownerField } = col;
-
   if (!ownerField) throw Error("ownerField required to upload image");
 
   const id = getOwnerRefIdStr({ ownerField });

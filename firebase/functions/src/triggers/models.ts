@@ -38,15 +38,12 @@ export interface Like {
 
 const tweetsComputeFields = ["hotness"] as const;
 type TweetC = typeof tweetsComputeFields[number];
-export function computeTweet<D extends keyof Omit<Tweet, TweetC>>({
-  dependencyFields,
-  onCreate,
-  onUpdate,
-}: {
+export function computeTweet<D extends keyof Omit<Tweet, TweetC>>(param: {
   dependencyFields: D[];
   onCreate: onCreateFn<Tweet, TweetC>;
   onUpdate: onUpdateFn<Tweet, TweetC, D>;
 }) {
+  const { dependencyFields, onCreate, onUpdate } = param;
   return computeDocument(
     "tweets",
     tweetsComputeFields,

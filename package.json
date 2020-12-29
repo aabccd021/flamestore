@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "types": "lib/index.d.js",
   "bin": {
-    "generate": "lib/generator/index.js"
+    "generate": "lib/file-generators/index.js"
   },
   "scripts": {
     "lint": "eslint",

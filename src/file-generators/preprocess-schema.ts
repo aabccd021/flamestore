@@ -1,5 +1,5 @@
-import { FlamestoreSchema, ReferenceField } from "../type";
-import { colsOf } from "./util";
+import { FlamestoreSchema, PathField } from "../type";
+import { colsOf } from "./utils";
 
 export function preprocessSchema(schema: FlamestoreSchema): FlamestoreSchema {
   if (schema.authentication) {
@@ -12,7 +12,7 @@ export function preprocessSchema(schema: FlamestoreSchema): FlamestoreSchema {
         if (col.fields[col.ownerField]) {
           (schema.collections[colName].fields[
             col.ownerField
-          ] as ReferenceField).collection = auth.userCollection;
+          ] as PathField).collection = auth.userCollection;
         } else {
           schema.collections[colName].fields[col.ownerField] = {
             type: "path",

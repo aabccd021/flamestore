@@ -1,7 +1,7 @@
 import * as path from "path";
 import * as fs from "fs";
 import { FlamestoreSchema } from "../../type";
-import { colsOf, fieldsOfSchema } from "../util";
+import { colsOf, fieldsOfSchema } from "../utils";
 import { triggerTypes } from "./trigger-generator-types";
 import {
   dataOfTriggers as processTriggers,
@@ -11,7 +11,7 @@ import {
 } from "./trigger-generator-utils";
 import { getModelImportsStr, utilImports } from "./trigger-generator-templates";
 
-export default function generateTrigger(
+export function generateFirebaseTrigger(
   outputFilePath: string,
   schema: FlamestoreSchema
 ): void {
@@ -23,20 +23,19 @@ export default function generateTrigger(
   const triggers = fieldsOfSchema(schema).map(fieldToTriggers).flatMap();
 
   // generate triggers
-  colsOf(schema).forEach(({ colName, pascalColName, singularColName }) => {
-    const colNames = { colName, pascalColName, singularColName };
+  colsOf(schema).forEach(({ colName }) => {
     // triggers to string
     const triggerStr = triggerTypes
       .map((triggerType) => {
         const filteredTriggers = filterTrigger(triggers, colName, triggerType);
-        const processedTrigger = processTriggers(filteredTriggers, schema);
-        return getTriggerStr({ triggerType, processedTrigger, ...colNames });
+        const processedTrigger = processTriggers(filteredTriggers);
+        return getTriggerStr({ triggerType, processedTrigger, colName });
       })
       .join("");
     const modelImportsStr = getModelImportsStr(schema);
-    const finalTriggerStr = `${modelImportsStr}${utilImports}\n${triggerStr}`;
+    const triggerFileStr = `${modelImportsStr}${utilImports}\n${triggerStr}`;
 
     // write out
-    fs.writeFileSync(path.join(triggerDir, `${colName}.ts`), finalTriggerStr);
+    fs.writeFileSync(path.join(triggerDir, `${colName}.ts`), triggerFileStr);
   });
 }

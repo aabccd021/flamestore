@@ -1,4 +1,4 @@
-import { FieldIteration, SumField } from "../../../type";
+import { SumField } from "../../../type";
 import {
   getDataFieldStr,
   getIncrementStr,
@@ -7,9 +7,9 @@ import { Trigger } from "../trigger-generator-types";
 
 export function getSumTrigger(
   field: SumField,
-  { fName, colName }: FieldIteration
+  { fName, colName }: { fName: string; colName: string }
 ): Trigger[] {
-  const targetRef = field.reference;
+  const dataName = field.reference;
   const incField = field.field;
   const dataField = getDataFieldStr(incField);
   const updateValueDiffStr = `after.${incField} - before.${incField}`;
@@ -25,7 +25,7 @@ export function getSumTrigger(
       type: "Create",
       useDocData: true,
       updatedData: {
-        dataName: targetRef,
+        dataName,
         field: { fName, value: getIncrementStr(dataField) },
       },
     },
@@ -34,7 +34,7 @@ export function getSumTrigger(
       type: "Update",
       useDocData: true,
       updatedData: {
-        dataName: targetRef,
+        dataName,
         field: {
           fName,
           value:
@@ -48,7 +48,7 @@ export function getSumTrigger(
       type: "Delete",
       useDocData: true,
       updatedData: {
-        dataName: targetRef,
+        dataName: dataName,
         field: { fName, value: getIncrementStr(`-${dataField}`) },
       },
     },

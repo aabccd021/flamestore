@@ -1,10 +1,16 @@
 import _ from "lodash";
 import { FlamestoreSchema } from "../../type";
-import { assertNever, colsOf, mapPick } from "../util";
 import {
-  TriggerDependencyIteration,
+  assertNever,
+  colsOf,
+  mapPick,
+  toPascalColName,
+  toSingularColName,
+} from "../utils";
+import {
   FieldTuple,
   TriggerData,
+  TriggerDependency,
   TriggerType,
 } from "./trigger-generator-types";
 
@@ -31,7 +37,7 @@ export const utilImports = `
   ${imageDataStr},
   } from '../utils';`;
 export function getModelImportsStr(schema: FlamestoreSchema): string {
-  const modelNames = mapPick(colsOf(schema), "pascalColName");
+  const modelNames = mapPick(colsOf(schema), "colName").map(toPascalColName);
   return `import {${modelNames}} from "../models"`;
 }
 
@@ -64,13 +70,13 @@ export function getUpdateUpdatedDataStr(
   return `${updateStr}(${referenceStr}, ${dataStr})`;
 }
 export function getDocDataCommits(param: {
-  singularColName: string;
+  colName: string;
   suffix: DataSuffix;
   docData: FieldTuple[];
 }): string[] {
-  const { suffix, docData, singularColName } = param;
+  const { suffix, docData, colName } = param;
   if (docData.length === 0) return [];
-  const dataName = getDataStr(singularColName);
+  const dataName = getDataStr(toSingularColName(colName));
   return [`${updateStr}(snapshot${suffix}.ref, ${dataName})`];
 }
 
@@ -93,10 +99,11 @@ export function suffixStrOfType(triggerType: TriggerType): DataSuffix {
 // prepare trigger
 export function getTriggerPrepareStr(param: {
   triggerType: TriggerType;
-  pascalColName: string;
+  colName: string;
   useDocData: boolean;
 }): string {
-  const { triggerType, pascalColName, useDocData } = param;
+  const { triggerType, colName, useDocData } = param;
+  const pascalColName = toPascalColName(colName);
   if (!useDocData) return "";
   if (triggerType === "Create" || triggerType === "Delete") {
     return `const data = snapshot.data() as ${pascalColName};`;
@@ -117,13 +124,13 @@ export function getBatchCommitStr(commits: string[]): string {
 
 // assign data
 export function getDocDataAssignStr(param: {
-  singularColName: string;
+  colName: string;
   docData: FieldTuple[];
 }): string {
-  const { singularColName, docData } = param;
+  const { colName, docData } = param;
   if (docData.length === 0) return "";
   const dataContent = docData.map(({ fName, value }) => `${fName}: ${value}`);
-  const dataName = getDataStr(singularColName);
+  const dataName = getDataStr(toSingularColName(colName));
   return `const ${dataName} = {${dataContent}};`;
 }
 export function toNonUpdatedDataAssignStr(triggerData: TriggerData): string {
@@ -160,15 +167,13 @@ export function getTriggerFunctionStr(param: {
 }
 
 // promise
-export function getPromiseCallStr(
-  dependencies: TriggerDependencyIteration[]
-): string {
+export function getPromiseCallStr(dependencies: TriggerDependency[]): string {
   if (dependencies.length === 0) return "";
   const names = dependencies.map(({ key }) => getSnapshotStr(key));
   const promises = mapPick(dependencies, "fName").map(toPromiseStr);
   const assignments = dependencies
-    .map(({ colIter, key }) => {
-      const { pascalColName } = colIter;
+    .map(({ colName, key }) => {
+      const pascalColName = toPascalColName(colName);
       const snapshotStr = getSnapshotStr(key);
       return `const ${key} = ${snapshotStr}.data() as ${pascalColName};`;
     })

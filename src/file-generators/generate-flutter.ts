@@ -162,7 +162,6 @@
 //    }
 //   }
 
-
 //   final ${pluralize.singular(
 //     colName
 //   )}Definition = DocumentDefinition<${pascalColName}>(
