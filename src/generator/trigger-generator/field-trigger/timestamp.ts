@@ -1,6 +1,6 @@
 import { FieldIteration } from "../../../type";
-import { serverTimestampStr } from "../constants";
-import { Trigger } from "../type";
+import { getServerTimestampStr } from "../templates";
+import { Trigger } from "../types";
 
 export function timestampTriggerGenerator(
   _: "serverTimestamp",
@@ -10,7 +10,7 @@ export function timestampTriggerGenerator(
     {
       colName,
       type: "Create",
-      docData: { fName, fValue: `${serverTimestampStr}()` },
+      docData: { fName, value: getServerTimestampStr() },
     },
   ];
 }

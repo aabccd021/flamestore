@@ -4,7 +4,7 @@ import * as fs from "fs";
 import { FlamestoreSchema } from "../type";
 import { preprocessSchema } from "./preprocess-schema";
 import { generateSchema } from "./schema-generator";
-import generateTrigger from "./trigger-generator";
+import generateTrigger from "./trigger-generator/generate-trigger";
 
 const schemaJson = fs.readFileSync("../flamestore.json");
 const schemaJsonString = schemaJson.toString();

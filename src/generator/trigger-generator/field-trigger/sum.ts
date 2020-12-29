@@ -1,7 +1,6 @@
 import { FieldIteration, SumField } from "../../../type";
-import { incrementStr } from "../constants";
-import { getDataFieldStr } from "../templates";
-import { Trigger } from "../type";
+import { getDataFieldStr, getIncrementStr } from "../templates";
+import { Trigger } from "../types";
 
 export function sumTriggerGenerator(
   field: SumField,
@@ -10,11 +9,13 @@ export function sumTriggerGenerator(
   const targetRef = field.reference;
   const incField = field.field;
   const dataField = getDataFieldStr(incField);
+  const updateValueDiffStr = `after.${incField} - before.${incField}`;
+  const updateIncStr = getIncrementStr(updateValueDiffStr);
   return [
     {
       colName,
       type: "Create",
-      docData: { fName, fValue: "0" },
+      docData: { fName, value: "0" },
     },
     {
       colName: field.collection,
@@ -22,7 +23,7 @@ export function sumTriggerGenerator(
       useDocData: true,
       updatedData: {
         dataName: targetRef,
-        field: { fName, fValue: `${incrementStr}(${dataField})` },
+        field: { fName, value: getIncrementStr(dataField) },
       },
     },
     {
@@ -33,10 +34,9 @@ export function sumTriggerGenerator(
         dataName: targetRef,
         field: {
           fName,
-          fValue:
+          value:
             `before.${incField} !== after.${incField}` +
-            `? ${incrementStr}(after.${incField} - before.${incField})` +
-            `: null`,
+            ` ? ${updateIncStr} : null`,
         },
       },
     },
@@ -46,7 +46,7 @@ export function sumTriggerGenerator(
       useDocData: true,
       updatedData: {
         dataName: targetRef,
-        field: { fName, fValue: `${incrementStr}(-${dataField})` },
+        field: { fName, value: getIncrementStr(`-${dataField}`) },
       },
     },
   ];

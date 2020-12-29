@@ -1,8 +1,7 @@
 import { FieldIteration, ReferenceField } from "../../../type";
 import { colIterOf, getSyncFields } from "../../util";
-import { syncFieldStr } from "../constants";
-import { getPromiseStr } from "../templates";
-import { Trigger } from "../type";
+import { getSyncFieldStr } from "../templates";
+import { Trigger } from "../types";
 
 export function pathTriggerGenerator(
   field: ReferenceField,
@@ -24,16 +23,15 @@ export function pathTriggerGenerator(
     ({ fName: f }) => `${f}: before.${f} !== after.${f} ? after.${f}: null`
   );
   const dataName = `${colName}${pascalFName}Data`;
-  const syncField = `${syncFieldStr}('${colName}','${fName}',snapshot,${dataName})`;
 
   return [
     {
       colName,
       type: "Create",
-      docData: { fName, fValue: `{${onCreateData}}` },
+      docData: { fName, value: `{${onCreateData}}` },
       dependency: {
         key: refDataStr,
-        promise: getPromiseStr(fName),
+        fName,
         colName: colNameToSyncFrom,
       },
     },
@@ -41,11 +39,16 @@ export function pathTriggerGenerator(
       colName: colNameToSyncFrom,
       type: "Update",
       useDocData: true,
-      resultPromise: syncField,
       nonUpdatedData: {
         dataName,
-        field: { fName, fValue: `{${onUpdateData}}` },
+        field: { fName, value: `{${onUpdateData}}` },
       },
+      resultPromise: getSyncFieldStr(
+        `'${colName}'`,
+        `'${fName}'`,
+        `snapshot`,
+        dataName
+      ),
     },
   ];
 }

@@ -1,20 +1,17 @@
 import { CountField, FieldIteration } from "../../../type";
-import { incrementStr } from "../constants";
-import { Trigger } from "../type";
+import { getIncrementStr } from "../templates";
+import { Trigger } from "../types";
 
-export function countTriggerGenerator({
-  field,
-  fIter,
-}: {
-  field: CountField;
-  fIter: FieldIteration;
-}): Trigger[] {
+export function countTriggerGenerator(
+  field: CountField,
+  fIter: FieldIteration
+): Trigger[] {
   const { colName, fName } = fIter;
   return [
     {
       colName,
       type: "Create",
-      docData: { fName, fValue: "0" },
+      docData: { fName, value: "0" },
     },
     {
       colName: field.collection,
@@ -22,7 +19,7 @@ export function countTriggerGenerator({
       useDocData: true,
       updatedData: {
         dataName: field.reference,
-        field: { fName, fValue: `${incrementStr}(1)` },
+        field: { fName, value: getIncrementStr(1) },
       },
     },
     {
@@ -31,7 +28,7 @@ export function countTriggerGenerator({
       useDocData: true,
       updatedData: {
         dataName: field.reference,
-        field: { fName, fValue: `${incrementStr}(-1)` },
+        field: { fName, value: getIncrementStr(-1) },
       },
     },
   ];
