@@ -7,7 +7,7 @@ import {
   toComputedModelStr,
   getFieldRequiredStr,
 } from "./model-generator-templates";
-import { CollectionEntry } from "../../types";
+import { CollectionEntry } from "../../generator-types";
 import { valueOfFieldStr } from "./model-generator-utils";
 
 export function generateFirebaseModel(

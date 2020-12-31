@@ -1,4 +1,4 @@
-import { assertNever } from "../../../types";
+import { assertNever } from "../../../utils";
 import {
   CollectionEntry,
   Field,
@@ -14,7 +14,7 @@ import {
   isStringField,
   isSumField,
   PathField,
-} from "../../types";
+} from "../../generator-types";
 import { toPascalColName } from "../../generator-utils";
 import { valueOfFieldStr } from "./model-generator-utils";
 

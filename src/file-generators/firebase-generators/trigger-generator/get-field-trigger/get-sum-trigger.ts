@@ -1,4 +1,4 @@
-import { SumField } from "../../../types";
+import { SumField } from "../../../generator-types";
 import {
   getDataFieldStr,
   getIncrementStr,

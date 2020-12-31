@@ -1,6 +1,6 @@
 import { SchemaCollection, SchemaField } from "../schema-types";
-import { ServerTimestampField } from "../../types";
-import { getSchemaFieldProperties } from "../schema-processor-utils";
+import { ServerTimestampField } from "../../generator-types";
+import { getSchemaFieldProperties } from "../schema-preprocess-utils/schema-field-property-utils";
 
 export type ServerTimestampSchemaField = "serverTimestamp";
 

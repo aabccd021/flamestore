@@ -1,4 +1,4 @@
-import { Collection, ImageField } from "../../../types";
+import { Collection, ImageField } from "../../../generator-types";
 import {
   getImageDataStr,
   getOwnerRefIdStr,

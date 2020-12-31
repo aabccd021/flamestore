@@ -1,6 +1,6 @@
 import { SchemaCollection, SchemaField } from "../schema-types";
-import { StringField } from "../../types";
-import { getSchemaFieldProperties } from "../schema-processor-utils";
+import { StringField } from "../../generator-types";
+import { getSchemaFieldProperties } from "../schema-preprocess-utils/schema-field-property-utils";
 
 export type StringSchemaField = {
   type: "string";

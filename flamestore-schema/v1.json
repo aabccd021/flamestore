@@ -112,20 +112,7 @@
           "type": "string"
         },
         "authentication": {
-          "additionalProperties": false,
-          "properties": {
-            "uidField": {
-              "type": "string"
-            },
-            "userCollection": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "userCollection",
-            "uidField"
-          ],
-          "type": "object"
+          "$ref": "#/definitions/FlameSchemaAuth"
         },
         "collections": {
           "additionalProperties": {
@@ -154,9 +141,25 @@
       },
       "required": [
         "$schema",
-        "region",
+        "collections",
         "project",
-        "collections"
+        "region"
+      ],
+      "type": "object"
+    },
+    "FlameSchemaAuth": {
+      "additionalProperties": false,
+      "properties": {
+        "uidField": {
+          "type": "string"
+        },
+        "userCollection": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "userCollection",
+        "uidField"
       ],
       "type": "object"
     },

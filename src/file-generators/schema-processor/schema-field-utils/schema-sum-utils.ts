@@ -1,6 +1,6 @@
 import { SchemaCollection, SchemaField } from "../schema-types";
-import { SumField } from "../../types";
-import { getSchemaFieldProperties } from "../schema-processor-utils";
+import { SumField } from "../../generator-types";
+import { getSchemaFieldProperties } from "../schema-preprocess-utils/schema-field-property-utils";
 
 export type SumSchemaField = {
   type: "sum";

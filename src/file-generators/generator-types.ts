@@ -1,14 +1,6 @@
-import { ImageMetadata } from "../types";
+export type FieldEntry = Readonly<{ fName: string; field: Field }>;
 
-export type FieldEntry = Readonly<{
-  fName: string;
-  field: Field;
-}>;
-
-export type CollectionEntry = Readonly<{
-  colName: string;
-  col: Collection;
-}>;
+export type CollectionEntry = Readonly<{ colName: string; col: Collection }>;
 
 export type FieldCollectionEntry = FieldEntry & CollectionEntry;
 
@@ -43,6 +35,7 @@ export type ImageField = Readonly<
     metadatas: ImageMetadata[];
   }
 >;
+export type ImageMetadata = "height" | "width" | "size";
 
 export type SumField = Readonly<
   FieldProperty & {

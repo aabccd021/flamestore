@@ -1,4 +1,4 @@
-import { Field, isImageField, isPathField } from "../../types";
+import { Field, isImageField, isPathField } from "../../generator-types";
 import {
   getTypeOfImageStr,
   getTypeOfPrimitiveStr,

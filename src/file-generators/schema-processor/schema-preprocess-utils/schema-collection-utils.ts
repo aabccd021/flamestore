@@ -1,7 +1,7 @@
 import _ from "lodash";
-import { Collection } from "../types";
-import { processSchemaField } from "./schema-processor-field-utils";
-import { SchemaCollection } from "./schema-types";
+import { Collection } from "../../generator-types";
+import { processSchemaField } from "./schema-field-utils";
+import { SchemaCollection } from "../schema-types";
 
 export function processSchemaCollection(
   schemaCol: SchemaCollection,

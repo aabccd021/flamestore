@@ -2,9 +2,9 @@
 // ts-json-schema-generator
 import { chain } from "lodash";
 import { SchemaCollection, SchemaField } from "../schema-types";
-import { ArrayOr, ImageMetadata } from "../../../types";
-import { ImageField } from "../../types";
-import { getSchemaFieldProperties } from "../schema-processor-utils";
+import { ImageField, ImageMetadata } from "../../generator-types";
+import { getSchemaFieldProperties } from "../schema-preprocess-utils/schema-field-property-utils";
+import { ArrayOr } from "../../../types";
 
 export type ImageSchemaField = {
   type: "image";

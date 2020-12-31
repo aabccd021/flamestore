@@ -1,6 +1,6 @@
 import { SchemaCollection, SchemaField } from "../schema-types";
-import { DynamicLinkAttribute, DynamicLinkField } from "../../types";
-import { getSchemaFieldProperties } from "../schema-processor-utils";
+import { DynamicLinkAttribute, DynamicLinkField } from "../../generator-types";
+import { getSchemaFieldProperties } from "../schema-preprocess-utils/schema-field-property-utils";
 
 export type DynamicLinkSchemaField = {
   type: "dynamicLink";

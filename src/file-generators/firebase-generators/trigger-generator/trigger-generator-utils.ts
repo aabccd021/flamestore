@@ -1,6 +1,6 @@
 import _ from "lodash";
+import { mapPick } from "../../../lodash-utils";
 import { ArrayOr } from "../../../types";
-import { mapPick } from "../../../utils";
 import {
   FieldCollectionEntry,
   isCountField,
@@ -8,7 +8,7 @@ import {
   isPathField,
   isServerTimestampField,
   isSumField,
-} from "../../types";
+} from "../../generator-types";
 import { getBaseTrigger } from "./get-field-trigger/get-base-trigger";
 import { getCountTrigger } from "./get-field-trigger/get-count-trigger";
 import { getImageTrigger } from "./get-field-trigger/get-image-trigger";
@@ -130,11 +130,9 @@ export function dataOfTriggers(
   const headers = flatCompact(triggers, "header");
   const docData = flatCompact(triggers, "docData");
   const resultCommits = flatCompact(triggers, "resultPromise");
-  const updatedData = flatCompact(triggers, "updatedData").map(
-    schemaToTriggerData
-  );
+  const updatedData = flatCompact(triggers, "updatedData").map(toTriggerData);
   const nonUpdatedData = flatCompact(triggers, "nonUpdatedData").map(
-    schemaToTriggerData
+    toTriggerData
   );
   const dependencies = flatCompact(triggers, "dependency");
   return {
@@ -148,9 +146,7 @@ export function dataOfTriggers(
     docData,
   };
 }
-function schemaToTriggerData(
-  schemaTriggerData: SchemaTriggerData
-): TriggerData {
+function toTriggerData(schemaTriggerData: SchemaTriggerData): TriggerData {
   const { dataName } = schemaTriggerData;
   const fields = _.flatMap([schemaTriggerData.field]);
   return { fields, dataName };

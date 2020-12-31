@@ -1,6 +1,6 @@
 import { SchemaCollection, SchemaField } from "../schema-types";
-import { FloatField } from "../../types";
-import { getSchemaFieldProperties } from "../schema-processor-utils";
+import { FloatField } from "../../generator-types";
+import { getSchemaFieldProperties } from "../schema-preprocess-utils/schema-field-property-utils";
 
 export type FloatSchemaField = {
   type: "float";

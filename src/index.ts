@@ -12,7 +12,7 @@ import _ from "lodash";
 import { QueryDocumentSnapshot } from "firebase-functions/lib/providers/firestore";
 import sharp from "sharp";
 import path from "path";
-import { ImageMetadata, assertNever } from "./types";
+import { ImageMetadata, assertNever } from "./utils";
 export { ProjectConfiguration } from "./file-generators/schema-processor/schema-types";
 
 export function useFlamestoreUtils(

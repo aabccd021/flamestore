@@ -1,4 +1,4 @@
-import { Field } from "../../../types";
+import { Field } from "../../../generator-types";
 import { getFoundDuplicateStr } from "../trigger-generator-templates";
 import { Trigger } from "../trigger-generator-types";
 

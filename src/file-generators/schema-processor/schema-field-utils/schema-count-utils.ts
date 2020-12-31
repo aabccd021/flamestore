@@ -1,6 +1,6 @@
 import { SchemaCollection, SchemaField } from "../schema-types";
-import { CountField } from "../../types";
-import { getSchemaFieldProperties } from "../schema-processor-utils";
+import { CountField } from "../../generator-types";
+import { getSchemaFieldProperties } from "../schema-preprocess-utils/schema-field-property-utils";
 
 export type CountSchemaField = {
   type: "count";

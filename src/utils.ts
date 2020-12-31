@@ -1,8 +1,7 @@
-import _ from "lodash";
+export function assertNever(x: never): never {
+  throw new Error("Unexpected object: " + x);
+}
 
-export function mapPick<T, V extends keyof T>(
-  array: _.Collection<T> | T[],
-  key: V
-): _.Collection<T[V]> {
-  return _(array).map(key);
+export function assertString(x: string): void {
+  if (typeof x !== "string") throw Error();
 }

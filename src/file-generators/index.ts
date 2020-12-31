@@ -2,7 +2,7 @@
 
 import * as fs from "fs";
 import { FlameSchema } from "./schema-processor/schema-types";
-import { colEntryOfSchema } from "./schema-processor/schema-processor";
+import { processSchema } from "./schema-processor/schema-processor";
 import { generateFirebaseTrigger } from "./firebase-generators/trigger-generator/trigger-generator";
 import { generateFirebaseModel } from "./firebase-generators/model-generator/model-generator";
 import generateFirebaseUtil from "./firebase-generators/util-generator";
@@ -17,7 +17,7 @@ const schema: FlameSchema = rawSchema;
 // TODO: document has owner if want to upload image
 // TODO: user col auth field should not be specified in json
 // modules.forEach(module => module.validate && module.validate(schema));
-const colEntries = colEntryOfSchema(schema);
+const colEntries = processSchema(schema);
 // const rulePath = schema.ruleOutputPath ?? "firestore/firestore.rules";
 const triggerDir = schema.triggerOutputPath ?? "functions/src/triggers";
 // const flutterPath = schema.flutterOutputPath ?? "../flutter/lib/flamestore";

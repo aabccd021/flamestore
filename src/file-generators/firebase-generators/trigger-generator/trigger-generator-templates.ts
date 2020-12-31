@@ -1,6 +1,6 @@
-import { assertNever, assertString } from "../../../types";
-import { mapPick } from "../../../utils";
-import { CollectionEntry } from "../../types";
+import { mapPick } from "../../../lodash-utils";
+import { assertNever, assertString } from "../../../utils";
+import { CollectionEntry } from "../../generator-types";
 import { toPascalColName, toSingularColName } from "../../generator-utils";
 import {
   FieldTuple,

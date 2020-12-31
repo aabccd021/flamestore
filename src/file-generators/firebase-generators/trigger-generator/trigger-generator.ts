@@ -12,9 +12,9 @@ import {
   toIndexFileExportStr,
   utilImports,
 } from "./trigger-generator-templates";
-import { CollectionEntry } from "../../types";
-import { mapPick } from "../../../utils";
+import { CollectionEntry } from "../../generator-types";
 import { fcEntriesOf } from "../../generator-utils";
+import { mapPick } from "../../../lodash-utils";
 
 export function generateFirebaseTrigger(
   outputFilePath: string,

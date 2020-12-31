@@ -1,6 +1,6 @@
 import pluralize from "pluralize";
 import _ from "lodash";
-import { CollectionEntry, FieldCollectionEntry } from "./types";
+import { CollectionEntry, FieldCollectionEntry } from "./generator-types";
 
 export function toSingularColName(colName: string): string {
   return pluralize.singular(colName);

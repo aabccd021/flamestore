@@ -2,9 +2,9 @@
 // ts-json-schema-generator
 import { chain } from "lodash";
 import { ArrayOr } from "../../../types";
-import { PathField } from "../../types";
-import { processSchemaField } from "../schema-processor-field-utils";
-import { getSchemaFieldProperties } from "../schema-processor-utils";
+import { PathField } from "../../generator-types";
+import { getSchemaFieldProperties } from "../schema-preprocess-utils/schema-field-property-utils";
+import { processSchemaField } from "../schema-preprocess-utils/schema-field-utils";
 import { SchemaCollection, SchemaField } from "../schema-types";
 
 export type PathSchemaField = {
