@@ -12,9 +12,8 @@ import _ from "lodash";
 import { QueryDocumentSnapshot } from "firebase-functions/lib/providers/firestore";
 import sharp from "sharp";
 import path from "path";
-export { ProjectConfiguration } from "./type";
-import { ImageMetadata } from "./type";
-import { assertNever } from "./file-generators/utils";
+import { ImageMetadata, assertNever } from "./types";
+export { ProjectConfiguration } from "./file-generators/schema-processor/schema-types";
 
 export function useFlamestoreUtils(
   firestore: typeof defaultFirestore,
@@ -111,9 +110,7 @@ export function useFlamestoreUtils(
 
   function hasDependencyChanged(before: Document, after: Document): boolean {
     for (const key in before) {
-      if (!isFieldEqual(before[key], after[key])) {
-        return true;
-      }
+      if (!isFieldEqual(before[key], after[key])) return true;
     }
     return false;
   }

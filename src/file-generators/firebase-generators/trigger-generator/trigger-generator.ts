@@ -1,34 +1,35 @@
 import * as path from "path";
 import * as fs from "fs";
-import { FlameSchema } from "../../../type";
-import { colsOf, fieldsOfSchema, mapPick } from "../../utils";
 import { triggerTypes } from "./trigger-generator-types";
 import {
   dataOfTriggers as processTriggers,
   filterTrigger,
   getTriggerStr,
-  toTriggers as fieldToTriggers,
+  fcEntryToTriggers,
 } from "./trigger-generator-utils";
 import {
   getModelImportsStr,
   toIndexFileExportStr,
   utilImports,
 } from "./trigger-generator-templates";
+import { CollectionEntry } from "../../types";
+import { mapPick } from "../../../utils";
+import { fcEntriesOf } from "../../generator-utils";
 
 export function generateFirebaseTrigger(
   outputFilePath: string,
-  schema: FlameSchema
+  colEntries: CollectionEntry[]
 ): void {
   // create dir
   const triggerDir = path.join(outputFilePath, "flamestore");
   if (!fs.existsSync(triggerDir)) fs.mkdirSync(triggerDir);
 
   // create triggers
-  const triggers = fieldsOfSchema(schema).map(fieldToTriggers).flatMap();
+  const fcEntries = fcEntriesOf(colEntries);
+  const triggers = fcEntries.map(fcEntryToTriggers).flatMap();
 
-  const collections = colsOf(schema);
   // generate triggers
-  collections.forEach(({ colName }) => {
+  colEntries.forEach(({ colName }) => {
     // triggers to string
     const triggerStr = triggerTypes
       .map((triggerType) => {
@@ -37,13 +38,13 @@ export function generateFirebaseTrigger(
         return getTriggerStr({ triggerType, processedTrigger, colName });
       })
       .join("");
-    const modelImportsStr = getModelImportsStr(schema);
+    const modelImportsStr = getModelImportsStr(colEntries);
     const triggerFileStr = `${modelImportsStr}${utilImports}\n${triggerStr}`;
 
     // write collection trigger
     fs.writeFileSync(path.join(triggerDir, `${colName}.ts`), triggerFileStr);
   });
-  const indexFileContent = mapPick(collections, "colName")
+  const indexFileContent = mapPick(colEntries, "colName")
     .map(toIndexFileExportStr)
     .join("");
   fs.writeFileSync(path.join(triggerDir, `index.ts`), indexFileContent);

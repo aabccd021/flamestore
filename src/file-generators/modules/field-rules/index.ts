@@ -1,7 +1,10 @@
 import { FlamestoreModule } from "../../type";
-import { isFieldNotCreatable, isFieldNotUpdatable } from "../../utils";
+import {
+  isNotCreatableSchemaField,
+  isNotUpdatableSchemaField,
+} from "../../generator-utils";
 
 export const module: FlamestoreModule = {
-  isNotCreatable: ({ field }) => isFieldNotCreatable(field),
-  isNotUpdatable: ({ field }) => isFieldNotUpdatable(field),
+  isNotCreatable: ({ field }) => isNotCreatableSchemaField(field),
+  isNotUpdatable: ({ field }) => isNotUpdatableSchemaField(field),
 };

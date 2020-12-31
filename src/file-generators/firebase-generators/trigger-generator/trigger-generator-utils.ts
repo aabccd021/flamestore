@@ -1,18 +1,20 @@
 import _ from "lodash";
-import { ArrayOr, FieldIteration } from "../../../type";
+import { ArrayOr } from "../../../types";
+import { mapPick } from "../../../utils";
 import {
-  isTypePath,
-  isTypeCount,
-  isTypeImage,
-  isTypeSum,
-  mapPick,
-} from "../../utils";
-import { getBaseTrigger } from "./get-trigger/get-base-trigger";
-import { getCountTrigger } from "./get-trigger/get-count-trigger";
-import { getImageTrigger } from "./get-trigger/get-image-trigger";
-import { getPathTrigger } from "./get-trigger/get-path-trigger";
-import { getSumTrigger } from "./get-trigger/get-sum-trigger";
-import { getTimestampTrigger } from "./get-trigger/get-timestamp-trigger";
+  FieldCollectionEntry,
+  isCountField,
+  isImageField,
+  isPathField,
+  isServerTimestampField,
+  isSumField,
+} from "../../types";
+import { getBaseTrigger } from "./get-field-trigger/get-base-trigger";
+import { getCountTrigger } from "./get-field-trigger/get-count-trigger";
+import { getImageTrigger } from "./get-field-trigger/get-image-trigger";
+import { getPathTrigger } from "./get-field-trigger/get-path-trigger";
+import { getSumTrigger } from "./get-field-trigger/get-sum-trigger";
+import { getTimestampTrigger } from "./get-field-trigger/get-timestamp-trigger";
 import {
   getBatchCommitStr,
   getPromiseCallStr,
@@ -28,7 +30,9 @@ import {
 } from "./trigger-generator-templates";
 import {
   ProcessedTrigger,
+  SchemaTriggerData,
   Trigger,
+  TriggerData,
   TriggerType,
 } from "./trigger-generator-types";
 
@@ -96,15 +100,15 @@ export function getTriggerStr(param: {
   });
 }
 
-export function toTriggers(fIter: FieldIteration): Trigger[] {
-  const { field } = fIter;
-  const triggers: Trigger[][] = [getBaseTrigger(fIter)];
-  if (isTypePath(field)) triggers.push(getPathTrigger(field, fIter));
-  if (isTypeCount(field)) triggers.push(getCountTrigger(field, fIter));
-  if (isTypeSum(field)) triggers.push(getSumTrigger(field, fIter));
-  if (isTypeImage(field)) triggers.push(getImageTrigger(field, fIter));
-  if (field === "serverTimestamp")
-    triggers.push(getTimestampTrigger(field, fIter));
+export function fcEntryToTriggers(fcEntry: FieldCollectionEntry): Trigger[] {
+  const { field } = fcEntry;
+  const triggers: Trigger[][] = [getBaseTrigger(fcEntry)];
+  if (isPathField(field)) triggers.push(getPathTrigger(field, fcEntry));
+  if (isCountField(field)) triggers.push(getCountTrigger(field, fcEntry));
+  if (isSumField(field)) triggers.push(getSumTrigger(field, fcEntry));
+  if (isImageField(field)) triggers.push(getImageTrigger(field, fcEntry));
+  if (isServerTimestampField(field))
+    triggers.push(getTimestampTrigger(field, fcEntry));
   return _.flatMap(triggers);
 }
 
@@ -126,8 +130,12 @@ export function dataOfTriggers(
   const headers = flatCompact(triggers, "header");
   const docData = flatCompact(triggers, "docData");
   const resultCommits = flatCompact(triggers, "resultPromise");
-  const updatedData = flatCompact(triggers, "updatedData");
-  const nonUpdatedData = flatCompact(triggers, "nonUpdatedData");
+  const updatedData = flatCompact(triggers, "updatedData").map(
+    schemaToTriggerData
+  );
+  const nonUpdatedData = flatCompact(triggers, "nonUpdatedData").map(
+    schemaToTriggerData
+  );
   const dependencies = flatCompact(triggers, "dependency");
   return {
     useDocData,
@@ -139,6 +147,13 @@ export function dataOfTriggers(
     nonUpdatedData,
     docData,
   };
+}
+function schemaToTriggerData(
+  schemaTriggerData: SchemaTriggerData
+): TriggerData {
+  const { dataName } = schemaTriggerData;
+  const fields = _.flatMap([schemaTriggerData.field]);
+  return { fields, dataName };
 }
 
 function flatCompact<T extends { [key: string]: any }, V extends keyof T>(

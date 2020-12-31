@@ -1,14 +1,14 @@
 import _ from "lodash";
 import { FlamestoreModule } from "../../type";
-import { isTypeString } from "../../utils";
+import { isStringSchemaField } from "../../generator-utils";
 
 export const module: FlamestoreModule = {
-  isCreatable: ({ field }) => isTypeString(field),
-  isUpdatable: ({ field }) => isTypeString(field),
+  isCreatable: ({ field }) => isStringSchemaField(field),
+  isUpdatable: ({ field }) => isStringSchemaField(field),
   getRule({ field, fName, col }) {
     const content = [];
     const fieldType = field;
-    if (isTypeString(fieldType)) {
+    if (isStringSchemaField(fieldType)) {
       content.push(`${fName} is string`);
       if (col.keyFields?.includes(fName) ?? false) {
         content.push(`${fName} == ${fName}OfDocumentId()`);

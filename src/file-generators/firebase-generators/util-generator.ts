@@ -1,16 +1,16 @@
 import * as path from "path";
-import { FlameSchema } from "../../type";
 import * as fs from "fs";
+import { FirebaseRegion } from "../schema-processor/schema-types";
 
 export default function generateFirebaseUtil(
   dir: string,
-  schema: FlameSchema
+  region: FirebaseRegion
 ): void {
   const content = `import { firestore, storage } from "firebase-admin";
     import * as _functions from "firebase-functions";
     import { useFlamestoreUtils } from "flamestore";
 
-    export const functions = _functions.region("${schema.region}");
+    export const functions = _functions.region("${region}");
     export const {
       foundDuplicate,
       syncField,
@@ -22,7 +22,6 @@ export default function generateFirebaseUtil(
       useOnImageUploaded,
       imageDataOf,
     } = useFlamestoreUtils(firestore, storage, functions);
-    `
-  fs.writeFileSync(path.join(dir, `utils.ts`),content);
+    `;
+  fs.writeFileSync(path.join(dir, `utils.ts`), content);
 }
-

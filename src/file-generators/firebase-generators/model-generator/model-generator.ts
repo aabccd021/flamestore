@@ -1,4 +1,3 @@
-import { FlameSchema } from "../../../type";
 import * as path from "path";
 import * as fs from "fs";
 import {
@@ -6,26 +5,26 @@ import {
   getNonComputedFieldStr,
   modelImportsStr,
   toComputedModelStr,
+  getFieldRequiredStr,
 } from "./model-generator-templates";
-import { colsOf, fieldsOfCol } from "../../utils";
-import { getIsFieldRequired, valueOfFieldStr } from "./model-generator-utils";
+import { CollectionEntry } from "../../types";
+import { valueOfFieldStr } from "./model-generator-utils";
 
 export function generateFirebaseModel(
   outputFilePath: string,
-  schema: FlameSchema
+  collections: CollectionEntry[]
 ): void {
-  const cols = colsOf(schema);
-  const computedModelStr = cols.map(toComputedModelStr).join("");
-  const nonComputedModelStr = cols
-    .map(({colName, col}) => {
-      const modelContentStr = fieldsOfCol({colName, col})
+  const computedModelStr = collections.map(toComputedModelStr).join("");
+  const nonComputedModelStr = collections
+    .map(({ colName, col }) => {
+      const modelContentStr = col.fields
         .map(({ field, fName }) => {
-          const isFieldRequired = getIsFieldRequired(field);
-          const fieldValueStr = valueOfFieldStr({ field, schema });
+          const fieldRequiredStr = getFieldRequiredStr(field);
+          const fieldValueStr = valueOfFieldStr(field);
           return getNonComputedFieldStr({
-            isFieldRequired,
+            fieldRequiredStr,
             fieldValueStr,
-            fName
+            fName,
           });
         })
         .join("");

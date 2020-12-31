@@ -1,22 +1,22 @@
-import { ArrayOr } from "../../../type";
+import { ArrayOr } from "../../../types";
 
 export const triggerTypes = ["Create", "Update", "Delete"] as const;
 export type TriggerType = typeof triggerTypes[number];
 
-export interface Trigger {
+export type Trigger = Readonly<{
   colName: string;
   type: TriggerType;
   useDocData?: boolean;
   useContext?: boolean;
   header?: ArrayOr<string>;
   resultPromise?: ArrayOr<string>;
-  updatedData?: ArrayOr<TriggerData>;
-  nonUpdatedData?: ArrayOr<TriggerData>;
+  updatedData?: ArrayOr<SchemaTriggerData>;
+  nonUpdatedData?: ArrayOr<SchemaTriggerData>;
   docData?: ArrayOr<FieldTuple>;
   dependency?: ArrayOr<TriggerDependency>;
-}
+}>;
 
-export interface ProcessedTrigger {
+export type ProcessedTrigger = Readonly<{
   useDocData: boolean;
   useContext: boolean;
   updatedData: TriggerData[];
@@ -25,20 +25,24 @@ export interface ProcessedTrigger {
   resultCommits: string[];
   headerStrs: string[];
   dependencies: TriggerDependency[];
-}
+}>;
 
-export interface FieldTuple {
+export type FieldTuple = Readonly<{
   fName: string;
-  value: string;
-}
+  fValue: string;
+}>;
 
-export interface TriggerData {
+export type SchemaTriggerData = Readonly<{
   dataName: string;
   field: ArrayOr<FieldTuple>;
-}
+}>;
+export type TriggerData = Readonly<{
+  dataName: string;
+  fields: FieldTuple[];
+}>;
 
-export interface TriggerDependency {
+export type TriggerDependency = Readonly<{
   key: string;
   fName: string;
   colName: string;
-}
+}>;

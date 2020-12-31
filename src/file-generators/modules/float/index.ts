@@ -1,13 +1,13 @@
 import _ from "lodash";
 import { FlamestoreModule } from "../../type";
-import { isTypeFloat } from "../../utils";
+import { isFloatSchemaField } from "../../generator-utils";
 
 export const module: FlamestoreModule = {
-  isCreatable: ({ field }) => isTypeFloat(field),
-  isUpdatable: ({ field }) => isTypeFloat(field),
+  isCreatable: ({ field }) => isFloatSchemaField(field),
+  isUpdatable: ({ field }) => isFloatSchemaField(field),
   getRule({ fName, field }) {
     const content = [];
-    if (isTypeFloat(field)) {
+    if (isFloatSchemaField(field)) {
       content.push(`${fName} is float`);
       const min = field.min;
       if (!_.isNil(min)) {

@@ -1,13 +1,13 @@
 import _ from "lodash";
 import { FlamestoreModule } from "../../type";
-import { isTypeInt } from "../../utils";
+import { isIntSchemaField } from "../../generator-utils";
 
 export const module: FlamestoreModule = {
-  isCreatable: ({ field }) => isTypeInt(field),
-  isUpdatable: ({ field }) => isTypeInt(field),
+  isCreatable: ({ field }) => isIntSchemaField(field),
+  isUpdatable: ({ field }) => isIntSchemaField(field),
   getRule({ fName, field }) {
     const content = [];
-    if (isTypeInt(field)) {
+    if (isIntSchemaField(field)) {
       content.push(`${fName} is int`);
       const min = field.min;
       if (!_.isNil(min)) {

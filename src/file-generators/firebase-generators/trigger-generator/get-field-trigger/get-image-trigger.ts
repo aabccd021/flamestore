@@ -1,5 +1,4 @@
-import { Collection, ImageField } from "../../../../type";
-import { getImageMetadatas } from "../../../utils";
+import { Collection, ImageField } from "../../../types";
 import {
   getImageDataStr,
   getOwnerRefIdStr,
@@ -10,28 +9,33 @@ export function getImageTrigger(
   field: ImageField,
   { fName, colName, col }: { fName: string; colName: string; col: Collection }
 ): Trigger[] {
-  const { ownerField } = col;
+  const { ownerFieldName: ownerField } = col;
   if (!ownerField) throw Error("ownerField required to upload image");
 
-  const id = getOwnerRefIdStr({ ownerField });
-  const metadatasStr = getImageMetadatas(field).map((x) => `"${x}"`);
-  const imageDataCallStr = getImageDataStr(
+  const idStr = getOwnerRefIdStr({ ownerField });
+  const metadatasStr = field.metadatas.map((x) => `"${x}"`);
+  const imageDataStr = getImageDataStr(
     `"${colName}"`,
     `"${fName}"`,
-    id,
+    idStr,
     `[${metadatasStr}]`,
     "snapshot"
   );
-
+  const imageDataCallStr = getImageDataCallStr({ imageDataStr });
   return [
     {
       colName,
       type: "Create",
       useDocData: true,
-      docData: {
-        fName,
-        value: `await ${imageDataCallStr}`,
-      },
+      docData: { fName, fValue: imageDataCallStr },
     },
   ];
+}
+
+function getImageDataCallStr({
+  imageDataStr,
+}: {
+  imageDataStr: string;
+}): string {
+  return `await ${imageDataStr}`;
 }

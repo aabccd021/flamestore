@@ -16,7 +16,7 @@
     "build:check": "tsc --noEmit",
     "flamestore2": "npm run build && node lib/index.js -i sample/sample.json --ro firebase/functions/firestore.rules --to firebase/functions/src/flamestore/triggers.ts",
     "reinstall-flamestore": "yarn build && cd firebase/functions/ && rm -rf node_modules/flamestore/ && yarn install --check-files",
-    "generate-schema": "ts-json-schema-generator --path src/type.ts --type FlamestoreSchema --out flamestore-schema/v1.json"
+    "generate-schema": "ts-json-schema-generator --path src/file-generators/schema-processor/schema-types.ts --type FlameSchema --out flamestore-schema/v1.json"
   },
   "dependencies": {
     "firebase-admin": "^9.4.2",

@@ -1,23 +1,22 @@
-import { Field } from "../../../../type";
-import { isFieldUnique } from "../../../utils";
+import { Field } from "../../../types";
 import { getFoundDuplicateStr } from "../trigger-generator-templates";
 import { Trigger } from "../trigger-generator-types";
 
-export function getBaseTrigger(param: {
+export function getBaseTrigger(fieldEntry: {
   field: Field;
   fName: string;
   colName: string;
 }): Trigger[] {
-  const { field, fName, colName } = param;
+  const { field, fName, colName } = fieldEntry;
   const triggers: Trigger[] = [];
-  if (isFieldUnique(field)) {
+  if (field.isUnique) {
     const foundDuplicateStr = getFoundDuplicateStr(
       `'${colName}'`,
       `'${fName}'`,
       "snapshot",
       "context"
     );
-    const handleDuplicateStr = `if (await ${foundDuplicateStr}) return;`;
+    const handleDuplicateStr = getHandleDuplicateStr({ foundDuplicateStr });
     triggers.push({
       colName,
       type: "Create",
@@ -32,4 +31,9 @@ export function getBaseTrigger(param: {
     });
   }
   return triggers;
+}
+
+function getHandleDuplicateStr(param: { foundDuplicateStr: string }): string {
+  const { foundDuplicateStr } = param;
+  return `if (await ${foundDuplicateStr}) return;`;
 }

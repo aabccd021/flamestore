@@ -1,51 +1,58 @@
 {
-  "$ref": "#/definitions/FlamestoreSchema",
+  "$ref": "#/definitions/FlameSchema",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
-    "Collection": {
-      "additionalProperties": false,
-      "properties": {
-        "fields": {
-          "additionalProperties": {
-            "$ref": "#/definitions/Field"
-          },
-          "type": "object"
+    "ArrayOr<ImageMetadata>": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ImageMetadata"
         },
-        "keyFields": {
+        {
+          "items": {
+            "$ref": "#/definitions/ImageMetadata"
+          },
+          "type": "array"
+        }
+      ]
+    },
+    "ArrayOr<NormalSchemaFieldProperties>": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/NormalSchemaFieldProperties"
+        },
+        {
+          "items": {
+            "$ref": "#/definitions/NormalSchemaFieldProperties"
+          },
+          "type": "array"
+        }
+      ]
+    },
+    "ArrayOr<string>": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
           "items": {
             "type": "string"
           },
           "type": "array"
-        },
-        "ownerField": {
-          "type": "string"
-        },
-        "rule:create": {
-          "$ref": "#/definitions/Rule"
-        },
-        "rule:delete": {
-          "$ref": "#/definitions/Rule"
-        },
-        "rule:get": {
-          "$ref": "#/definitions/Rule"
-        },
-        "rule:list": {
-          "$ref": "#/definitions/Rule"
-        },
-        "rule:update": {
-          "$ref": "#/definitions/Rule"
         }
-      },
-      "required": [
-        "fields"
-      ],
-      "type": "object"
+      ]
     },
-    "ComputedField": {
+    "ComputedSchemaField": {
       "additionalProperties": false,
       "properties": {
         "compute": {
-          "$ref": "#/definitions/PrimitiveFieldTypes"
+          "enum": [
+            "int",
+            "float",
+            "string",
+            "timestamp",
+            "path"
+          ],
+          "type": "string"
         }
       },
       "required": [
@@ -53,39 +60,52 @@
       ],
       "type": "object"
     },
-    "DynamicLinkAttribute": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "$ref": "#/definitions/DynamicLinkAttributeFromField"
-        }
-      ]
-    },
-    "DynamicLinkAttributeFromField": {
+    "CountSchemaField": {
       "additionalProperties": false,
       "properties": {
-        "field": {
+        "collection": {
+          "type": "string"
+        },
+        "reference": {
+          "type": "string"
+        },
+        "type": {
+          "const": "count",
           "type": "string"
         }
       },
       "required": [
-        "field"
+        "type",
+        "collection",
+        "reference"
       ],
       "type": "object"
     },
-    "Field": {
-      "anyOf": [
-        {
-          "$ref": "#/definitions/NormalField"
-        },
-        {
-          "$ref": "#/definitions/SpecialField"
-        }
-      ]
+    "FirebaseRegion": {
+      "enum": [
+        "us-central1",
+        "us-east1",
+        "us-east4",
+        "us-west2",
+        "us-west3",
+        "us-west4",
+        "europe-west1",
+        "europe-west2",
+        "europe-west3",
+        "europe-west6",
+        "asia-east2",
+        "asia-northeast1",
+        "asia-northeast2",
+        "asia-northeast3",
+        "asia-south1",
+        "asia-southeast2",
+        "northamerica-northeast1",
+        "southamerica-east1",
+        "australia-southeast1"
+      ],
+      "type": "string"
     },
-    "FlamestoreSchema": {
+    "FlameSchema": {
       "additionalProperties": false,
       "properties": {
         "$schema": {
@@ -109,7 +129,7 @@
         },
         "collections": {
           "additionalProperties": {
-            "$ref": "#/definitions/Collection"
+            "$ref": "#/definitions/SchemaCollection"
           },
           "type": "object"
         },
@@ -123,28 +143,7 @@
           "type": "object"
         },
         "region": {
-          "enum": [
-            "us-central1",
-            "us-east1",
-            "us-east4",
-            "us-west2",
-            "us-west3",
-            "us-west4",
-            "europe-west1",
-            "europe-west2",
-            "europe-west3",
-            "europe-west6",
-            "asia-east2",
-            "asia-northeast1",
-            "asia-northeast2",
-            "asia-northeast3",
-            "asia-south1",
-            "asia-southeast2",
-            "northamerica-northeast1",
-            "southamerica-east1",
-            "australia-southeast1"
-          ],
-          "type": "string"
+          "$ref": "#/definitions/FirebaseRegion"
         },
         "ruleOutputPath": {
           "type": "string"
@@ -155,13 +154,13 @@
       },
       "required": [
         "$schema",
-        "collections",
         "region",
-        "project"
+        "project",
+        "collections"
       ],
       "type": "object"
     },
-    "ImageData": {
+    "ImageMetadata": {
       "enum": [
         "height",
         "width",
@@ -169,346 +168,12 @@
       ],
       "type": "string"
     },
-    "NonComputed": {
+    "NormalSchemaFieldProperties": {
       "enum": [
         "isUnique",
         "isOptional",
         "isNotCreatable",
         "isNotUpdatable"
-      ],
-      "type": "string"
-    },
-    "NormalField": {
-      "anyOf": [
-        {
-          "additionalProperties": false,
-          "properties": {
-            "description": {
-              "$ref": "#/definitions/DynamicLinkAttribute"
-            },
-            "imageURL": {
-              "$ref": "#/definitions/DynamicLinkAttribute"
-            },
-            "isSuffixShort": {
-              "type": "boolean"
-            },
-            "property": {
-              "anyOf": [
-                {
-                  "items": {
-                    "$ref": "#/definitions/NonComputed"
-                  },
-                  "type": "array"
-                },
-                {
-                  "$ref": "#/definitions/NonComputed"
-                }
-              ]
-            },
-            "title": {
-              "$ref": "#/definitions/DynamicLinkAttribute"
-            },
-            "type": {
-              "const": "dynamicLink",
-              "type": "string"
-            }
-          },
-          "required": [
-            "type"
-          ],
-          "type": "object"
-        },
-        {
-          "additionalProperties": false,
-          "properties": {
-            "maxLength": {
-              "type": "number"
-            },
-            "minLength": {
-              "type": "number"
-            },
-            "property": {
-              "anyOf": [
-                {
-                  "items": {
-                    "$ref": "#/definitions/NonComputed"
-                  },
-                  "type": "array"
-                },
-                {
-                  "$ref": "#/definitions/NonComputed"
-                }
-              ]
-            },
-            "type": {
-              "const": "string",
-              "type": "string"
-            }
-          },
-          "required": [
-            "type"
-          ],
-          "type": "object"
-        },
-        {
-          "additionalProperties": false,
-          "properties": {
-            "deleteDocWhen": {
-              "type": "number"
-            },
-            "max": {
-              "type": "number"
-            },
-            "min": {
-              "type": "number"
-            },
-            "property": {
-              "anyOf": [
-                {
-                  "items": {
-                    "$ref": "#/definitions/NonComputed"
-                  },
-                  "type": "array"
-                },
-                {
-                  "$ref": "#/definitions/NonComputed"
-                }
-              ]
-            },
-            "type": {
-              "const": "float",
-              "type": "string"
-            }
-          },
-          "required": [
-            "type"
-          ],
-          "type": "object"
-        },
-        {
-          "additionalProperties": false,
-          "properties": {
-            "collection": {
-              "type": "string"
-            },
-            "property": {
-              "anyOf": [
-                {
-                  "items": {
-                    "$ref": "#/definitions/NonComputed"
-                  },
-                  "type": "array"
-                },
-                {
-                  "$ref": "#/definitions/NonComputed"
-                }
-              ]
-            },
-            "syncField": {
-              "anyOf": [
-                {
-                  "items": {
-                    "type": "string"
-                  },
-                  "type": "array"
-                },
-                {
-                  "type": "string"
-                }
-              ]
-            },
-            "type": {
-              "const": "path",
-              "type": "string"
-            }
-          },
-          "required": [
-            "collection",
-            "type"
-          ],
-          "type": "object"
-        },
-        {
-          "additionalProperties": false,
-          "properties": {
-            "deleteDocWhen": {
-              "type": "number"
-            },
-            "max": {
-              "type": "number"
-            },
-            "min": {
-              "type": "number"
-            },
-            "property": {
-              "anyOf": [
-                {
-                  "items": {
-                    "$ref": "#/definitions/NonComputed"
-                  },
-                  "type": "array"
-                },
-                {
-                  "$ref": "#/definitions/NonComputed"
-                }
-              ]
-            },
-            "type": {
-              "const": "int",
-              "type": "string"
-            }
-          },
-          "required": [
-            "type"
-          ],
-          "type": "object"
-        },
-        {
-          "additionalProperties": false,
-          "properties": {
-            "property": {
-              "anyOf": [
-                {
-                  "items": {
-                    "$ref": "#/definitions/NonComputed"
-                  },
-                  "type": "array"
-                },
-                {
-                  "$ref": "#/definitions/NonComputed"
-                }
-              ]
-            },
-            "type": {
-              "const": "timestamp",
-              "type": "string"
-            }
-          },
-          "required": [
-            "type"
-          ],
-          "type": "object"
-        },
-        {
-          "additionalProperties": false,
-          "properties": {
-            "collection": {
-              "type": "string"
-            },
-            "field": {
-              "type": "string"
-            },
-            "property": {
-              "anyOf": [
-                {
-                  "items": {
-                    "$ref": "#/definitions/NonComputed"
-                  },
-                  "type": "array"
-                },
-                {
-                  "$ref": "#/definitions/NonComputed"
-                }
-              ]
-            },
-            "reference": {
-              "type": "string"
-            },
-            "type": {
-              "const": "sum",
-              "type": "string"
-            }
-          },
-          "required": [
-            "collection",
-            "field",
-            "reference",
-            "type"
-          ],
-          "type": "object"
-        },
-        {
-          "additionalProperties": false,
-          "properties": {
-            "collection": {
-              "type": "string"
-            },
-            "property": {
-              "anyOf": [
-                {
-                  "items": {
-                    "$ref": "#/definitions/NonComputed"
-                  },
-                  "type": "array"
-                },
-                {
-                  "$ref": "#/definitions/NonComputed"
-                }
-              ]
-            },
-            "reference": {
-              "type": "string"
-            },
-            "type": {
-              "const": "count",
-              "type": "string"
-            }
-          },
-          "required": [
-            "collection",
-            "reference",
-            "type"
-          ],
-          "type": "object"
-        },
-        {
-          "additionalProperties": false,
-          "properties": {
-            "metadata": {
-              "anyOf": [
-                {
-                  "$ref": "#/definitions/ImageData"
-                },
-                {
-                  "items": {
-                    "$ref": "#/definitions/ImageData"
-                  },
-                  "type": "array"
-                }
-              ]
-            },
-            "property": {
-              "anyOf": [
-                {
-                  "items": {
-                    "$ref": "#/definitions/NonComputed"
-                  },
-                  "type": "array"
-                },
-                {
-                  "$ref": "#/definitions/NonComputed"
-                }
-              ]
-            },
-            "type": {
-              "const": "image",
-              "type": "string"
-            }
-          },
-          "required": [
-            "type"
-          ],
-          "type": "object"
-        }
-      ]
-    },
-    "PrimitiveFieldTypes": {
-      "enum": [
-        "int",
-        "float",
-        "string",
-        "path",
-        "timestamp"
       ],
       "type": "string"
     },
@@ -530,25 +195,309 @@
       ],
       "type": "object"
     },
-    "Rule": {
-      "enum": [
-        "all",
-        "owner",
-        "authenticated",
-        "none"
-      ],
-      "type": "string"
-    },
-    "SpecialField": {
-      "anyOf": [
-        {
-          "const": "serverTimestamp",
+    "SchemaCollection": {
+      "additionalProperties": false,
+      "properties": {
+        "fields": {
+          "additionalProperties": {
+            "$ref": "#/definitions/SchemaField"
+          },
+          "type": "object"
+        },
+        "keyFields": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "ownerField": {
           "type": "string"
         },
+        "rule:create": {
+          "enum": [
+            "all",
+            "owner",
+            "authenticated",
+            "none"
+          ],
+          "type": "string"
+        },
+        "rule:delete": {
+          "enum": [
+            "all",
+            "owner",
+            "authenticated",
+            "none"
+          ],
+          "type": "string"
+        },
+        "rule:get": {
+          "enum": [
+            "all",
+            "owner",
+            "authenticated",
+            "none"
+          ],
+          "type": "string"
+        },
+        "rule:list": {
+          "enum": [
+            "all",
+            "owner",
+            "authenticated",
+            "none"
+          ],
+          "type": "string"
+        },
+        "rule:update": {
+          "enum": [
+            "all",
+            "owner",
+            "authenticated",
+            "none"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "fields"
+      ],
+      "type": "object"
+    },
+    "SchemaField": {
+      "anyOf": [
         {
-          "$ref": "#/definitions/ComputedField"
+          "additionalProperties": false,
+          "properties": {
+            "description": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "field": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "field"
+                  ],
+                  "type": "object"
+                }
+              ]
+            },
+            "imageURL": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "field": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "field"
+                  ],
+                  "type": "object"
+                }
+              ]
+            },
+            "isSuffixShort": {
+              "type": "boolean"
+            },
+            "property": {
+              "$ref": "#/definitions/ArrayOr%3CNormalSchemaFieldProperties%3E"
+            },
+            "title": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "field": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "field"
+                  ],
+                  "type": "object"
+                }
+              ]
+            },
+            "type": {
+              "const": "dynamicLink",
+              "type": "string"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "deleteDocWhen": {
+              "type": "number"
+            },
+            "max": {
+              "type": "number"
+            },
+            "min": {
+              "type": "number"
+            },
+            "property": {
+              "$ref": "#/definitions/ArrayOr%3CNormalSchemaFieldProperties%3E"
+            },
+            "type": {
+              "const": "float",
+              "type": "string"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "metadata": {
+              "$ref": "#/definitions/ArrayOr%3CImageMetadata%3E"
+            },
+            "property": {
+              "$ref": "#/definitions/ArrayOr%3CNormalSchemaFieldProperties%3E"
+            },
+            "type": {
+              "const": "image",
+              "type": "string"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "deleteDocWhen": {
+              "type": "number"
+            },
+            "max": {
+              "type": "number"
+            },
+            "min": {
+              "type": "number"
+            },
+            "property": {
+              "$ref": "#/definitions/ArrayOr%3CNormalSchemaFieldProperties%3E"
+            },
+            "type": {
+              "const": "int",
+              "type": "string"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "collection": {
+              "type": "string"
+            },
+            "property": {
+              "$ref": "#/definitions/ArrayOr%3CNormalSchemaFieldProperties%3E"
+            },
+            "syncField": {
+              "$ref": "#/definitions/ArrayOr%3Cstring%3E"
+            },
+            "type": {
+              "const": "path",
+              "type": "string"
+            }
+          },
+          "required": [
+            "collection",
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "maxLength": {
+              "type": "number"
+            },
+            "minLength": {
+              "type": "number"
+            },
+            "property": {
+              "$ref": "#/definitions/ArrayOr%3CNormalSchemaFieldProperties%3E"
+            },
+            "type": {
+              "const": "string",
+              "type": "string"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "$ref": "#/definitions/ComputedSchemaField"
+        },
+        {
+          "$ref": "#/definitions/CountSchemaField"
+        },
+        {
+          "$ref": "#/definitions/ServerTimestampSchemaField"
+        },
+        {
+          "$ref": "#/definitions/SumSchemaField"
         }
       ]
+    },
+    "ServerTimestampSchemaField": {
+      "const": "serverTimestamp",
+      "type": "string"
+    },
+    "SumSchemaField": {
+      "additionalProperties": false,
+      "properties": {
+        "collection": {
+          "type": "string"
+        },
+        "field": {
+          "type": "string"
+        },
+        "reference": {
+          "type": "string"
+        },
+        "type": {
+          "const": "sum",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "collection",
+        "field",
+        "reference"
+      ],
+      "type": "object"
     }
   }
 }

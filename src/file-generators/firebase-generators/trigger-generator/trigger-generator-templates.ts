@@ -1,12 +1,7 @@
-import _ from "lodash";
-import { FlameSchema } from "../../../type";
-import {
-  assertNever,
-  colsOf,
-  mapPick,
-  toPascalColName,
-  toSingularColName,
-} from "../../utils";
+import { assertNever, assertString } from "../../../types";
+import { mapPick } from "../../../utils";
+import { CollectionEntry } from "../../types";
+import { toPascalColName, toSingularColName } from "../../generator-utils";
 import {
   FieldTuple,
   TriggerData,
@@ -14,7 +9,6 @@ import {
   TriggerType,
 } from "./trigger-generator-types";
 
-// constants
 export const functionsString = "functions";
 const foundDuplicateStr = "foundDuplicate";
 const incrementStr = "increment";
@@ -36,9 +30,11 @@ export const utilImports = `
   ${updateStr},
   ${imageDataStr},
   } from '../utils';`;
-export function getModelImportsStr(schema: FlameSchema): string {
-  const modelNames = mapPick(colsOf(schema), "colName").map(toPascalColName);
-  return `import {${modelNames}} from "../models"`;
+export function getModelImportsStr(colEntries: CollectionEntry[]): string {
+  const names: string = mapPick(colEntries, "colName")
+    .map(toPascalColName)
+    .join(",");
+  return `import {${names}} from "../models"`;
 }
 
 // frequently used string
@@ -50,10 +46,10 @@ function getSnapshotStr(dataName: string): string {
 }
 
 // access data
-export function getDataFieldStr(fName: string): string {
+export function getDataFieldStr({ fName }: { fName: string }): string {
   return `data.${fName}`;
 }
-export function toPromiseStr(fName: string): string {
+export function toPromiseStr({ fName }: { fName: string }): string {
   return `data.${fName}.reference.get()`;
 }
 export function getOwnerRefIdStr({ ownerField }: { ownerField: string }) {
@@ -65,7 +61,7 @@ export function getUpdateUpdatedDataStr(
   snapshotDataName: SnapshotDataName,
   dataName: string
 ): string {
-  const dataStr = getDataStr(dataName);
+  const dataStr: string = getDataStr(dataName);
   const referenceStr = `${snapshotDataName}.${dataName}.reference`;
   return `${updateStr}(${referenceStr}, ${dataStr})`;
 }
@@ -76,7 +72,7 @@ export function getDocDataCommits(param: {
 }): string[] {
   const { suffix, docData, colName } = param;
   if (docData.length === 0) return [];
-  const dataName = getDataStr(toSingularColName(colName));
+  const dataName: string = getDataStr(toSingularColName(colName));
   return [`${updateStr}(snapshot${suffix}.ref, ${dataName})`];
 }
 
@@ -103,7 +99,7 @@ export function getTriggerPrepareStr(param: {
   useDocData: boolean;
 }): string {
   const { triggerType, colName, useDocData } = param;
-  const pascalColName = toPascalColName(colName);
+  const pascalColName: string = toPascalColName(colName);
   if (!useDocData) return "";
   if (triggerType === "Create" || triggerType === "Delete") {
     return `const data = snapshot.data() as ${pascalColName};`;
@@ -129,23 +125,28 @@ export function getDocDataAssignStr(param: {
 }): string {
   const { colName, docData } = param;
   if (docData.length === 0) return "";
-  const dataContent = docData.map(({ fName, value }) => `${fName}: ${value}`);
-  const dataName = getDataStr(toSingularColName(colName));
+  const dataContent: string = docData.map(fieldToAssignmentStr).join(",");
+  const dataName: string = getDataStr(toSingularColName(colName));
   return `const ${dataName} = {${dataContent}};`;
 }
 export function toNonUpdatedDataAssignStr(triggerData: TriggerData): string {
-  const { field, dataName } = triggerData;
-  const dataContent = _([field])
-    .flatMap()
-    .map(({ fName, value }) => `${fName}: ${value}`);
+  const { fields, dataName } = triggerData;
+  assertString(dataName);
+  const dataContent: string = fields.map(fieldToAssignmentStr).join(",");
   return `const ${dataName} = {${dataContent}};`;
 }
 export function toUpdatedDataAssignStr(triggerData: TriggerData): string {
-  const { field, dataName } = triggerData;
-  const dataContent = _([field])
-    .flatMap()
-    .map(({ fName, value }) => `${fName}: ${value}`);
-  return `const ${getDataStr(dataName)} = {${dataContent}};`;
+  const { fields, dataName } = triggerData;
+  const dataContent: string = fields.map(fieldToAssignmentStr).join(",");
+  const dataStr: string = getDataStr(dataName);
+  return `const ${dataStr} = {${dataContent}};`;
+}
+function fieldToAssignmentStr(param: {
+  fName: string;
+  fValue: string;
+}): string {
+  const { fName, fValue } = param;
+  return `${fName}: ${fValue}`;
 }
 
 // trigger
@@ -156,7 +157,8 @@ export function getTriggerFunctionStr(param: {
   triggerContentStr: string;
 }): string {
   const { useContext, colName, triggerType, triggerContentStr } = param;
-  const context = useContext ? ", context" : "";
+  assertString(triggerType);
+  const context: string = useContext ? ", context" : "";
   return `
     export const on${triggerType} = ${functionsString}.firestore
     .document('/${colName}/{documentId}')
@@ -169,16 +171,23 @@ export function getTriggerFunctionStr(param: {
 // promise
 export function getPromiseCallStr(dependencies: TriggerDependency[]): string {
   if (dependencies.length === 0) return "";
-  const names = dependencies.map(({ key }) => getSnapshotStr(key));
-  const promises = mapPick(dependencies, "fName").map(toPromiseStr);
-  const assignments = dependencies
-    .map(({ colName, key }) => {
-      const pascalColName = toPascalColName(colName);
-      const snapshotStr = getSnapshotStr(key);
-      return `const ${key} = ${snapshotStr}.data() as ${pascalColName};`;
-    })
+  const names: string = mapPick(dependencies, "key")
+    .map(getSnapshotStr)
+    .join(",");
+  const promises: string = dependencies.map(toPromiseStr).join(",");
+  const assignments: string = dependencies
+    .map(dependencyToPromiseAssignmentStr)
     .join("");
   return `const [${names}] = await Promise.all([${promises}]);${assignments}`;
+}
+function dependencyToPromiseAssignmentStr(param: {
+  colName: string;
+  key: string;
+}): string {
+  const { colName, key } = param;
+  const pascalColName: string = toPascalColName(colName);
+  const snapshotStr: string = getSnapshotStr(key);
+  return `const ${key} = ${snapshotStr}.data() as ${pascalColName};`;
 }
 
 // functions
