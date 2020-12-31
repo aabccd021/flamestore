@@ -8,9 +8,11 @@ export type SchemaIntField = {
   max?: number;
   deleteDocWhen?: number;
 };
+
 export function isTypeOf(field: SchemaField): field is SchemaIntField {
   return (field as SchemaIntField).type === "int";
 }
+
 export function process(
   field: SchemaIntField,
   data: { fName: string; col: SchemaCollection }

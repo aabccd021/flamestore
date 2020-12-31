@@ -12,9 +12,11 @@ export type PathSchemaField = {
   collection: string;
   syncField?: ArrayOr<string>;
 };
+
 export function isTypeOf(field: SchemaField): field is PathSchemaField {
   return (field as PathSchemaField).type === "path";
 }
+
 export function process(
   field: PathSchemaField,
   data: {

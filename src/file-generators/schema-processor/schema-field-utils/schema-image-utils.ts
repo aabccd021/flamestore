@@ -10,6 +10,7 @@ export type ImageSchemaField = {
   type: "image";
   metadata?: ArrayOr<ImageMetadata>;
 };
+
 export function process(
   field: ImageSchemaField,
   data: { fName: string; col: SchemaCollection }
@@ -18,6 +19,7 @@ export function process(
   const metadatas = chain([field.metadata]).compact().flatMap().value();
   return { ...field, ...properties, metadatas };
 }
+
 export function isTypeOf(field: SchemaField): field is ImageSchemaField {
   return (field as ImageSchemaField).type === "image";
 }

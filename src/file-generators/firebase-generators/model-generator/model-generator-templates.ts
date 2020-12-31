@@ -72,6 +72,7 @@ export function getFieldRequiredStr(field: Field): FieldRequiredString {
   if (isStringField(field)) return "";
   assertNever(field);
 }
+
 export function getNonComputedFieldStr(param: {
   fName: string;
   fieldRequiredStr: FieldRequiredString;

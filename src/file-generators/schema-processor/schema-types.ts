@@ -79,6 +79,7 @@ export type NormalSchemaField =
 export type NormalSchemaFieldMetadata = {
   property?: ArrayOr<NormalSchemaFieldProperties>;
 };
+
 export type NormalSchemaFieldProperties =
   | "isUnique"
   | "isOptional"

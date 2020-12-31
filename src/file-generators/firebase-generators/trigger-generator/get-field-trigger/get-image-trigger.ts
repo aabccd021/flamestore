@@ -32,10 +32,7 @@ export function getImageTrigger(
   ];
 }
 
-function getImageDataCallStr({
-  imageDataStr,
-}: {
-  imageDataStr: string;
-}): string {
+function getImageDataCallStr(param: { imageDataStr: string }): string {
+  const { imageDataStr } = param;
   return `await ${imageDataStr}`;
 }

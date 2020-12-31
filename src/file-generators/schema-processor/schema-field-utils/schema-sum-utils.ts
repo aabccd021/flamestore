@@ -19,6 +19,7 @@ export function process(
   const refName = field.reference;
   return { ...field, ...properties, colName, incFieldName, refName };
 }
+
 export function isTypeOf(field: SchemaField): field is SumSchemaField {
   return (field as SumSchemaField).type === "sum";
 }

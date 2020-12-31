@@ -23,11 +23,9 @@ export function generateFirebaseTrigger(
   // create dir
   const triggerDir = path.join(outputFilePath, "flamestore");
   if (!fs.existsSync(triggerDir)) fs.mkdirSync(triggerDir);
-
   // create triggers
   const fcEntries = fcEntriesOf(colEntries);
   const triggers = fcEntries.map(fcEntryToTriggers).flatMap();
-
   // generate triggers
   colEntries.forEach(({ colName }) => {
     // triggers to string
@@ -40,7 +38,6 @@ export function generateFirebaseTrigger(
       .join("");
     const modelImportsStr = getModelImportsStr(colEntries);
     const triggerFileStr = `${modelImportsStr}${utilImports}\n${triggerStr}`;
-
     // write collection trigger
     fs.writeFileSync(path.join(triggerDir, `${colName}.ts`), triggerFileStr);
   });

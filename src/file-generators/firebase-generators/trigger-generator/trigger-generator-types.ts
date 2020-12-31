@@ -1,6 +1,7 @@
 import { ArrayOr } from "../../../types";
 
 export const triggerTypes = ["Create", "Update", "Delete"] as const;
+
 export type TriggerType = typeof triggerTypes[number];
 
 export type Trigger = Readonly<{
@@ -36,6 +37,7 @@ export type SchemaTriggerData = Readonly<{
   dataName: string;
   field: ArrayOr<FieldTuple>;
 }>;
+
 export type TriggerData = Readonly<{
   dataName: string;
   fields: FieldTuple[];

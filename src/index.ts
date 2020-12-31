@@ -117,12 +117,12 @@ export function useFlamestoreUtils(
 
   type Document = { [key: string]: Field };
 
-  interface ImageField {
+  type ImageField = {
     url?: string;
     width?: number;
     height?: number;
     size?: number;
-  }
+  };
 
   type Field =
     | defaultFirestore.Timestamp
