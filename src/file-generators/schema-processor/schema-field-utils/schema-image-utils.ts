@@ -13,7 +13,7 @@ export type ImageSchemaField = {
 
 export function process(
   field: ImageSchemaField,
-  data: { fName: string; col: SchemaCollection }
+  data: { fName: string; schemaCol: SchemaCollection }
 ): ImageField {
   const properties = getSchemaFieldProperties({ field, ...data });
   const metadatas = chain([field.metadata]).compact().flatMap().value();

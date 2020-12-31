@@ -10,12 +10,8 @@ export function processSchemaCollection(
   const { fields: schemaFields, ownerField } = schemaCol;
   const ownerFieldName = ownerField;
   const fields = _.map(schemaFields, (schemaField, fName) => {
-    const field = processSchemaField(
-      schemaField,
-      fName,
-      schemaCol,
-      schemaColMap
-    );
+    const data = { schemaCol, schemaColMap, fName, schemaField };
+    const field = processSchemaField(data);
     return { fName, field };
   });
   return { ownerFieldName, fields };

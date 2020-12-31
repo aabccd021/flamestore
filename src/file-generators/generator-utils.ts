@@ -8,7 +8,7 @@ export function toSingularColName(colName: string): string {
 export function toPascalColName(colName: string): string {
   return _.upperFirst(toSingularColName(colName));
 }
-export function fcEntriesOf(
+export function fieldColEntriesOf(
   colEntries: CollectionEntry[]
 ): _.Collection<FieldCollectionEntry> {
   return _(colEntries)

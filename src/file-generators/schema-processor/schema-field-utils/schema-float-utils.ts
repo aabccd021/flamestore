@@ -11,7 +11,7 @@ export type FloatSchemaField = {
 
 export function process(
   field: FloatSchemaField,
-  data: { fName: string; col: SchemaCollection }
+  data: { fName: string; schemaCol: SchemaCollection }
 ): FloatField {
   const properties = getSchemaFieldProperties({ field, ...data });
   return { ...field, ...properties };

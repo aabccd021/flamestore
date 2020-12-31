@@ -13,20 +13,20 @@ import {
   utilImports,
 } from "./trigger-generator-templates";
 import { CollectionEntry } from "../../generator-types";
-import { fcEntriesOf } from "../../generator-utils";
+import { fieldColEntriesOf } from "../../generator-utils";
 import { mapPick } from "../../../lodash-utils";
 
 export function generateFirebaseTrigger(
   outputFilePath: string,
   colEntries: CollectionEntry[]
 ): void {
-  // create dir
   const triggerDir = path.join(outputFilePath, "flamestore");
   if (!fs.existsSync(triggerDir)) fs.mkdirSync(triggerDir);
+
   // create triggers
-  const fcEntries = fcEntriesOf(colEntries);
+  const fcEntries = fieldColEntriesOf(colEntries);
   const triggers = fcEntries.map(fcEntryToTriggers).flatMap();
-  // generate triggers
+
   colEntries.forEach(({ colName }) => {
     // triggers to string
     const triggerStr = triggerTypes
@@ -38,7 +38,7 @@ export function generateFirebaseTrigger(
       .join("");
     const modelImportsStr = getModelImportsStr(colEntries);
     const triggerFileStr = `${modelImportsStr}${utilImports}\n${triggerStr}`;
-    // write collection trigger
+
     fs.writeFileSync(path.join(triggerDir, `${colName}.ts`), triggerFileStr);
   });
   const indexFileContent = mapPick(colEntries, "colName")

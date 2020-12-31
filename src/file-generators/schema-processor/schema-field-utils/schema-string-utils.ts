@@ -14,7 +14,7 @@ export function isTypeOf(field: SchemaField): field is StringSchemaField {
 
 export function process(
   field: StringSchemaField,
-  data: { fName: string; col: SchemaCollection }
+  data: { fName: string; schemaCol: SchemaCollection }
 ): StringField {
   const properties = getSchemaFieldProperties({ field, ...data });
   return { ...field, ...properties };

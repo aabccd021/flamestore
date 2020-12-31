@@ -12,23 +12,23 @@ import * as string from "../schema-field-utils/schema-string-utils";
 import * as sum from "../schema-field-utils/schema-sum-utils";
 import { assertNever } from "../../../utils";
 
-export function processSchemaField(
-  field: SchemaField,
-  fName: string,
-  col: SchemaCollection,
-  schemaColMap: { [colName: string]: SchemaCollection }
-): Field {
-  const data = { fName, col, schemaColMap };
-  if (computed.isTypeOf(field)) return computed.process(field, data);
-  if (count.isTypeOf(field)) return count.process(field, data);
-  if (dynamicLink.isTypeOf(field)) return dynamicLink.process(field, data);
-  if (float.isTypeOf(field)) return float.process(field, data);
-  if (image.isTypeOf(field)) return image.process(field, data);
-  if (int.isTypeOf(field)) return int.process(field, data);
-  if (path.isTypeOf(field)) return path.process(field, data);
+export function processSchemaField(param: {
+  schemaField: SchemaField;
+  fName: string;
+  schemaCol: SchemaCollection;
+  schemaColMap: { [colName: string]: SchemaCollection };
+}): Field {
+  const { schemaField: field } = param;
+  if (computed.isTypeOf(field)) return computed.process(field, param);
+  if (count.isTypeOf(field)) return count.process(field, param);
+  if (dynamicLink.isTypeOf(field)) return dynamicLink.process(field, param);
+  if (float.isTypeOf(field)) return float.process(field, param);
+  if (image.isTypeOf(field)) return image.process(field, param);
+  if (int.isTypeOf(field)) return int.process(field, param);
+  if (path.isTypeOf(field)) return path.process(field, param);
   if (serverTimestamp.isTypeOf(field))
-    return serverTimestamp.toProcessed(field, data);
-  if (string.isTypeOf(field)) return string.process(field, data);
-  if (sum.isTypeOf(field)) return sum.process(field, data);
+    return serverTimestamp.toProcessed(field, param);
+  if (string.isTypeOf(field)) return string.process(field, param);
+  if (sum.isTypeOf(field)) return sum.process(field, param);
   assertNever(field);
 }

@@ -22,7 +22,7 @@ export function toDynamicLinkAttribute(
 
 export function process(
   field: DynamicLinkSchemaField,
-  data: { fName: string; col: SchemaCollection }
+  data: { fName: string; schemaCol: SchemaCollection }
 ): DynamicLinkField {
   const properties = getSchemaFieldProperties({ field, ...data });
   const [title, description, imageURL] = [

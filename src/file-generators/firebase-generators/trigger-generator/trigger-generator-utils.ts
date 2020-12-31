@@ -52,15 +52,15 @@ export function getTriggerStr(param: {
     useDocData,
     useContext,
   } = trigger;
-  // prepare easy variables
+
   const suffix = suffixStrOfType(triggerType);
   const snapshotType = snapshotStrOf(triggerType);
   const promiseCallStr = getPromiseCallStr(dependencies);
-  // get datas string
+
   const updatedDataStrs = updatedData.map(toUpdatedDataAssignStr);
   const nonUpdatedDataStrs = nonUpdatedData.map(toNonUpdatedDataAssignStr);
   const docDataStr = getDocDataAssignStr({ colName, docData });
-  // get commits string
+
   const docDataCommits = getDocDataCommits({
     colName,
     suffix,
@@ -74,7 +74,7 @@ export function getTriggerStr(param: {
     ...updatedDataCommits,
     ...resultCommits,
   ]);
-  // get all contents string
+
   const contents: string[] = [
     ...headerStrs,
     promiseCallStr,
@@ -84,9 +84,9 @@ export function getTriggerStr(param: {
     batchCommitStr,
   ];
   const contentStr = contents.join("");
-  // return if content empty, no need to add trigger prepare string
+
   if (contentStr === "") return "";
-  // return final trigger string
+
   const prepareStr = getTriggerPrepareStr({
     triggerType,
     colName,

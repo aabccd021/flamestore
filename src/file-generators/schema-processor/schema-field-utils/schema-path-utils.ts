@@ -21,24 +21,20 @@ export function process(
   field: PathSchemaField,
   data: {
     fName: string;
-    col: SchemaCollection;
+    schemaCol: SchemaCollection;
     schemaColMap: { [colName: string]: SchemaCollection };
   }
 ): PathField {
   const { schemaColMap } = data;
   const syncColName = field.collection;
-  const syncSchemaCol = schemaColMap[syncColName];
+  const schemaCol = schemaColMap[syncColName];
   const properties = getSchemaFieldProperties({ field, ...data });
   const syncFieldNames = chain([field.syncField]).compact().flatMap().value();
-  const syncFields = syncFieldNames.map((syncFName) => {
-    const schemaField = syncSchemaCol.fields[syncFName];
-    const field = processSchemaField(
-      schemaField,
-      syncFName,
-      syncSchemaCol,
-      schemaColMap
-    );
-    return { fName: syncFName, field };
+  const syncFields = syncFieldNames.map((fName) => {
+    const schemaField = schemaCol.fields[fName];
+    const data = { schemaCol, schemaColMap, fName, schemaField };
+    const field = processSchemaField(data);
+    return { fName: fName, field };
   });
   return { ...field, ...properties, syncFields };
 }

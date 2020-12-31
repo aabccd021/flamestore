@@ -7,14 +7,10 @@ import { preprocessAuth } from "./schema-preprocess-utils/schema-auth-utils";
 export function processSchema(schema: FlameSchema): CollectionEntry[] {
   let schemaColMap = schema.collections;
   const preprocessFns = [preprocessAuth];
-  preprocessFns.forEach((preprocessFn) => {
-    schemaColMap = preprocessFn(schema, schemaColMap);
+  preprocessFns.forEach((fn) => (schemaColMap = fn(schema, schemaColMap)));
+  const colEntries = _(schema.collections).map((schemaCol, colName) => {
+    const col = processSchemaCollection(schemaCol, schemaColMap);
+    return { colName, col };
   });
-  const colEntries = _(schema.collections)
-    .map((schemaCol, colName) => {
-      const col = processSchemaCollection(schemaCol, schemaColMap);
-      return { colName, col };
-    })
-    .value();
-  return colEntries;
+  return colEntries.value();
 }

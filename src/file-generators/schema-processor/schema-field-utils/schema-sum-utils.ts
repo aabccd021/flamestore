@@ -11,7 +11,7 @@ export type SumSchemaField = {
 
 export function process(
   field: SumSchemaField,
-  data: { fName: string; col: SchemaCollection }
+  data: { fName: string; schemaCol: SchemaCollection }
 ): SumField {
   const properties = getSchemaFieldProperties({ field, ...data });
   const colName = field.collection;
