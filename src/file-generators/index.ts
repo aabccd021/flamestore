@@ -15,6 +15,7 @@ const schema: FlameSchema = rawSchema;
 // TODO: Validate circular reference
 // TODO: reference field
 // TODO: document has owner if want to upload image
+// TODO: user col auth field should not be specified in json
 // modules.forEach(module => module.validate && module.validate(schema));
 const colEntries = colEntryOfSchema(schema);
 // const rulePath = schema.ruleOutputPath ?? "firestore/firestore.rules";

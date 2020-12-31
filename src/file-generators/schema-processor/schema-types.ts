@@ -10,15 +10,23 @@ import { ServerTimestampSchemaField } from "./schema-field-utils/schema-server-t
 import { StringSchemaField } from "./schema-field-utils/schema-string-utils";
 import { SumSchemaField } from "./schema-field-utils/schema-sum-utils";
 
-export type FlameSchema = {
+export type FlameSchema = FlameSchemaMetadata & {
   $schema: string;
+  collections: { [name: string]: SchemaCollection };
+};
+
+export type FlameSchemaMetadata = {
   ruleOutputPath?: string;
   triggerOutputPath?: string;
   flutterOutputPath?: string;
   region: FirebaseRegion;
   project: { [name: string]: ProjectConfiguration };
-  authentication?: { userCollection: string; uidField: string };
-  collections: { [name: string]: SchemaCollection };
+  authentication?: FlameSchemaAuth;
+};
+
+export type FlameSchemaAuth = {
+  userCollection: string;
+  uidField: string;
 };
 
 export type FirebaseRegion =
