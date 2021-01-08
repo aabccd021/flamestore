@@ -2,35 +2,25 @@ rules_version = '2';
 service cloud.firestore {
 
   match /databases/{database}/documents {
-    function isAuthenticated(){
-      return request.auth != null;
-    }
-    function reqData(){
-      return request.resource.data;
-    }
-    function resData(){
-      return resource.data;
-    }
+    function isAuthenticated(){ return request.auth != null; }
+    function reqData(){ return request.resource.data; }
+    function resData(){ return resource.data; }
+    function updatedKeys(){ return reqData().diff(resData()).affectedKeys(); }
     function isNotDeleted(fieldName){
       return fieldName in reqData() && fieldName in resData();
     }
-    function updatedKeys(){
-      return reqData().diff(resData()).affectedKeys();
-    }
     match /users/{documentId} {
-      function uidOfDocumentId(){
-        return documentId.split('_')[0];
-      }
-      function isReqOwner(){
-        return request.auth.uid == reqData().uid;
-      }
+      function uidOfDocumentId(){ return documentId.split('_')[0]; }
+      function isReqOwner(){ return request.auth.uid == reqData().uid; }
       function isResOwner(){
         return !(exists(/databases/$(database)/documents/users/$(documentId)))
           || request.auth.uid == resData().uid;
       }
       function userNameIsValid(){
         let userName = reqData().userName;
-        return userName is string && userName.size() <= 15 && userName.size() >= 1;
+        return userName is string
+          && userName.size() <= 15
+          && userName.size() >= 1;
       }
       function bioIsValid(){
         let bio = reqData().bio;
@@ -68,15 +58,21 @@ service cloud.firestore {
       }
       function userIsValid(){
         let user = reqData().user;
-        return user is map && user.keys() == ['reference'] && user.reference is path && exists(user.reference);
+        return user is map
+          && user.keys() == ['reference']
+          && user.reference is path
+          && exists(user.reference);
       }
       function tweetTextIsValid(){
         let tweetText = reqData().tweetText;
-        return tweetText is string && tweetText.size() <= 280 && tweetText.size() >= 1;
+        return tweetText is string
+          && tweetText.size() <= 280
+          && tweetText.size() >= 1;
       }
       function dynamicLinkIsValid(){
         let dynamicLink = reqData().dynamicLink;
-        return dynamicLink is string && dynamicLink[0:29] == 'https://flamestore.page.link/';
+        return dynamicLink is string
+          && dynamicLink[0:29] == 'https://flamestore.page.link/';
       }
       function isCreateValid(){
         return reqData().keys().hasOnly(['user','tweetText','dynamicLink'])
@@ -96,12 +92,8 @@ service cloud.firestore {
       allow delete: if isResOwner();
     }
     match /likes/{documentId} {
-      function userOfDocumentId(){
-        return documentId.split('_')[0];
-      }
-      function tweetOfDocumentId(){
-        return documentId.split('_')[1];
-      }
+      function userOfDocumentId(){ return documentId.split('_')[0]; }
+      function tweetOfDocumentId(){ return documentId.split('_')[1]; }
       function isReqOwner(){
         return request.auth.uid == get(reqData().user.reference).data.uid;
       }
@@ -111,15 +103,26 @@ service cloud.firestore {
       }
       function likeValueIsValid(){
         let likeValue = reqData().likeValue;
-        return likeValue is int && likeValue >= 0 && likeValue <= 5 && likeValue != 0;
+        return likeValue is int
+          && likeValue >= 0
+          && likeValue <= 5
+          && likeValue != 0;
       }
       function tweetIsValid(){
         let tweet = reqData().tweet;
-        return tweet is map && tweet.keys() == ['reference'] && tweet.reference is path && exists(tweet.reference) && get(tweet.reference).id == tweetOfDocumentId();
+        return tweet is map
+          && tweet.keys() == ['reference']
+          && tweet.reference is path
+          && exists(tweet.reference)
+          && get(tweet.reference).id == tweetOfDocumentId();
       }
       function userIsValid(){
         let user = reqData().user;
-        return user is map && user.keys() == ['reference'] && user.reference is path && exists(user.reference) && get(user.reference).id == userOfDocumentId();
+        return user is map
+          && user.keys() == ['reference']
+          && user.reference is path
+          && exists(user.reference)
+          && get(user.reference).id == userOfDocumentId();
       }
       function isCreateValid(){
         return reqData().keys().hasOnly(['likeValue','tweet','user'])
