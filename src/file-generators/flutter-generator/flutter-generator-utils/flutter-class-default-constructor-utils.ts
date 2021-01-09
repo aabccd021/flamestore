@@ -28,8 +28,8 @@ export function toConstrAssgStr(fcEntry: FieldCollectionEntry): string[] {
   if (isComputedField(field)) return [t`${fName} = null`];
   if (isCountField(field)) return [t`${fName} = 0`];
   if (isDynamicLinkField(field)) return [t`${fName} = null`];
-  if (isFloatField(field)) return [t`${fName} = null`];
-  if (isIntField(field)) return [t`${fName} = null`];
+  if (isFloatField(field)) return [];
+  if (isIntField(field)) return [];
   if (isServerTimestampField(field)) return [t`${fName} = null`];
   if (isStringField(field)) return [];
   if (isSumField(field)) return [t`${fName} = 0`];
@@ -37,7 +37,7 @@ export function toConstrAssgStr(fcEntry: FieldCollectionEntry): string[] {
   if (isPathField(field)) {
     const pascalColName = toPascalColName(colName);
     const pascalFieldName = _.upperFirst(fName);
-    const pascalSyncColName = _.upperFirst(field.colName);
+    const pascalSyncColName = toPascalColName(field.colName);
     return [
       t`${fName} = _${pascalColName}${pascalFieldName}._from${pascalSyncColName}(${fName})`,
     ];

@@ -12,6 +12,10 @@ import {
 } from "./flutter-generator-utils/flutter-class-default-constructor-utils";
 import { toFieldStr } from "./flutter-generator-utils/flutter-class-fields-utils";
 import { toFromMapConstrAssgStr } from "./flutter-generator-utils/flutter-class-from-map-constructor-utils";
+import {
+  toAnonPrivConstrArgStr,
+  toNamedPrivConstrArgStr,
+} from "./flutter-generator-utils/flutter-class-private-constructor-utils";
 
 export function colEntryToStr(colEntry: CollectionEntry): string {
   //
@@ -24,11 +28,17 @@ export function colEntryToStr(colEntry: CollectionEntry): string {
   const constructorAssgStr = flatSuf(fields, toConstrAssgStr, ",");
   const fieldStr = flatSuf(fields, toFieldStr, ";");
   const fromMapConstrAssgStr = flatSuf(fields, toFromMapConstrAssgStr, ",");
+  const anonPrivConstrArgStr = flatSuf(fields, toAnonPrivConstrArgStr, ",");
+  const namedPrivConstrArgStr = flatSuf(fields, toNamedPrivConstrArgStr, ",");
   //
   return t`class ${pascal} extends Document{
     ${pascal}({${constructorArgStr}}): ${constructorAssgStr} super(null);
     ${pascal}._fromMap(Map<String, dynamic> data)
       : ${fromMapConstrAssgStr} super(data['reference']);
+    ${pascal}._(${anonPrivConstrArgStr}{
+      ${namedPrivConstrArgStr}
+      @required DocumentReference reference,
+    }):super(reference);
     ${fieldStr}
   }`;
 }
