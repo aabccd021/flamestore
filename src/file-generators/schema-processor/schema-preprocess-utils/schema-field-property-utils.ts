@@ -33,7 +33,6 @@ function getIsKeyField(param: {
   if (keyFields.includes(fName)) return true;
   if (auth) {
     const { uidField, userCollection } = auth;
-    console.log(fName);
     if (userCollection === colName && uidField === fName) return true;
   }
   return false;

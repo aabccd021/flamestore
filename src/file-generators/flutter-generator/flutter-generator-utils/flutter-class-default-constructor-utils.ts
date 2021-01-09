@@ -21,19 +21,19 @@ import {
   FieldCollectionEntry,
 } from "../../generator-types";
 import { t, toPascalColName } from "../../generator-utils";
-import { isConstrArgRequired } from "../flutter-generator-utils";
 
 export function toConstrAssgStr(fcEntry: FieldCollectionEntry): string[] {
   const { fName, field, colName } = fcEntry;
-  if (isComputedField(field)) return [t`${fName} = null`];
-  if (isCountField(field)) return [t`${fName} = 0`];
-  if (isDynamicLinkField(field)) return [t`${fName} = null`];
+  const assignNullStr = t`${fName} = null`;
   if (isFloatField(field)) return [];
   if (isIntField(field)) return [];
-  if (isServerTimestampField(field)) return [t`${fName} = null`];
   if (isStringField(field)) return [];
+  if (isCountField(field)) return [t`${fName} = 0`];
   if (isSumField(field)) return [t`${fName} = 0`];
-  if (isImageField(field)) return [t`_${fName} = ${fName}`, t`${fName} = null`];
+  if (isComputedField(field)) return [assignNullStr];
+  if (isDynamicLinkField(field)) return [assignNullStr];
+  if (isServerTimestampField(field)) return [assignNullStr];
+  if (isImageField(field)) return [t`_${fName} = ${fName}`, assignNullStr];
   if (isPathField(field)) {
     const pascalColName = toPascalColName(colName);
     const pascalFieldName = _.upperFirst(fName);
@@ -52,7 +52,7 @@ export function toConstrArgStr(fEntry: FieldEntry): string[] {
   if (isServerTimestampField(field)) return [];
   if (isSumField(field)) return [];
   if (isDynamicLinkField(field)) return [];
-  const requiredStr = isConstrArgRequired(field) ? "@required " : "";
+  const requiredStr = field.isOptional ? "" : "@required ";
   return [requiredStr + getCreatableConstrArgStr(fName, field)];
 }
 
@@ -67,16 +67,17 @@ function getCreatableConstrArgStr(
     | ComputedField
   >
 ): string {
+  const thisStr = t`this.${fName}`;
   if (isImageField(field)) return t`File ${fName}`;
-  if (isComputedField(field)) return t`this.${fName}`;
-  if (isCountField(field)) return t`this.${fName}`;
-  if (isDynamicLinkField(field)) return t`this.${fName}`;
-  if (isFloatField(field)) return t`this.${fName}`;
-  if (isImageField(field)) return t`this.${fName}`;
-  if (isIntField(field)) return t`this.${fName}`;
-  if (isServerTimestampField(field)) return t`this.${fName}`;
-  if (isStringField(field)) return t`this.${fName}`;
-  if (isSumField(field)) return t`this.${fName}`;
+  if (isComputedField(field)) return thisStr;
+  if (isCountField(field)) return thisStr;
+  if (isDynamicLinkField(field)) return thisStr;
+  if (isFloatField(field)) return thisStr;
+  if (isImageField(field)) return thisStr;
+  if (isIntField(field)) return thisStr;
+  if (isServerTimestampField(field)) return thisStr;
+  if (isStringField(field)) return thisStr;
+  if (isSumField(field)) return thisStr;
   if (isPathField(field)) {
     const pascalColName = toPascalColName(field.colName);
     return t`${pascalColName} ${fName}`;

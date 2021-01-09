@@ -6,7 +6,11 @@ import {
   t,
   toPascalColName,
 } from "../generator-utils";
-import { toCwConstrArgStr } from "./flutter-generator-utils/flutter-class-copy-with-constructor-utils";
+import {
+  toCwAnonConstrAssgStr,
+  toCwConstrArgStr,
+  toCwNamedConstrAssgStr,
+} from "./flutter-generator-utils/flutter-class-copy-with-constructor-utils";
 import {
   toConstrArgStr,
   toConstrAssgStr,
@@ -21,17 +25,19 @@ import {
 export function colEntryToStr(colEntry: CollectionEntry): string {
   //
   const { colName } = colEntry;
-  const fields = _(fieldColEntriesOfCol(colEntry));
+  const fs = _(fieldColEntriesOfCol(colEntry));
   //
   const pascal = toPascalColName(colName);
   //
-  const constructorArgStr = flatSuf(fields, toConstrArgStr, ",");
-  const constructorAssgStr = flatSuf(fields, toConstrAssgStr, ",");
-  const fieldStr = flatSuf(fields, toFieldStr, ";");
-  const fromMapConstrAssgStr = flatSuf(fields, toFromMapConstrAssgStr, ",");
-  const anonPrivConstrArgStr = flatSuf(fields, toAnonPrivConstrArgStr, ",");
-  const namedPrivConstrArgStr = flatSuf(fields, toNamedPrivConstrArgStr, ",");
-  const cwConstrArgStr = flatSuf(fields, toCwConstrArgStr, ",");
+  const constructorArgStr = flatSuf(fs, toConstrArgStr, ",");
+  const constructorAssgStr = flatSuf(fs, toConstrAssgStr, ",");
+  const fieldStr = flatSuf(fs, toFieldStr, ";");
+  const fromMapConstrAssgStr = flatSuf(fs, toFromMapConstrAssgStr, ",");
+  const anonPrivConstrArgStr = compactSuf(fs, toAnonPrivConstrArgStr, ",");
+  const namedPrivConstrArgStr = compactSuf(fs, toNamedPrivConstrArgStr, ",");
+  const cwConstrArgStr = compactSuf(fs, toCwConstrArgStr, ",");
+  const cwNamedConstrAssgStr = compactSuf(fs, toCwNamedConstrAssgStr, ",");
+  const cwAnonConstrAssgStr = compactSuf(fs, toCwAnonConstrAssgStr, ",");
   //
   return t`class ${pascal} extends Document{
     ${pascal}({${constructorArgStr}}): ${constructorAssgStr} super(null);
@@ -41,8 +47,19 @@ export function colEntryToStr(colEntry: CollectionEntry): string {
       ${namedPrivConstrArgStr}
       @required DocumentReference reference,
     }):super(reference);
-    ${pascal} copyWith({${cwConstrArgStr}}){return ${pascal}._();}
+    ${pascal} copyWith({${cwConstrArgStr}}){
+      return ${pascal}._(
+        ${cwAnonConstrAssgStr}
+        ${cwNamedConstrAssgStr}
+        reference: this.reference,
+      );}
     ${fieldStr}
+    @override
+    String get colName => "${colName}";
+    @override
+    List<String> get keys {
+      return [];
+    }
   }`;
 }
 
@@ -52,6 +69,14 @@ function flatSuf(
   suffix: string
 ): string {
   return fields.map(fn).flatMap().map(suf(suffix)).join("");
+}
+
+function compactSuf(
+  fields: _.Collection<FieldCollectionEntry>,
+  fn: (fEntry: FieldCollectionEntry) => string | null,
+  suffix: string
+): string {
+  return fields.map(fn).compact().map(suf(suffix)).join("");
 }
 
 export const importsStr = t`
