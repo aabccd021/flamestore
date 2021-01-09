@@ -15,17 +15,17 @@ import {
   isSumField,
   PathField,
 } from "../../generator-types";
-import { toPascalColName } from "../../generator-utils";
+import { t, toPascalColName } from "../../generator-utils";
 import { valueOfFieldStr } from "./model-generator-utils";
 
 export function toComputedModelStr(colEntry: CollectionEntry): string | null {
   const { colName, col } = colEntry;
   const computedFields = col.fields
     .filter(({ field }) => isComputedField(field))
-    .map(({ fName }) => `"${fName}"`);
+    .map(({ fName }) => t`"${fName}"`);
   if (computedFields.length === 0) return null;
   const pascal = toPascalColName(colName);
-  return `const ${colName}ComputeFields = [${computedFields}] as const;
+  return t`const ${colName}ComputeFields = [${computedFields}] as const;
     type ${pascal}C = typeof ${colName}ComputeFields[number];
     export function compute${pascal}<D extends keyof Omit<${pascal},${pascal}C>>(param: {
       dependencyFields: D[];
@@ -43,7 +43,7 @@ export function toComputedModelStr(colEntry: CollectionEntry): string | null {
     }`;
 }
 
-export const modelImportsStr = `import { firestore } from 'firebase-admin';
+export const modelImportsStr = t`import { firestore } from 'firebase-admin';
 import { onCreateFn, onUpdateFn } from "flamestore/lib";
 import {computeDocument} from "./utils";`;
 
@@ -53,7 +53,7 @@ export function getNonComputedInterfaceStr(param: {
 }) {
   const { colName, modelContentStr } = param;
   const pascalColName = toPascalColName(colName);
-  return `export interface ${pascalColName} {${modelContentStr}}`;
+  return t`export interface ${pascalColName} {${modelContentStr}}`;
 }
 
 type FieldRequiredString = "" | "?";
@@ -79,14 +79,14 @@ export function getNonComputedFieldStr(param: {
   fieldValueStr: string;
 }): string {
   const { fName, fieldRequiredStr, fieldValueStr } = param;
-  return `${fName}${fieldRequiredStr}: ${fieldValueStr};`;
+  return t`${fName}${fieldRequiredStr}: ${fieldValueStr};`;
 }
 
 export function getTypeOfImageStr(field: ImageField): string {
   const imageMetadataStr = field.metadatas
-    .map((data) => `${data}?: number;`)
+    .map((data) => t`${data}?: number;`)
     .join("\n");
-  return `{
+  return t`{
     url?: string;
     ${imageMetadataStr}
   }`;
@@ -94,9 +94,9 @@ export function getTypeOfImageStr(field: ImageField): string {
 
 export function getTypeOfPathStr(field: PathField): string {
   const syncFieldsStr = field.syncFields
-    .map(({ fName, field }) => `${fName}?: ${valueOfFieldStr(field)};`)
+    .map(({ fName, field }) => t`${fName}?: ${valueOfFieldStr(field)};`)
     .join("\n");
-  return `{
+  return t`{
     reference: firestore.DocumentReference;
     ${syncFieldsStr}
   }`;

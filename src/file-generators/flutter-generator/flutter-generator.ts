@@ -3,6 +3,7 @@ import * as fs from "fs";
 import { CollectionEntry } from "../generator-types";
 import { colEntryToStr } from "./flutter-generator-col-utils";
 import { importsStr } from "./flutter-generator-template";
+import { t } from "../generator-utils";
 
 export function generateFlutter(
   outputFilePath: string,
@@ -10,5 +11,5 @@ export function generateFlutter(
 ): void {
   const colContent = colEntries.map(colEntryToStr).join("\n");
   const content = importsStr + colContent;
-  fs.writeFileSync(path.join(outputFilePath, `flamestore.g.dart`), content);
+  fs.writeFileSync(path.join(outputFilePath, t`flamestore.g.dart`), content);
 }

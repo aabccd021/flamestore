@@ -8,7 +8,7 @@ export const onCreate = functions.firestore
     const tweetData = { likesSum: increment(data.likeValue) };
     await update(data.tweet.reference, tweetData);
   });
-
+t;
 export const onUpdate = functions.firestore
   .document("/likes/{documentId}")
   .onUpdate(async (snapshot) => {
@@ -22,7 +22,7 @@ export const onUpdate = functions.firestore
     };
     await update(after.tweet.reference, tweetData);
   });
-
+t;
 export const onDelete = functions.firestore
   .document("/likes/{documentId}")
   .onDelete(async (snapshot) => {
@@ -30,3 +30,4 @@ export const onDelete = functions.firestore
     const tweetData = { likesSum: increment(-data.likeValue) };
     await update(data.tweet.reference, tweetData);
   });
+t;

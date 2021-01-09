@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { PathField } from "../../../generator-types";
-import { toSingularColName } from "../../../generator-utils";
+import { t, toSingularColName } from "../../../generator-utils";
 import { getSyncFieldStr } from "../trigger-generator-templates";
 import { Trigger } from "../trigger-generator-types";
 
@@ -19,14 +19,14 @@ export function getPathTrigger(
   const onCreateDataStrMap = syncFields.map(({ fName }) =>
     syncFieldToCreateStr({ fName, refDataStr })
   );
-  const onCreateDataStr = `{${onCreateDataStrMap}}`;
+  const onCreateDataStr = t`{${onCreateDataStrMap}}`;
   const onUpdateDataStrMap = syncFields.map(syncFieldToUpdateStr);
-  const onUpdateDataStr = `{${onUpdateDataStrMap}}`;
-  const dataName = `${colName}${pascalFName}Data`;
+  const onUpdateDataStr = t`{${onUpdateDataStrMap}}`;
+  const dataName = t`${colName}${pascalFName}Data`;
   const syncFieldStr = getSyncFieldStr(
-    `'${colName}'`,
-    `'${fName}'`,
-    `snapshot`,
+    t`'${colName}'`,
+    t`'${fName}'`,
+    t`snapshot`,
     dataName
   );
   return [
@@ -48,7 +48,7 @@ export function getPathTrigger(
 
 // TODO: change "!==" depends on type, use isEqual for timestamp and reference
 function syncFieldToUpdateStr({ fName }: { fName: string }): string {
-  return `${fName}: before.${fName} !== after.${fName} ? after.${fName}: null`;
+  return t`${fName}: before.${fName} !== after.${fName} ? after.${fName}: null`;
 }
 
 function syncFieldToCreateStr(param: {
@@ -56,7 +56,7 @@ function syncFieldToCreateStr(param: {
   refDataStr: string;
 }): string {
   const { fName, refDataStr } = param;
-  return `${fName}:${refDataStr}.${fName}`;
+  return t`${fName}:${refDataStr}.${fName}`;
 }
 
 function getRefDataStr(param: {
@@ -64,5 +64,5 @@ function getRefDataStr(param: {
   pascalFName: string;
 }): string {
   const { singularColName, pascalFName } = param;
-  return `${singularColName}${pascalFName}Data`;
+  return t`${singularColName}${pascalFName}Data`;
 }

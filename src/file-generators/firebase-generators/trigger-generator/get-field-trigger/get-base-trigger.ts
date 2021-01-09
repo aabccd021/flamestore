@@ -1,4 +1,5 @@
 import { Field } from "../../../generator-types";
+import { t } from "../../../generator-utils";
 import { getFoundDuplicateStr } from "../trigger-generator-templates";
 import { Trigger } from "../trigger-generator-types";
 
@@ -11,8 +12,8 @@ export function getBaseTrigger(fieldEntry: {
   const triggers: Trigger[] = [];
   if (field.isUnique) {
     const foundDuplicateStr = getFoundDuplicateStr(
-      `'${colName}'`,
-      `'${fName}'`,
+      t`'${colName}'`,
+      t`'${fName}'`,
       "snapshot",
       "context"
     );
@@ -35,5 +36,5 @@ export function getBaseTrigger(fieldEntry: {
 
 function getHandleDuplicateStr(param: { foundDuplicateStr: string }): string {
   const { foundDuplicateStr } = param;
-  return `if (await ${foundDuplicateStr}) return;`;
+  return t`if (await ${foundDuplicateStr}) return;`;
 }

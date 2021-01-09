@@ -8,7 +8,7 @@ export const onCreate = functions.firestore
     const userData = { tweetsCount: 0 };
     await update(snapshot.ref, userData);
   });
-
+t;
 export const onUpdate = functions.firestore
   .document("/users/{documentId}")
   .onUpdate(async (snapshot, context) => {
@@ -22,3 +22,4 @@ export const onUpdate = functions.firestore
     };
     await syncField("tweets", "owner", snapshot, tweetsOwnerData);
   });
+t;

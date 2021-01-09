@@ -34,7 +34,7 @@ export const onCreate = functions.firestore
       update(data.owner.reference, ownerData),
     ]);
   });
-
+t;
 export const onDelete = functions.firestore
   .document("/tweets/{documentId}")
   .onDelete(async (snapshot) => {
@@ -42,3 +42,4 @@ export const onDelete = functions.firestore
     const ownerData = { tweetsCount: increment(-1) };
     await update(data.owner.reference, ownerData);
   });
+t;

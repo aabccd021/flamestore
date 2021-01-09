@@ -1,7 +1,7 @@
 import { mapPick } from "../../../lodash-utils";
-import { assertNever, assertString } from "../../../utils";
+import { assertNever } from "../../../utils";
 import { CollectionEntry } from "../../generator-types";
-import { toPascalColName, toSingularColName } from "../../generator-utils";
+import { t, toPascalColName, toSingularColName } from "../../generator-utils";
 import {
   FieldTuple,
   TriggerData,
@@ -19,7 +19,7 @@ const updateStr = "update";
 const serverTimestampStr = "serverTimestamp";
 
 // imports
-export const utilImports = `
+export const utilImports = t`
   import {
   ${foundDuplicateStr},
   ${functionsString},
@@ -31,29 +31,27 @@ export const utilImports = `
   ${imageDataStr},
   } from '../utils';`;
 export function getModelImportsStr(colEntries: CollectionEntry[]): string {
-  const names: string = mapPick(colEntries, "colName")
-    .map(toPascalColName)
-    .join(",");
-  return `import {${names}} from "../models"`;
+  const names = mapPick(colEntries, "colName").map(toPascalColName);
+  return t`import {${names}} from "../models"`;
 }
 
 // frequently used string
 function getDataStr(dataName: string): string {
-  return `${dataName}Data`;
+  return t`${dataName}Data`;
 }
 function getSnapshotStr(dataName: string): string {
-  return `${dataName}Snapshot`;
+  return t`${dataName}Snapshot`;
 }
 
 // access data
 export function getDataFieldStr({ fName }: { fName: string }): string {
-  return `data.${fName}`;
+  return t`data.${fName}`;
 }
 export function toPromiseStr({ fName }: { fName: string }): string {
-  return `data.${fName}.reference.get()`;
+  return t`data.${fName}.reference.get()`;
 }
 export function getOwnerRefIdStr({ ownerField }: { ownerField: string }) {
-  return `data.${ownerField}.reference.id`;
+  return t`data.${ownerField}.reference.id`;
 }
 
 // update data
@@ -61,9 +59,9 @@ export function getUpdateUpdatedDataStr(
   snapshotDataName: SnapshotDataName,
   dataName: string
 ): string {
-  const dataStr: string = getDataStr(dataName);
-  const referenceStr = `${snapshotDataName}.${dataName}.reference`;
-  return `${updateStr}(${referenceStr}, ${dataStr})`;
+  const dataStr = getDataStr(dataName);
+  const referenceStr = t`${snapshotDataName}.${dataName}.reference`;
+  return t`${updateStr}(${referenceStr}, ${dataStr})`;
 }
 export function getDocDataCommits(param: {
   colName: string;
@@ -72,7 +70,7 @@ export function getDocDataCommits(param: {
 }): string[] {
   const { suffix, docData, colName } = param;
   if (docData.length === 0) return [];
-  const dataName: string = getDataStr(toSingularColName(colName));
+  const dataName = getDataStr(toSingularColName(colName));
   return [`${updateStr}(snapshot${suffix}.ref, ${dataName})`];
 }
 
@@ -99,13 +97,13 @@ export function getTriggerPrepareStr(param: {
   useDocData: boolean;
 }): string {
   const { triggerType, colName, useDocData } = param;
-  const pascalColName: string = toPascalColName(colName);
+  const pascalColName = toPascalColName(colName);
   if (!useDocData) return "";
   if (triggerType === "Create" || triggerType === "Delete") {
-    return `const data = snapshot.data() as ${pascalColName};`;
+    return t`const data = snapshot.data() as ${pascalColName};`;
   }
   if (triggerType === "Update") {
-    return `const before = snapshot.before.data() as ${pascalColName};
+    return t`const before = snapshot.before.data() as ${pascalColName};
             const after = snapshot.after.data() as ${pascalColName};`;
   }
   assertNever(triggerType);
@@ -114,8 +112,9 @@ export function getTriggerPrepareStr(param: {
 // batch commit
 export function getBatchCommitStr(commits: string[]): string {
   if (commits.length === 0) return "";
-  if (commits.length === 1) return `await ${commits[0]};`;
-  return `await ${allSettledStr}([${commits}]);`;
+  if (commits.length === 1) return t`await ${commits[0]};`;
+  const commitsStr = commits.join();
+  return t`await ${allSettledStr}([${commitsStr}]);`;
 }
 
 // assign data
@@ -125,28 +124,27 @@ export function getDocDataAssignStr(param: {
 }): string {
   const { colName, docData } = param;
   if (docData.length === 0) return "";
-  const dataContent: string = docData.map(fieldToAssignmentStr).join(",");
-  const dataName: string = getDataStr(toSingularColName(colName));
-  return `const ${dataName} = {${dataContent}};`;
+  const dataContent = docData.map(fieldToAssignmentStr);
+  const dataName = getDataStr(toSingularColName(colName));
+  return t`const ${dataName} = {${dataContent}};`;
 }
 export function toNonUpdatedDataAssignStr(triggerData: TriggerData): string {
   const { fields, dataName } = triggerData;
-  assertString(dataName);
-  const dataContent: string = fields.map(fieldToAssignmentStr).join(",");
-  return `const ${dataName} = {${dataContent}};`;
+  const dataContent = fields.map(fieldToAssignmentStr);
+  return t`const ${dataName} = {${dataContent}};`;
 }
 export function toUpdatedDataAssignStr(triggerData: TriggerData): string {
   const { fields, dataName } = triggerData;
-  const dataContent: string = fields.map(fieldToAssignmentStr).join(",");
-  const dataStr: string = getDataStr(dataName);
-  return `const ${dataStr} = {${dataContent}};`;
+  const dataContent = fields.map(fieldToAssignmentStr);
+  const dataStr = getDataStr(dataName);
+  return t`const ${dataStr} = {${dataContent}};`;
 }
 function fieldToAssignmentStr(param: {
   fName: string;
   fValue: string;
 }): string {
   const { fName, fValue } = param;
-  return `${fName}: ${fValue}`;
+  return t`${fName}: ${fValue}`;
 }
 
 // trigger
@@ -157,37 +155,34 @@ export function getTriggerFunctionStr(param: {
   triggerContentStr: string;
 }): string {
   const { useContext, colName, triggerType, triggerContentStr } = param;
-  assertString(triggerType);
-  const context: string = useContext ? ", context" : "";
-  return `
+  const context = useContext ? ", context" : "";
+  return t`
     export const on${triggerType} = ${functionsString}.firestore
     .document('/${colName}/{documentId}')
     .on${triggerType}(async (snapshot${context})=>{
       ${triggerContentStr}
     });
-  `;
+  t`;
 }
 
 // promise
 export function getPromiseCallStr(dependencies: TriggerDependency[]): string {
   if (dependencies.length === 0) return "";
-  const names: string = mapPick(dependencies, "key")
-    .map(getSnapshotStr)
-    .join(",");
-  const promises: string = dependencies.map(toPromiseStr).join(",");
-  const assignments: string = dependencies
+  const names = mapPick(dependencies, "key").map(getSnapshotStr);
+  const promises = dependencies.map(toPromiseStr);
+  const assignments = dependencies
     .map(dependencyToPromiseAssignmentStr)
     .join("");
-  return `const [${names}] = await Promise.all([${promises}]);${assignments}`;
+  return t`const [${names}] = await Promise.all([${promises}]);${assignments}`;
 }
 function dependencyToPromiseAssignmentStr(param: {
   colName: string;
   key: string;
 }): string {
   const { colName, key } = param;
-  const pascalColName: string = toPascalColName(colName);
-  const snapshotStr: string = getSnapshotStr(key);
-  return `const ${key} = ${snapshotStr}.data() as ${pascalColName};`;
+  const pascalColName = toPascalColName(colName);
+  const snapshotStr = getSnapshotStr(key);
+  return t`const ${key} = ${snapshotStr}.data() as ${pascalColName};`;
 }
 
 // functions
@@ -197,10 +192,10 @@ export function getFoundDuplicateStr(
   snapshot: string,
   context: string
 ): string {
-  return `${foundDuplicateStr}(${colName},${fName},${snapshot},${context})`;
+  return t`${foundDuplicateStr}(${colName},${fName},${snapshot},${context})`;
 }
 export function getIncrementStr(value: string | number): string {
-  return `${incrementStr}(${value})`;
+  return t`${incrementStr}(${value})`;
 }
 export function getSyncFieldStr(
   colName: string,
@@ -208,7 +203,7 @@ export function getSyncFieldStr(
   snapshot: string,
   dataName: string
 ): string {
-  return `${syncFieldStr}(${colName},${fName},${snapshot},${dataName})`;
+  return t`${syncFieldStr}(${colName},${fName},${snapshot},${dataName})`;
 }
 export function getImageDataStr(
   colName: string,
@@ -217,13 +212,13 @@ export function getImageDataStr(
   metadatas: string,
   snapshot: string
 ): string {
-  return `${imageDataStr}(${colName},${fName},${id},${metadatas},${snapshot})`;
+  return t`${imageDataStr}(${colName},${fName},${id},${metadatas},${snapshot})`;
 }
 export function getServerTimestampStr(): string {
-  return `${serverTimestampStr}()`;
+  return t`${serverTimestampStr}()`;
 }
 
 // index file exports
 export function toIndexFileExportStr(colName: string): string {
-  return `export * as ${colName} from "./${colName}";`;
+  return t`export * as ${colName} from "./${colName}";`;
 }

@@ -1,4 +1,5 @@
 import { SumField } from "../../../generator-types";
+import { t } from "../../../generator-utils";
 import {
   getDataFieldStr,
   getIncrementStr,
@@ -50,8 +51,8 @@ function getOnUpdateDataStr(param: {
   onUpdateIncStr: string;
 }): string {
   const { incFieldName: field, onUpdateIncStr } = param;
-  return `before.${field} !== after.${field} ? ${onUpdateIncStr} : null`;
+  return t`before.${field} !== after.${field} ? ${onUpdateIncStr} : null`;
 }
 function getOnUpdateValueDiffStr({ incFieldName }: { incFieldName: string }) {
-  return `after.${incFieldName} - before.${incFieldName}`;
+  return t`after.${incFieldName} - before.${incFieldName}`;
 }

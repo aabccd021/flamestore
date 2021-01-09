@@ -1,4 +1,5 @@
 import { Collection, ImageField } from "../../../generator-types";
+import { t } from "../../../generator-utils";
 import {
   getImageDataStr,
   getOwnerRefIdStr,
@@ -13,12 +14,12 @@ export function getImageTrigger(
   if (!ownerField) throw Error("ownerField required to upload image");
 
   const idStr = getOwnerRefIdStr({ ownerField });
-  const metadatasStr = field.metadatas.map((x) => `"${x}"`);
+  const metadatasStr = field.metadatas.map((x) => t`"${x}"`);
   const imageDataStr = getImageDataStr(
-    `"${colName}"`,
-    `"${fName}"`,
+    t`"${colName}"`,
+    t`"${fName}"`,
     idStr,
-    `[${metadatasStr}]`,
+    t`[${metadatasStr}]`,
     "snapshot"
   );
   const imageDataCallStr = getImageDataCallStr({ imageDataStr });
@@ -34,5 +35,5 @@ export function getImageTrigger(
 
 function getImageDataCallStr(param: { imageDataStr: string }): string {
   const { imageDataStr } = param;
-  return `await ${imageDataStr}`;
+  return t`await ${imageDataStr}`;
 }

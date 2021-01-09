@@ -13,7 +13,7 @@ import {
   utilImports,
 } from "./trigger-generator-templates";
 import { CollectionEntry } from "../../generator-types";
-import { fieldColEntriesOf } from "../../generator-utils";
+import { fieldColEntriesOf, t } from "../../generator-utils";
 import { mapPick } from "../../../lodash-utils";
 
 export function generateFirebaseTrigger(
@@ -37,12 +37,12 @@ export function generateFirebaseTrigger(
       })
       .join("");
     const modelImportsStr = getModelImportsStr(colEntries);
-    const triggerFileStr = `${modelImportsStr}${utilImports}\n${triggerStr}`;
+    const triggerFileStr = t`${modelImportsStr}${utilImports}\n${triggerStr}`;
 
-    fs.writeFileSync(path.join(triggerDir, `${colName}.ts`), triggerFileStr);
+    fs.writeFileSync(path.join(triggerDir, t`${colName}.ts`), triggerFileStr);
   });
   const indexFileContent = mapPick(colEntries, "colName")
     .map(toIndexFileExportStr)
     .join("");
-  fs.writeFileSync(path.join(triggerDir, `index.ts`), indexFileContent);
+  fs.writeFileSync(path.join(triggerDir, t`index.ts`), indexFileContent);
 }

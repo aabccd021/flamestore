@@ -22,3 +22,14 @@ export function fieldColEntriesOf(
     )
     .flatMap();
 }
+
+type AllowedTypes = string | number | string[] | _.Collection<string>;
+export function t(
+  strings: TemplateStringsArray,
+  ...values: AllowedTypes[]
+): string {
+  const arrStr = _.range(0, strings.length - 1)
+    .map((i) => strings[i] + values[i])
+    .join("");
+  return arrStr + strings[strings.length - 1];
+}

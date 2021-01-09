@@ -1,4 +1,4 @@
-import { assertNever, assertString } from "../../utils";
+import { assertNever } from "../../utils";
 import {
   ComputedField,
   CountField,
@@ -19,7 +19,7 @@ import {
   ServerTimestampField,
   SumField,
 } from "../generator-types";
-import { toPascalColName } from "../generator-utils";
+import { t, toPascalColName } from "../generator-utils";
 import { isConstrArgRequired } from "./flutter-generator-utils";
 
 export function getDocClassStr({
@@ -34,16 +34,16 @@ export function getDocClassStr({
   fieldStrs: string[];
 }): string {
   const pascal: string = toPascalColName(colName);
-  const fieldStr: string = fieldStrs.map((x) => `${x};`).join("");
-  const constructorArgStr = constructorArgStrs.map((x) => `${x},`).join("");
-  const constructorAssgStr = constructorAssgStrs.map((x) => `${x},`).join("");
-  return `class ${pascal} extends Document{
+  const fieldStr: string = fieldStrs.map((x) => t`${x};`).join("");
+  const constructorArgStr = constructorArgStrs.map((x) => t`${x},`).join("");
+  const constructorAssgStr = constructorAssgStrs.map((x) => t`${x},`).join("");
+  return t`class ${pascal} extends Document{
     ${pascal}({${constructorArgStr}}): ${constructorAssgStr} super(null);
     ${fieldStr}
   }`;
 }
 
-export const importsStr = `
+export const importsStr = t`
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -55,7 +55,7 @@ import 'package:flutter/widgets.dart';
 export function getConstrAssgStr(fEntry: FieldEntry): string | null {
   const { fName, field } = fEntry;
   if (isComputedField(field)) return null;
-  if (isCountField(field)) return `${fName} = 0`;
+  if (isCountField(field)) return t`${fName} = 0`;
   if (isDynamicLinkField(field)) return null;
   if (isFloatField(field)) return null;
   if (isImageField(field)) return null;
@@ -84,12 +84,11 @@ function getCreatableConstrArgStr(
   >
 ): string {
   const requiredStr: string = isConstrArgRequired(field) ? "@required " : "";
-  return `${requiredStr}this.${fName}`;
+  return t`${requiredStr}this.${fName}`;
 }
 
 export function getFieldStrs(fEntry: FieldEntry): string[] {
   const { field, fName } = fEntry;
-  assertString(fName);
   if (isComputedField(field)) return [];
   if (isImageField(field)) {
     return [`final File _${fName}`];
