@@ -33,3 +33,9 @@ export function t(
     .join("");
   return arrStr + strings[strings.length - 1];
 }
+
+export function suf(suffix: string): (str: string) => string {
+  return function _append(str: string): string {
+    return str + suffix;
+  };
+}
