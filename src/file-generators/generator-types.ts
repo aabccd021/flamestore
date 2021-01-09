@@ -13,16 +13,16 @@ export type FieldProperty = Readonly<{
 }>;
 
 export type Field =
-  | DynamicLinkField
-  | StringField
-  | FloatField
-  | PathField
-  | IntField
-  | SumField
-  | CountField
-  | ImageField
   | ComputedField
-  | ServerTimestampField;
+  | CountField
+  | DynamicLinkField
+  | FloatField
+  | ImageField
+  | IntField
+  | PathField
+  | ServerTimestampField
+  | StringField
+  | SumField;
 
 export type Collection = Readonly<{
   fields: FieldEntry[];

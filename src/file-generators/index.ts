@@ -6,6 +6,7 @@ import { processSchema } from "./schema-processor/schema-processor";
 import { generateFirebaseTrigger } from "./firebase-generators/trigger-generator/trigger-generator";
 import { generateFirebaseModel } from "./firebase-generators/model-generator/model-generator";
 import generateFirebaseUtil from "./firebase-generators/util-generator";
+import { generateFlutter } from "./flutter-generator/flutter-generator";
 
 const schemaJson = fs.readFileSync("../flamestore.json");
 const schemaJsonString = schemaJson.toString();
@@ -20,7 +21,7 @@ const schema: FlameSchema = rawSchema;
 const colEntries = processSchema(schema);
 // const rulePath = schema.ruleOutputPath ?? "firestore/firestore.rules";
 const triggerDir = schema.triggerOutputPath ?? "functions/src/triggers";
-// const flutterPath = schema.flutterOutputPath ?? "../flutter/lib/flamestore";
+const flutterPath = schema.flutterOutputPath ?? "../flutter/lib/flamestore";
 // generateRule(schema, rulePath, modules);
 if (!fs.existsSync(triggerDir)) {
   fs.mkdirSync(triggerDir, { recursive: true });
@@ -28,4 +29,4 @@ if (!fs.existsSync(triggerDir)) {
 generateFirebaseModel(triggerDir, colEntries);
 generateFirebaseTrigger(triggerDir, colEntries);
 generateFirebaseUtil(triggerDir, schema.region);
-// generateFlutter(flutterPath, schema, modules);
+generateFlutter(flutterPath, colEntries);
