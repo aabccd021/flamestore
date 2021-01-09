@@ -36,5 +36,5 @@ export function process(
     const field = processSchemaField(data);
     return { fName: fName, field };
   });
-  return { ...field, ...properties, syncFields };
+  return { ...field, ...properties, syncFields, colName: syncColName };
 }

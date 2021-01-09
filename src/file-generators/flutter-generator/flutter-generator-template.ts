@@ -1,25 +1,34 @@
+import _ from "lodash";
+import { CollectionEntry, FieldEntry } from "../generator-types";
 import { suf, t, toPascalColName } from "../generator-utils";
+import {
+  toConstrArgStr,
+  toConstrAssgStr,
+} from "./flutter-generator-utils/flutter-class-default-constructor-utils";
+import { toFieldStr } from "./flutter-generator-utils/flutter-class-fields-utils";
+import { toFromMapConstrAssgStr } from "./flutter-generator-utils/flutter-class-from-map-constructor-utils";
 
-export function getDocClassStr({
-  colName,
-  constructorArgStrs,
-  constructorAssgStrs,
-  fieldStrs,
-}: {
-  colName: string;
-  constructorArgStrs: string[];
-  constructorAssgStrs: string[];
-  fieldStrs: string[];
-}): string {
+export function colEntryToStr(colEntry: CollectionEntry): string {
+  const { colName, col } = colEntry;
+  const fields = _(col.fields);
   const pascal: string = toPascalColName(colName);
-  const fieldStr: string = fieldStrs.map(suf(",")).join("");
-  const constructorArgStr = constructorArgStrs.map(suf(",")).join("");
-  const constructorAssgStr = constructorAssgStrs.map(suf(";")).join("");
+  const constructorArgStr = compactComma(fields, toConstrArgStr);
+  const constructorAssgStr = compactComma(fields, toConstrAssgStr);
+  const fieldStr = fields.map(toFieldStr).flatMap().map(suf(";")).join("");
+  const fromMapConstrAssgStr = fields.map(toFromMapConstrAssgStr).compact();
   return t`class ${pascal} extends Document{
     ${pascal}({${constructorArgStr}}): ${constructorAssgStr} super(null);
-    ${pascal}._fromMap(Map<string, dynamic> data): super(data['reference']);
+    ${pascal}._fromMap(Map<String, dynamic> data)
+      : ${fromMapConstrAssgStr} super(data['reference']);
     ${fieldStr}
   }`;
+}
+
+function compactComma(
+  fields: _.Collection<FieldEntry>,
+  fn: (fEntry: FieldEntry) => string | null
+): string {
+  return fields.map(fn).compact().map(suf(",")).join("");
 }
 
 export const importsStr = t`

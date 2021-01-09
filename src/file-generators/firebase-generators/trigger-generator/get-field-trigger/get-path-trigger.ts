@@ -14,7 +14,7 @@ export function getPathTrigger(
   //
   const pascalFName = _.upperFirst(fName);
   const singularColName = toSingularColName(colName);
-  const syncColName = field.collection;
+  const syncColName = field.colName;
   const refDataStr = getRefDataStr({ singularColName, pascalFName });
   const onCreateDataStrMap = syncFields.map(({ fName }) =>
     syncFieldToCreateStr({ fName, refDataStr })

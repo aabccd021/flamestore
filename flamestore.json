@@ -67,6 +67,7 @@
           "compute": "float"
         },
         "image": {
+          "property": "isOptional",
           "type": "image",
           "metadata": [
             "height",

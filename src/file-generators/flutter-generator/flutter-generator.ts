@@ -1,8 +1,7 @@
 import path from "path";
 import * as fs from "fs";
 import { CollectionEntry } from "../generator-types";
-import { colEntryToStr } from "./flutter-generator-col-utils";
-import { importsStr } from "./flutter-generator-template";
+import { colEntryToStr, importsStr } from "./flutter-generator-template";
 import { t } from "../generator-utils";
 
 export function generateFlutter(
