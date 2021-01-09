@@ -1,4 +1,8 @@
-import { SchemaCollection, SchemaField } from "../schema-types";
+import {
+  FlameSchemaAuth,
+  SchemaCollection,
+  SchemaField,
+} from "../schema-types";
 import { StringField } from "../../generator-types";
 import { getSchemaFieldProperties } from "../schema-preprocess-utils/schema-field-property-utils";
 
@@ -14,7 +18,12 @@ export function isTypeOf(field: SchemaField): field is StringSchemaField {
 
 export function process(
   field: StringSchemaField,
-  data: { fName: string; schemaCol: SchemaCollection }
+  data: {
+    fName: string;
+    schemaCol: SchemaCollection;
+    colName: string;
+    auth?: FlameSchemaAuth;
+  }
 ): StringField {
   const properties = getSchemaFieldProperties({ field, ...data });
   return { ...field, ...properties };

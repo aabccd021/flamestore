@@ -9,7 +9,9 @@ export function processSchema(schema: FlameSchema): CollectionEntry[] {
   const preprocessFns = [preprocessAuth];
   preprocessFns.forEach((fn) => (schemaColMap = fn(schema, schemaColMap)));
   const colEntries = _(schema.collections).map((schemaCol, colName) => {
-    const col = processSchemaCollection(schemaCol, schemaColMap);
+    const auth = schema.authentication;
+    const data = { schemaColMap, schemaCol, colName, auth };
+    const col = processSchemaCollection(data);
     return { colName, col };
   });
   return colEntries.value();

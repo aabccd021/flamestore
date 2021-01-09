@@ -1,4 +1,8 @@
-import { SchemaCollection, SchemaField } from "../schema-types";
+import {
+  FlameSchemaAuth,
+  SchemaCollection,
+  SchemaField,
+} from "../schema-types";
 import { CountField } from "../../generator-types";
 import { getSchemaFieldProperties } from "../schema-preprocess-utils/schema-field-property-utils";
 
@@ -14,7 +18,12 @@ export function isTypeOf(field: SchemaField): field is CountSchemaField {
 
 export function process(
   field: CountSchemaField,
-  data: { fName: string; schemaCol: SchemaCollection }
+  data: {
+    fName: string;
+    schemaCol: SchemaCollection;
+    colName: string;
+    auth?: FlameSchemaAuth;
+  }
 ): CountField {
   const properties = getSchemaFieldProperties({ field, ...data });
   const colName = field.collection;

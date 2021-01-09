@@ -6,6 +6,7 @@ import {
   t,
   toPascalColName,
 } from "../generator-utils";
+import { toCwConstrArgStr } from "./flutter-generator-utils/flutter-class-copy-with-constructor-utils";
 import {
   toConstrArgStr,
   toConstrAssgStr,
@@ -30,6 +31,7 @@ export function colEntryToStr(colEntry: CollectionEntry): string {
   const fromMapConstrAssgStr = flatSuf(fields, toFromMapConstrAssgStr, ",");
   const anonPrivConstrArgStr = flatSuf(fields, toAnonPrivConstrArgStr, ",");
   const namedPrivConstrArgStr = flatSuf(fields, toNamedPrivConstrArgStr, ",");
+  const cwConstrArgStr = flatSuf(fields, toCwConstrArgStr, ",");
   //
   return t`class ${pascal} extends Document{
     ${pascal}({${constructorArgStr}}): ${constructorAssgStr} super(null);
@@ -39,6 +41,7 @@ export function colEntryToStr(colEntry: CollectionEntry): string {
       ${namedPrivConstrArgStr}
       @required DocumentReference reference,
     }):super(reference);
+    ${pascal} copyWith({${cwConstrArgStr}}){return ${pascal}._();}
     ${fieldStr}
   }`;
 }

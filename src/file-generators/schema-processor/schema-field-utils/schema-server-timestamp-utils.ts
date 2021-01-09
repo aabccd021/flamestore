@@ -1,4 +1,8 @@
-import { SchemaCollection, SchemaField } from "../schema-types";
+import {
+  FlameSchemaAuth,
+  SchemaCollection,
+  SchemaField,
+} from "../schema-types";
 import { ServerTimestampField } from "../../generator-types";
 import { getSchemaFieldProperties } from "../schema-preprocess-utils/schema-field-property-utils";
 
@@ -12,7 +16,12 @@ export function isTypeOf(
 
 export function toProcessed(
   field: ServerTimestampSchemaField,
-  data: { fName: string; schemaCol: SchemaCollection }
+  data: {
+    fName: string;
+    schemaCol: SchemaCollection;
+    colName: string;
+    auth?: FlameSchemaAuth;
+  }
 ): ServerTimestampField {
   const properties = getSchemaFieldProperties({ field, ...data });
   return { ...properties, type: "serverTimestamp" };

@@ -1,4 +1,8 @@
-import { SchemaCollection, SchemaField } from "../schema-types";
+import {
+  FlameSchemaAuth,
+  SchemaCollection,
+  SchemaField,
+} from "../schema-types";
 import { SumField } from "../../generator-types";
 import { getSchemaFieldProperties } from "../schema-preprocess-utils/schema-field-property-utils";
 
@@ -11,7 +15,12 @@ export type SumSchemaField = {
 
 export function process(
   field: SumSchemaField,
-  data: { fName: string; schemaCol: SchemaCollection }
+  data: {
+    fName: string;
+    schemaCol: SchemaCollection;
+    colName: string;
+    auth?: FlameSchemaAuth;
+  }
 ): SumField {
   const properties = getSchemaFieldProperties({ field, ...data });
   const colName = field.collection;

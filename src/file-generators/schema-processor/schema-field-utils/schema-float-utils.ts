@@ -1,4 +1,8 @@
-import { SchemaCollection, SchemaField } from "../schema-types";
+import {
+  FlameSchemaAuth,
+  SchemaCollection,
+  SchemaField,
+} from "../schema-types";
 import { FloatField } from "../../generator-types";
 import { getSchemaFieldProperties } from "../schema-preprocess-utils/schema-field-property-utils";
 
@@ -11,7 +15,12 @@ export type FloatSchemaField = {
 
 export function process(
   field: FloatSchemaField,
-  data: { fName: string; schemaCol: SchemaCollection }
+  data: {
+    fName: string;
+    schemaCol: SchemaCollection;
+    colName: string;
+    auth?: FlameSchemaAuth;
+  }
 ): FloatField {
   const properties = getSchemaFieldProperties({ field, ...data });
   return { ...field, ...properties };

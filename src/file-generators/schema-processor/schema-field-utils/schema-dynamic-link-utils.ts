@@ -1,4 +1,8 @@
-import { SchemaCollection, SchemaField } from "../schema-types";
+import {
+  FlameSchemaAuth,
+  SchemaCollection,
+  SchemaField,
+} from "../schema-types";
 import { DynamicLinkAttribute, DynamicLinkField } from "../../generator-types";
 import { getSchemaFieldProperties } from "../schema-preprocess-utils/schema-field-property-utils";
 
@@ -22,7 +26,12 @@ export function toDynamicLinkAttribute(
 
 export function process(
   field: DynamicLinkSchemaField,
-  data: { fName: string; schemaCol: SchemaCollection }
+  data: {
+    fName: string;
+    schemaCol: SchemaCollection;
+    colName: string;
+    auth?: FlameSchemaAuth;
+  }
 ): DynamicLinkField {
   const properties = getSchemaFieldProperties({ field, ...data });
   const [title, description, imageURL] = [
