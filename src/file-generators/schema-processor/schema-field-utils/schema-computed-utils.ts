@@ -3,7 +3,7 @@ import { ComputedField } from "../../generator-types";
 import { getSchemaFieldProperties } from "../schema-preprocess-utils/schema-field-property-utils";
 
 export type ComputedSchemaField = {
-  compute: "int" | "float" | "string" | "timestamp" | "path";
+  compute: "int" | "float" | "string" | "timestamp";
 };
 
 export function isTypeOf(field: SchemaField): field is ComputedSchemaField {

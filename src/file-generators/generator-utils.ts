@@ -22,6 +22,11 @@ export function fieldColEntriesOf(
     )
     .flatMap();
 }
+export function fieldColEntriesOfCol(
+  colEntry: CollectionEntry
+): FieldCollectionEntry[] {
+  return colEntry.col.fields.map((field) => ({ ...field, ...colEntry }));
+}
 
 type AllowedTypes = string | number | string[] | _.Collection<string>;
 export function t(

@@ -115,8 +115,6 @@ export function getTypeOfPrimitiveStr(
   if (isComputedField(field)) {
     if (field.computedFieldType === "float") return "number";
     if (field.computedFieldType === "int") return "number";
-    if (field.computedFieldType === "path")
-      return "firestore.DocumentReference";
     if (field.computedFieldType === "timestamp") return "firestore.Timestamp";
     if (field.computedFieldType === "string") return "string";
     assertNever(field.computedFieldType);

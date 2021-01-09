@@ -1,6 +1,11 @@
 import _ from "lodash";
-import { CollectionEntry, FieldEntry } from "../generator-types";
-import { suf, t, toPascalColName } from "../generator-utils";
+import { CollectionEntry, FieldCollectionEntry } from "../generator-types";
+import {
+  fieldColEntriesOfCol,
+  suf,
+  t,
+  toPascalColName,
+} from "../generator-utils";
 import {
   toConstrArgStr,
   toConstrAssgStr,
@@ -9,13 +14,17 @@ import { toFieldStr } from "./flutter-generator-utils/flutter-class-fields-utils
 import { toFromMapConstrAssgStr } from "./flutter-generator-utils/flutter-class-from-map-constructor-utils";
 
 export function colEntryToStr(colEntry: CollectionEntry): string {
-  const { colName, col } = colEntry;
-  const fields = _(col.fields);
-  const pascal: string = toPascalColName(colName);
-  const constructorArgStr = compactComma(fields, toConstrArgStr);
-  const constructorAssgStr = compactComma(fields, toConstrAssgStr);
-  const fieldStr = fields.map(toFieldStr).flatMap().map(suf(";")).join("");
-  const fromMapConstrAssgStr = fields.map(toFromMapConstrAssgStr).compact();
+  //
+  const { colName } = colEntry;
+  const fields = _(fieldColEntriesOfCol(colEntry));
+  //
+  const pascal = toPascalColName(colName);
+  //
+  const constructorArgStr = flatSuf(fields, toConstrArgStr, ",");
+  const constructorAssgStr = flatSuf(fields, toConstrAssgStr, ",");
+  const fieldStr = flatSuf(fields, toFieldStr, ";");
+  const fromMapConstrAssgStr = flatSuf(fields, toFromMapConstrAssgStr, ",");
+  //
   return t`class ${pascal} extends Document{
     ${pascal}({${constructorArgStr}}): ${constructorAssgStr} super(null);
     ${pascal}._fromMap(Map<String, dynamic> data)
@@ -24,11 +33,12 @@ export function colEntryToStr(colEntry: CollectionEntry): string {
   }`;
 }
 
-function compactComma(
-  fields: _.Collection<FieldEntry>,
-  fn: (fEntry: FieldEntry) => string | null
+function flatSuf(
+  fields: _.Collection<FieldCollectionEntry>,
+  fn: (fEntry: FieldCollectionEntry) => string[],
+  suffix: string
 ): string {
-  return fields.map(fn).compact().map(suf(",")).join("");
+  return fields.map(fn).flatMap().map(suf(suffix)).join("");
 }
 
 export const importsStr = t`

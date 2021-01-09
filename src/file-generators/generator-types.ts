@@ -106,7 +106,7 @@ export type FloatField = Readonly<
 export type ComputedField = Readonly<
   FieldProperty & {
     type: "computed";
-    computedFieldType: "int" | "float" | "string" | "timestamp" | "path";
+    computedFieldType: "int" | "float" | "string" | "timestamp";
   }
 >;
 

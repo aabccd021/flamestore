@@ -1,3 +1,4 @@
+import _ from "lodash";
 import { assertNever } from "../../../utils";
 import {
   FieldEntry,
@@ -17,34 +18,42 @@ import {
   SumField,
   DynamicLinkField,
   ComputedField,
+  FieldCollectionEntry,
 } from "../../generator-types";
 import { t, toPascalColName } from "../../generator-utils";
 import { isConstrArgRequired } from "../flutter-generator-utils";
 
-export function toConstrAssgStr(fEntry: FieldEntry): string | null {
-  const { fName, field } = fEntry;
-  if (isComputedField(field)) return null;
-  if (isCountField(field)) return t`${fName} = 0`;
-  if (isDynamicLinkField(field)) return null;
-  if (isFloatField(field)) return null;
-  if (isImageField(field)) return null;
-  if (isIntField(field)) return null;
-  if (isPathField(field)) return null;
-  if (isServerTimestampField(field)) return null;
-  if (isStringField(field)) return null;
-  if (isSumField(field)) return null;
+export function toConstrAssgStr(fcEntry: FieldCollectionEntry): string[] {
+  const { fName, field, colName } = fcEntry;
+  if (isComputedField(field)) return [t`${fName} = null`];
+  if (isCountField(field)) return [t`${fName} = 0`];
+  if (isDynamicLinkField(field)) return [t`${fName} = null`];
+  if (isFloatField(field)) return [t`${fName} = null`];
+  if (isIntField(field)) return [t`${fName} = null`];
+  if (isServerTimestampField(field)) return [t`${fName} = null`];
+  if (isStringField(field)) return [];
+  if (isSumField(field)) return [t`${fName} = 0`];
+  if (isImageField(field)) return [t`_${fName} = ${fName}`, t`${fName} = null`];
+  if (isPathField(field)) {
+    const pascalColName = toPascalColName(colName);
+    const pascalFieldName = _.upperFirst(fName);
+    const pascalSyncColName = _.upperFirst(field.colName);
+    return [
+      t`${fName} = _${pascalColName}${pascalFieldName}._from${pascalSyncColName}(${fName})`,
+    ];
+  }
   assertNever(field);
 }
 
-export function toConstrArgStr(fEntry: FieldEntry): string | null {
+export function toConstrArgStr(fEntry: FieldEntry): string[] {
   const { fName, field } = fEntry;
-  if (isComputedField(field)) return null;
-  if (isCountField(field)) return null;
-  if (isServerTimestampField(field)) return null;
-  if (isSumField(field)) return null;
-  if (isDynamicLinkField(field)) return null;
+  if (isComputedField(field)) return [];
+  if (isCountField(field)) return [];
+  if (isServerTimestampField(field)) return [];
+  if (isSumField(field)) return [];
+  if (isDynamicLinkField(field)) return [];
   const requiredStr = isConstrArgRequired(field) ? "@required " : "";
-  return requiredStr + getCreatableConstrArgStr(fName, field);
+  return [requiredStr + getCreatableConstrArgStr(fName, field)];
 }
 
 function getCreatableConstrArgStr(

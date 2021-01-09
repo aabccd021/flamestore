@@ -1,10 +1,9 @@
+import _ from "lodash";
 import { assertNever } from "../../../utils";
 import {
-  FieldEntry,
   isComputedField,
   isImageField,
   Field,
-  ComputedField,
   ImageField,
   isCountField,
   isDynamicLinkField,
@@ -14,28 +13,46 @@ import {
   isServerTimestampField,
   isStringField,
   isSumField,
+  FieldCollectionEntry,
+  PathField,
 } from "../../generator-types";
+import { t, toPascalColName } from "../../generator-utils";
 
-export function toFieldStr(fEntry: FieldEntry): string[] {
-  const { field, fName } = fEntry;
-  if (isComputedField(field)) return [];
+export function toFieldStr(fcEntry: FieldCollectionEntry): string[] {
+  const { field, fName, colName } = fcEntry;
   if (isImageField(field)) {
-    return [`final File _${fName}`];
+    const pascalColName = toPascalColName(colName);
+    const pascalImageFieldName = _.upperFirst(fName);
+    return [
+      t`final File _${fName}`,
+      t`final _${pascalColName}${pascalImageFieldName} ${fName}`,
+    ];
+  }
+  if (isPathField(field)) {
+    const pascalColName = toPascalColName(colName);
+    const pascalFieldName = _.upperFirst(fName);
+    return [t`final _${pascalColName}${pascalFieldName} ${fName}`];
   }
   const fieldTypeStr: string = getNormalFieldStr(field);
-  return [`final ${fieldTypeStr} ${fName}`];
+  return [t`final ${fieldTypeStr} ${fName}`];
 }
 
 function getNormalFieldStr(
-  field: Exclude<Field, ComputedField | ImageField>
-): string {
+  field: Exclude<Field, ImageField | PathField>
+): "int" | "String" | "double" | "DateTime" | "DocumentReference" {
   if (isCountField(field)) return "int";
   if (isDynamicLinkField(field)) return "String";
   if (isFloatField(field)) return "double";
   if (isIntField(field)) return "int";
-  if (isPathField(field)) return "DocumentReference";
   if (isServerTimestampField(field)) return "DateTime";
   if (isStringField(field)) return "String";
   if (isSumField(field)) return "double";
+  if (isComputedField(field)) {
+    if (field.computedFieldType === "float") return "double";
+    if (field.computedFieldType === "int") return "int";
+    if (field.computedFieldType === "string") return "String";
+    if (field.computedFieldType === "timestamp") return "DateTime";
+    assertNever(field.computedFieldType);
+  }
   assertNever(field);
 }
