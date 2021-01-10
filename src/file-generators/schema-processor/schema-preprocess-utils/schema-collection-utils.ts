@@ -1,13 +1,12 @@
 import _ from "lodash";
 import { Collection } from "../../generator-types";
 import { processSchemaField } from "./schema-field-utils";
-import { FlameSchemaAuth, SchemaCollection } from "../schema-types";
+import { SchemaCollection } from "../schema-types";
 
 export function processSchemaCollection(param: {
   schemaCol: SchemaCollection;
   schemaColMap: { [colName: string]: SchemaCollection };
   colName: string;
-  auth?: FlameSchemaAuth;
 }): Collection {
   const { schemaCol } = param;
   const { fields: schemaFields, ownerField } = schemaCol;
