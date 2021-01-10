@@ -12,10 +12,7 @@ export function isTypeOf(field: SchemaField): field is ComputedSchemaField {
 
 export function process(
   field: ComputedSchemaField,
-  data: {
-    fName: string;
-    schemaCol: SchemaCollection;
-  }
+  data: { fName: string; schemaCol: SchemaCollection }
 ): ComputedField {
   const properties = getSchemaFieldProperties({ field, ...data });
   const computedFieldType = field.compute;

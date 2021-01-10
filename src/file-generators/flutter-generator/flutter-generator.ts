@@ -18,7 +18,6 @@ export function generateFlutter(
   const colNames = mapPick(colEntries, "colName").value();
   const configStr = getConfigStr(colNames, project);
   const dlBuilderStr = getDynamicBuilderStr(colEntries);
-  const content =
-    importsStr + colContent + "\n\n" + configStr + "\n\n" + dlBuilderStr;
+  const content = `${importsStr}${colContent}\n\n${configStr}\n\n${dlBuilderStr}`;
   fs.writeFileSync(path.join(outputFilePath, t`flamestore.g.dart`), content);
 }

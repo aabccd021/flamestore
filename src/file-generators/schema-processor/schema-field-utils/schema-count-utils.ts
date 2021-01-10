@@ -14,10 +14,7 @@ export function isTypeOf(field: SchemaField): field is CountSchemaField {
 
 export function process(
   field: CountSchemaField,
-  data: {
-    fName: string;
-    schemaCol: SchemaCollection;
-  }
+  data: { fName: string; schemaCol: SchemaCollection }
 ): CountField {
   const properties = getSchemaFieldProperties({ field, ...data });
   const colName = field.collection;

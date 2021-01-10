@@ -22,18 +22,12 @@ export function toDynamicLinkAttribute(
 
 export function process(
   field: DynamicLinkSchemaField,
-  data: {
-    fName: string;
-    schemaCol: SchemaCollection;
-  }
+  data: { fName: string; schemaCol: SchemaCollection }
 ): DynamicLinkField {
   const properties = getSchemaFieldProperties({ field, ...data });
   const isSuffixShort = field.isSuffixShort ?? false;
-  const [title, description, imageURL] = [
-    field.title,
-    field.description,
-    field.imageURL,
-  ].map(toDynamicLinkAttribute);
+  const fieldAttrs = [field.title, field.description, field.imageURL];
+  const [title, description, imageURL] = fieldAttrs.map(toDynamicLinkAttribute);
   return {
     ...field,
     ...properties,
@@ -52,7 +46,7 @@ type DynamicLinkAttributeFromField = { field: string };
 function isDynamicLinkAttributeFromField(
   value?: SchemaDynamicLinkAttribute
 ): value is DynamicLinkAttributeFromField {
-  return (
-    value !== undefined && Object.prototype.hasOwnProperty.call(value, "field")
-  );
+  if (value === undefined) return false;
+  if (!Object.prototype.hasOwnProperty.call(value, "field")) return false;
+  return true;
 }

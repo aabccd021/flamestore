@@ -25,17 +25,15 @@ export function toFromMapConstrAssgStr(
   if (isImageField(field)) {
     const pascalColName = toPascalColName(colName);
     const pascalFieldName = _.upperFirst(fName);
-    return [
-      t`${fName} = _${pascalColName}${pascalFieldName}._fromMap(data['${fName}'])`,
-      t`_${fName} = null`,
-    ];
+    const fmAssgStr = t`${fName} = _${pascalColName}${pascalFieldName}._fromMap(data['${fName}'])`;
+    const fmAssgNullStr = t`_${fName} = null`;
+    return [ fmAssgStr, fmAssgNullStr];
   }
   if (isPathField(field)) {
     const pascalColName = toPascalColName(colName);
     const pascalFieldName = _.upperFirst(fName);
-    return [
-      t`${fName} = _${pascalColName}${pascalFieldName}._fromMap(data['${fName}'])`,
-    ];
+      const assgStr = t`${fName} = _${pascalColName}${pascalFieldName}._fromMap(data['${fName}'])`;
+    return [ assgStr ];
   }
   const fieldClassName = normalFieldToFromMapConstrAssgStr(field);
   return [t`${fName} = ${fieldClassName}Field.fromMap(data['${fName}']).value`];

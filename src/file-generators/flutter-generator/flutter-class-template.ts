@@ -72,8 +72,7 @@ export function toClassStr(colEntry: CollectionEntry): string {
         reference: this.reference,
       );}
     ${fieldStr}
-    @override
-    String get colName => '${colName}';
+    @override String get colName => '${colName}';
     ${keyGetterStr}
   }`;
 }
@@ -87,10 +86,9 @@ export function toFieldStr(params: {
   if (isImageField(field)) {
     const pascalColName = toPascalColName(colName);
     const pascalImageFieldName = _.upperFirst(fName);
-    return [
-      t`final File _${fName}`,
-      t`final _${pascalColName}${pascalImageFieldName} ${fName}`,
-    ];
+    const fileStr = t`final File _${fName}`;
+    const classStr = t`final _${pascalColName}${pascalImageFieldName} ${fName}`;
+    return [fileStr, classStr];
   }
   if (isPathField(field)) {
     const pascalColName = toPascalColName(colName);

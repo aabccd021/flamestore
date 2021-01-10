@@ -1,16 +1,14 @@
 import _ from "lodash";
 import { ProjectConfiguration } from "../..";
-import { t, toPascalColName } from "../generator-utils";
+import { t, toPascalColName as toPascalCol } from "../generator-utils";
 
 export function getConfigStr(
   names: string[],
   project: { [name: string]: ProjectConfiguration }
 ): string {
   const projectsStr = _(project).map(toProjectStr);
-  const colMapStr = names.map((x) => t`${toPascalColName(x)}:'${x}',`);
-  const docDefStr = names.map(
-    (x) => t`'${x}':${toPascalColName(x)}Definition,`
-  );
+  const colMapStr = names.map((x) => t`${toPascalCol(x)}:'${x}',`);
+  const docDefStr = names.map((x) => t`'${x}':${toPascalCol(x)}Definition,`);
   return t`final config = FlamestoreConfig(
     projects: {${projectsStr}},
     collectionClassMap: {${colMapStr}},
