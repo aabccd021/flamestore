@@ -16,5 +16,6 @@ export function processSchemaCollection(param: {
     const field = processSchemaField({ ...param, fName, schemaField });
     return { fName, field };
   });
-  return { ownerFieldName, fields };
+  const keyFieldNames = schemaCol.keyFields ?? [];
+  return { ownerFieldName, fields, keyFieldNames };
 }

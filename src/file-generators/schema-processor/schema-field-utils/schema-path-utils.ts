@@ -5,11 +5,7 @@ import { ArrayOr } from "../../../types";
 import { PathField } from "../../generator-types";
 import { getSchemaFieldProperties } from "../schema-preprocess-utils/schema-field-property-utils";
 import { processSchemaField } from "../schema-preprocess-utils/schema-field-utils";
-import {
-  FlameSchemaAuth,
-  SchemaCollection,
-  SchemaField,
-} from "../schema-types";
+import { SchemaCollection, SchemaField } from "../schema-types";
 
 export type PathSchemaField = {
   type: "path";
@@ -27,8 +23,6 @@ export function process(
     fName: string;
     schemaCol: SchemaCollection;
     schemaColMap: { [colName: string]: SchemaCollection };
-    colName: string;
-    auth?: FlameSchemaAuth;
   }
 ): PathField {
   const { schemaColMap } = params;

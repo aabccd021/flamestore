@@ -1,8 +1,4 @@
-import {
-  FlameSchemaAuth,
-  SchemaCollection,
-  SchemaField,
-} from "../schema-types";
+import { SchemaCollection, SchemaField } from "../schema-types";
 import { Field } from "../../generator-types";
 import * as computed from "../schema-field-utils/schema-computed-utils";
 import * as count from "../schema-field-utils/schema-count-utils";
@@ -21,8 +17,6 @@ export function processSchemaField(param: {
   fName: string;
   schemaCol: SchemaCollection;
   schemaColMap: { [colName: string]: SchemaCollection };
-  colName: string;
-  auth?: FlameSchemaAuth;
 }): Field {
   const { schemaField: field } = param;
   if (computed.isTypeOf(field)) return computed.process(field, param);
@@ -33,7 +27,7 @@ export function processSchemaField(param: {
   if (int.isTypeOf(field)) return int.process(field, param);
   if (path.isTypeOf(field)) return path.process(field, param);
   if (serverTimestamp.isTypeOf(field))
-    return serverTimestamp.toProcessed(field, param);
+    return serverTimestamp.process(field, param);
   if (string.isTypeOf(field)) return string.process(field, param);
   if (sum.isTypeOf(field)) return sum.process(field, param);
   assertNever(field);

@@ -1,11 +1,7 @@
 // import chain instead of default import _ to be compatible with
 // ts-json-schema-generator
 import { chain } from "lodash";
-import {
-  FlameSchemaAuth,
-  SchemaCollection,
-  SchemaField,
-} from "../schema-types";
+import { SchemaCollection, SchemaField } from "../schema-types";
 import { ImageField, ImageMetadata } from "../../generator-types";
 import { getSchemaFieldProperties } from "../schema-preprocess-utils/schema-field-property-utils";
 import { ArrayOr } from "../../../types";
@@ -20,8 +16,6 @@ export function process(
   data: {
     fName: string;
     schemaCol: SchemaCollection;
-    colName: string;
-    auth?: FlameSchemaAuth;
   }
 ): ImageField {
   const properties = getSchemaFieldProperties({ field, ...data });

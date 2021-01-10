@@ -27,6 +27,7 @@ export type Field =
 export type Collection = Readonly<{
   fields: FieldEntry[];
   ownerFieldName?: string;
+  keyFieldNames: string[];
 }>;
 
 export type ImageField = Readonly<

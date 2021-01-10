@@ -24,6 +24,10 @@ export function preprocessAuth(
       const newOwnerField = getOwnerField({ fields, ownerFName, authColName });
       schemaColMap[colName].fields[ownerFName] = newOwnerField;
     }
+    if (authentication.userCollection === colName) {
+      schemaColMap[colName].keyFields = schemaColMap[colName].keyFields ?? [];
+      schemaColMap[colName].keyFields?.push(authentication.uidField);
+    }
   });
   return schemaColMap;
 }

@@ -1,11 +1,6 @@
 import _ from "lodash";
-import { CollectionEntry, FieldCollectionEntry } from "../generator-types";
-import {
-  fieldColEntriesOfCol,
-  suf,
-  t,
-  toPascalColName,
-} from "../generator-utils";
+import { CollectionEntry } from "../generator-types";
+import { fieldColEntriesOfCol, t, toPascalColName } from "../generator-utils";
 import {
   toCwAnonConstrAssgStr,
   toCwConstrArgStr,
@@ -17,10 +12,12 @@ import {
 } from "./flutter-class-template/flutter-class-default-constructor-template";
 import { toFieldStr } from "./flutter-class-template/flutter-class-fields-template";
 import { toFromMapConstrAssgStr } from "./flutter-class-template/flutter-class-from-map-constructor-template";
+import { getKeyGetterStr } from "./flutter-class-template/flutter-class-keys-template";
 import {
   toAnonPrivConstrArgStr,
   toNamedPrivConstrArgStr,
 } from "./flutter-class-template/flutter-class-private-constructor-template";
+import { flatSuf, compactSuf } from "./flutter-generator-utils";
 
 export function colEntryToStr(colEntry: CollectionEntry): string {
   //
@@ -38,6 +35,7 @@ export function colEntryToStr(colEntry: CollectionEntry): string {
   const cwConstrArgStr = compactSuf(fs, toCwConstrArgStr, ",");
   const cwNamedConstrAssgStr = compactSuf(fs, toCwNamedConstrAssgStr, ",");
   const cwAnonConstrAssgStr = compactSuf(fs, toCwAnonConstrAssgStr, ",");
+  const keyGetterStr = getKeyGetterStr(fs);
   //
   return t`class ${pascal} extends Document{
     ${pascal}({${constructorArgStr}}): ${constructorAssgStr} super(null);
@@ -56,27 +54,8 @@ export function colEntryToStr(colEntry: CollectionEntry): string {
     ${fieldStr}
     @override
     String get colName => "${colName}";
-    @override
-    List<String> get keys {
-      return [];
-    }
+    ${keyGetterStr}
   }`;
-}
-
-function flatSuf(
-  fields: _.Collection<FieldCollectionEntry>,
-  fn: (fEntry: FieldCollectionEntry) => string[],
-  suffix: string
-): string {
-  return fields.map(fn).flatMap().map(suf(suffix)).join("");
-}
-
-function compactSuf(
-  fields: _.Collection<FieldCollectionEntry>,
-  fn: (fEntry: FieldCollectionEntry) => string | null,
-  suffix: string
-): string {
-  return fields.map(fn).compact().map(suf(suffix)).join("");
 }
 
 export const importsStr = t`
