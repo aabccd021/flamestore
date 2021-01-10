@@ -28,12 +28,20 @@ export function process(
   }
 ): DynamicLinkField {
   const properties = getSchemaFieldProperties({ field, ...data });
+  const isSuffixShort = field.isSuffixShort ?? false;
   const [title, description, imageURL] = [
     field.title,
     field.description,
     field.imageURL,
   ].map(toDynamicLinkAttribute);
-  return { ...field, ...properties, title, description, imageURL };
+  return {
+    ...field,
+    ...properties,
+    title,
+    description,
+    imageURL,
+    isSuffixShort,
+  };
 }
 export function isTypeOf(field: SchemaField): field is DynamicLinkSchemaField {
   return (field as DynamicLinkSchemaField).type === "dynamicLink";

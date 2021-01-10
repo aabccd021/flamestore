@@ -37,10 +37,7 @@ import { flatSuf, compactSuf } from "./flutter-generator-utils";
 export function toClassStr(colEntry: CollectionEntry): string {
   //
   const { colName } = colEntry;
-  //
   const pascal = toPascalColName(colName);
-  //
-  //
   const fs = _(fieldColEntriesOfCol(colEntry));
   //
   const fieldStr = flatSuf(fs, toFieldStr, ";");
@@ -62,15 +59,12 @@ export function toClassStr(colEntry: CollectionEntry): string {
   //
   return t`class ${pascal} extends Document{
     ${pascal}({${constructorArgStr}}): ${constructorAssgStr} super(null);
-
     ${pascal}._fromMap(Map<String, dynamic> data)
       : ${fromMapConstrAssgStr} super(data['reference']);
-
     ${pascal}._(${anonPrivConstrArgStr}{
       ${namedPrivConstrArgStr}
       @required DocumentReference reference,
     }):super(reference);
-
     ${pascal} copyWith({${cwConstrArgStr}}){
       return ${pascal}._(
         ${cwAnonConstrAssgStr}
@@ -78,10 +72,8 @@ export function toClassStr(colEntry: CollectionEntry): string {
         reference: this.reference,
       );}
     ${fieldStr}
-
     @override
     String get colName => "${colName}";
-
     ${keyGetterStr}
   }`;
 }

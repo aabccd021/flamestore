@@ -3,18 +3,18 @@ import { onCreateFn, onUpdateFn } from "flamestore/lib";
 import { computeDocument } from "./utils";
 
 export interface User {
-  userName: string;
+  userName?: string;
   bio?: string;
   tweetsCount?: number;
-  uid: string;
+  uid?: string;
 }
 
 export interface Tweet {
-  owner: {
+  owner?: {
     reference: firestore.DocumentReference;
     userName?: string;
   };
-  tweetText: string;
+  tweetText?: string;
   likesSum?: number;
   creationTime?: firestore.Timestamp;
   hotness?: number;
@@ -23,15 +23,15 @@ export interface Tweet {
     height?: number;
     width?: number;
   };
-  dynamicLink: string;
+  dynamicLink?: string;
 }
 
 export interface Like {
-  likeValue: number;
-  tweet: {
+  likeValue?: number;
+  tweet?: {
     reference: firestore.DocumentReference;
   };
-  user: {
+  user?: {
     reference: firestore.DocumentReference;
   };
 }

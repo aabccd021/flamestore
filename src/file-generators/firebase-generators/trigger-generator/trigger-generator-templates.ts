@@ -1,6 +1,6 @@
 import { mapPick } from "../../../lodash-utils";
 import { assertNever } from "../../../utils";
-import { CollectionEntry } from "../../generator-types";
+import { CollectionEntry, ColOwnerField } from "../../generator-types";
 import { t, toPascalColName, toSingularColName } from "../../generator-utils";
 import {
   FieldTuple,
@@ -50,8 +50,11 @@ export function getDataFieldStr({ fName }: { fName: string }): string {
 export function toPromiseStr({ fName }: { fName: string }): string {
   return t`data.${fName}.reference.get()`;
 }
-export function getOwnerRefIdStr({ ownerField }: { ownerField: string }) {
-  return t`data.${ownerField}.reference.id`;
+export function getOwnerRefIdStr(ownerField: ColOwnerField) {
+  const { type, name } = ownerField;
+  if (type === "reference") return t`data.${name}.reference.id`;
+  if (type === "string") return t`data.${name}`;
+  assertNever(type);
 }
 
 // update data

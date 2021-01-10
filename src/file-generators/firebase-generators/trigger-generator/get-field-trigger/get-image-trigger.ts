@@ -10,10 +10,10 @@ export function getImageTrigger(
   field: ImageField,
   { fName, colName, col }: { fName: string; colName: string; col: Collection }
 ): Trigger[] {
-  const { ownerFieldName: ownerField } = col;
+  const { ownerField } = col;
   if (!ownerField) throw Error("ownerField required to upload image");
 
-  const idStr = getOwnerRefIdStr({ ownerField });
+  const idStr = getOwnerRefIdStr(ownerField);
   const metadatasStr = field.metadatas.map((x) => t`"${x}"`);
   const imageDataStr = getImageDataStr(
     t`"${colName}"`,

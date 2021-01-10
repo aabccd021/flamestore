@@ -91,5 +91,4 @@ export type NormalSchemaFieldMetadata = {
 export type NormalSchemaFieldProperties =
   | "isUnique"
   | "isOptional"
-  | "isNotCreatable"
   | "isNotUpdatable";

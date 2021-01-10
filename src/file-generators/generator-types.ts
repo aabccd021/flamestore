@@ -7,8 +7,7 @@ export type FieldCollectionEntry = FieldEntry & CollectionEntry;
 export type FieldProperty = Readonly<{
   isOptional: boolean;
   isUnique: boolean;
-  isCreatable: boolean;
-  isUpdatable: boolean;
+  isNotUpdatable: boolean;
   isKeyField: boolean;
 }>;
 
@@ -26,9 +25,11 @@ export type Field =
 
 export type Collection = Readonly<{
   fields: FieldEntry[];
-  ownerFieldName?: string;
+  ownerField?: ColOwnerField;
   keyFieldNames: string[];
 }>;
+
+export type ColOwnerField = { name: string; type: "reference" | "string" };
 
 export type ImageField = Readonly<
   FieldProperty & {
@@ -61,7 +62,7 @@ export type DynamicLinkField = Readonly<
     title?: DynamicLinkAttribute;
     description?: DynamicLinkAttribute;
     imageURL?: DynamicLinkAttribute;
-    isSuffixShort?: boolean;
+    isSuffixShort: boolean;
   }
 >;
 
