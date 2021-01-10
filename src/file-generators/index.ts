@@ -29,4 +29,4 @@ if (!fs.existsSync(triggerDir)) {
 generateFirebaseModel(triggerDir, colEntries);
 generateFirebaseTrigger(triggerDir, colEntries);
 generateFirebaseUtil(triggerDir, schema.region);
-generateFlutter(flutterPath, colEntries);
+generateFlutter(flutterPath, colEntries, schema.project);
