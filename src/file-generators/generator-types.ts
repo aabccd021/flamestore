@@ -24,7 +24,7 @@ export type Field =
   | SumField;
 
 export type Collection = Readonly<{
-  fields: FieldEntry[];
+  fields: _.Collection<FieldEntry>;
   ownerField?: ColOwnerField;
   keyFieldNames: string[];
 }>;

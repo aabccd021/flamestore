@@ -1,4 +1,3 @@
-import _ from "lodash";
 import { assertNever } from "../../../utils";
 import {
   CollectionEntry,
@@ -16,14 +15,12 @@ import {
   isSumField,
   PathField,
 } from "../../generator-types";
-import { t, toPascalColName } from "../../generator-utils";
+import { filterMap, sur, t, toPascalColName } from "../../generator-utils";
 import { valueOfFieldStr } from "./model-generator-utils";
 
 export function toComputedModelStr(colEntry: CollectionEntry): string | null {
   const { colName, col } = colEntry;
-  const computedFields = _(col.fields)
-    .filter(({ field }) => isComputedField(field))
-    .map(({ fName }) => t`"${fName}"`);
+  const computedFields = filterMap(col.fields, isComputedField, sur('"', '"'));
   if (computedFields.isEmpty()) return null;
   const pascal = toPascalColName(colName);
   return t`const ${colName}ComputeFields = [${computedFields}] as const;
