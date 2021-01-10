@@ -73,7 +73,7 @@ export function toClassStr(colEntry: CollectionEntry): string {
       );}
     ${fieldStr}
     @override
-    String get colName => "${colName}";
+    String get colName => '${colName}';
     ${keyGetterStr}
   }`;
 }

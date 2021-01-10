@@ -63,10 +63,9 @@ export function toDocToMapValueStr(fcEntry: FieldCollectionEntry): string {
     return t`ImageField(
       doc?.${fName}?.url,
       file: doc._${fName},
-      userId: doc.${userIdStr},
-    )`;
+      userId: doc.${userIdStr},)`;
   }
-  return "1";
+  assertNever(field);
 }
 
 function getImageOwnerFieldStr(ownerField: {
@@ -84,9 +83,8 @@ function toDynamicLinkAttributeStr(
   attr?: DynamicLinkAttribute
 ): string {
   if (!attr) return "";
-  // TODO: double quotes to quotes
   const attrValueStr = attr.isLiteral
-    ? t`"${attr.content}"`
+    ? t`'${attr.content}'`
     : t`doc.${attr.content}`;
   return t`${attrName}:${attrValueStr},`;
 }
