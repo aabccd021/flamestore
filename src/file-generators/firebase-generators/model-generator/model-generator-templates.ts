@@ -60,7 +60,6 @@ export function getNonComputedInterfaceStr(param: {
 type FieldRequiredString = "" | "?";
 export function getFieldRequiredStr(field: Field): FieldRequiredString {
   if (field.isOptional) return "?";
-  if (!field.isCreatable) return "?";
   if (isSumField(field)) return "?";
   if (isCountField(field)) return "?";
   if (isImageField(field)) return "?";

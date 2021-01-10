@@ -18,7 +18,7 @@ export function getKeyGetterStr(
 ): string {
   const keyStrs = fs.map(toKeysStr).compact().map(suf(","));
   if (keyStrs.isEmpty()) return "";
-  const keyStr = keyStrs.join("");
+  const keyStr = keyStrs;
   return t`@override
     List<String> get keys {
       return [${keyStr}];

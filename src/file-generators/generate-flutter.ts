@@ -13,7 +13,7 @@
 //     imports +
 //     colsOf(schema)
 //       .map((colIter) => classString(colIter, modules))
-//       .join("") +
+//        +
 //     projectString(schema);
 //   fs.writeFileSync(path.join(outputFilePath, "flamestore.g.dart"), content);
 // }
@@ -37,12 +37,12 @@
 //           ${apName ? `androidPackageName: '${apName}',` : ""}
 //         ),`;
 //         })
-//         .join("")}
+//         }
 //     },
 //     collectionClassMap: {
 //       ${colsOf(schema)
 //         .map(({ colName, pascalColName }) => `${pascalColName}: '${colName}',`)
-//         .join("")}
+//         }
 //     },
 //     documentDefinitions: {
 //       ${colsOf(schema)
@@ -50,7 +50,7 @@
 //           ({ colName, singularColName }) =>
 //             `'${colName}':${singularColName}Definition,`
 //         )
-//         .join("")}
+//         }
 //     },
 //   );
 
@@ -60,7 +60,7 @@
 //         ({ singularColName, pascalColName }) =>
 //           `@required Widget Function(${pascalColName} ${singularColName}) ${singularColName}Builder,`
 //       )
-//       .join("")}
+//       }
 //   }) {
 //     return {
 //     ${colsWithDynamicLink
@@ -68,7 +68,7 @@
 //         ({ colName, singularColName, pascalColName }) =>
 //           `'${colName}': (document) => ${singularColName}Builder(document as ${pascalColName}),`
 //       )
-//       .join("")}
+//       }
 //     };
 //   }
 //   `;
@@ -113,14 +113,14 @@
 //         : "";
 //       return `${required} this.${fName},`;
 //     })
-//     .join("");
+//     ;
 
 //   const keys =
 //     schema.authentication?.userCollection === colName
 //       ? `${schema.authentication.uidField}`
 //       : col.keyFields
 //           ?.map((keyFName) => `${keyFName}.reference?.id,`)
-//           .join("") ?? "";
+//            ?? "";
 
 //   return `
 
@@ -130,28 +130,28 @@
 //       ${creatableThisField}
 //     }): ${nonCreatableFields
 //       .map((f) => `${f.fName}= ${defaultValue(f)},`)
-//       .join("")}
+//       }
 //     super(null);
 
 //     ${pascalColName}._fromMap(Map<String, dynamic> data)
-//         : ${fields.map((f) => `${f.fName} = ${fromMap(f)},`).join("")}
+//         : ${fields.map((f) => `${f.fName} = ${fromMap(f)},`)}
 //         super(data['reference']);
 
 //     ${pascalColName}._({
-//       ${fields.map(({ fName }) => `@required this.${fName},`).join("")}
+//       ${fields.map(({ fName }) => `@required this.${fName},`)}
 //       @required DocumentReference reference,
 //     }):super(reference);
 //    ${pascalColName} copyWith({
-//      ${updatableFields.map((f) => `${typeOf(f)} ${f.fName},`).join("")}
+//      ${updatableFields.map((f) => `${typeOf(f)} ${f.fName},`)}
 //    }){
 //      return ${pascalColName}._(
 //        ${fields
 //          .map((f) => `${f.fName}: ${copyWithAssign(f, modules)},`)
-//          .join("")}
+//          }
 //        reference: this.reference,
 //      );
 //    }
-//    ${fields.map((fIter) => `final ${typeOf(fIter)} ${fIter.fName};`).join("")}
+//    ${fields.map((fIter) => `final ${typeOf(fIter)} ${fIter.fName};`)}
 
 //    @override
 //    String get colName => "${colName}";
@@ -168,14 +168,14 @@
 //     mapToDoc: (data) => ${pascalColName}._fromMap(data),
 //     docToMap:(doc){
 //       return {
-//         ${fields.map((f) => `'${f.fName}': ${docToMap(f)},`).join("")}
+//         ${fields.map((f) => `'${f.fName}': ${docToMap(f)},`)}
 //       };
 //     },
 //     creatableFields: [
-//       ${creatableFields.map(({ fName }) => `'${fName}',`).join("")}
+//       ${creatableFields.map(({ fName }) => `'${fName}',`)}
 //     ],
 //     updatableFields: [
-//       ${updatableFields.map(({ fName }) => `'${fName}',`).join("")}
+//       ${updatableFields.map(({ fName }) => `'${fName}',`)}
 //     ],
 //   );
 //   `;

@@ -29,20 +29,18 @@ export function generateFirebaseTrigger(
 
   colEntries.forEach(({ colName }) => {
     // triggers to string
-    const triggerStr = triggerTypes
-      .map((triggerType) => {
-        const filteredTriggers = filterTrigger(triggers, colName, triggerType);
-        const processedTrigger = processTriggers(filteredTriggers);
-        return getTriggerStr({ triggerType, processedTrigger, colName });
-      })
-      .join("");
+    const triggerStr = triggerTypes.map((triggerType) => {
+      const filteredTriggers = filterTrigger(triggers, colName, triggerType);
+      const processedTrigger = processTriggers(filteredTriggers);
+      return getTriggerStr({ triggerType, processedTrigger, colName });
+    });
     const modelImportsStr = getModelImportsStr(colEntries);
     const triggerFileStr = t`${modelImportsStr}${utilImports}\n${triggerStr}`;
 
     fs.writeFileSync(path.join(triggerDir, t`${colName}.ts`), triggerFileStr);
   });
-  const indexFileContent = mapPick(colEntries, "colName")
-    .map(toIndexFileExportStr)
-    .join("");
-  fs.writeFileSync(path.join(triggerDir, t`index.ts`), indexFileContent);
+  const indexFileContent = mapPick(colEntries, "colName").map(
+    toIndexFileExportStr
+  );
+  fs.writeFileSync(path.join(triggerDir, t`index.ts`), t`${indexFileContent}`);
 }

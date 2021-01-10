@@ -20,26 +20,23 @@ export function getPathClassStr(
   const fieldsStr = field.syncFields
     .map((f) => toFieldStr({ ...f, colName: syncColName }))
     .flatMap()
-    .map(suf(";"))
-    .join("");
+    .map(suf(";"));
   //
   const constrArgs = syncFieldNames.map((x) => t`@required this.${x}`);
-  const constrArgStr = constrArgs.isEmpty()
-    ? ""
-    : t`, {${constrArgs.join("")}}`;
+  const constrArgStr = constrArgs.isEmpty() ? "" : t`, {${constrArgs}}`;
   const constrAssgs = syncFieldNames.map((x) => t`'${x}': ${x},`);
   const constrAssgStr = constrAssgs.isEmpty()
     ? ""
-    : t`,fields:{${constrAssgs.join("")}},`;
+    : t`,fields:{${constrAssgs}},`;
   //
   // TODO: unhandle if empty
   const fcAssgStr = syncFieldNames.map((x) => t`${x} = ${fName}.${x},`).join();
   const fcFieldAssgs = syncFieldNames.map((x) => t`'${x}' : ${fName}.${x},`);
   const fcFieldAssgStr = fcFieldAssgs.isEmpty()
     ? ""
-    : t`,fields: {${fcFieldAssgs.join("")}},`;
+    : t`,fields: {${fcFieldAssgs}},`;
   //
-  const fromMapStr = syncFieldNames.map((x) => t`${x} = map['${x}'],`).join("");
+  const fromMapStr = syncFieldNames.map((x) => t`${x} = map['${x}'],`);
   return t`class ${classNameStr} extends ReferenceField {
     ${classNameStr}(DocumentReference reference${constrArgStr})
       : super(reference${constrAssgStr});

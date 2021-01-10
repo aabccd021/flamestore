@@ -25,10 +25,10 @@ export function processSchemaField(param: {
   if (float.isTypeOf(field)) return float.process(field, param);
   if (image.isTypeOf(field)) return image.process(field, param);
   if (int.isTypeOf(field)) return int.process(field, param);
-  if (path.isTypeOf(field)) return path.process(field, param);
   if (serverTimestamp.isTypeOf(field))
     return serverTimestamp.process(field, param);
   if (string.isTypeOf(field)) return string.process(field, param);
   if (sum.isTypeOf(field)) return sum.process(field, param);
+  if (path.isTypeOf(field)) return path.process(field, param);
   assertNever(field);
 }

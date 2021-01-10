@@ -85,7 +85,7 @@ export function getTriggerStr(param: {
   ];
   const contentStr = contents.join("");
 
-  if (contentStr === "") return "";
+  if (_.isEmpty(contentStr)) return "";
 
   const prepareStr = getTriggerPrepareStr({
     triggerType,

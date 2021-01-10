@@ -13,7 +13,7 @@ export function getDefStr(colEntry: CollectionEntry): string {
   const fcEntries = _(fieldColEntriesOfCol(colEntry));
   const creatableFieldsStr = filterMap(fcEntries, isFieldFirestoreCreatable);
   const updatableFieldsStr = filterMap(fcEntries, isFieldFirestoreUpdatable);
-  const docToMapStr = fcEntries.map(toDocToMapStr).join("");
+  const docToMapStr = fcEntries.map(toDocToMapStr);
   return t`final ${pascal}Definition = DocumentDefinition< ${pascal} >(
     mapToDoc: (data) => ${pascal}._fromMap(data),
     docToMap: (doc) {return {${docToMapStr}};},

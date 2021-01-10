@@ -57,7 +57,7 @@
 //     .map((ruleFunction) => ruleFunction(colIter))
 //     .flatMap()
 //     .map((rule) => `\n${rule}`)
-//     .join("");
+//     ;
 //   const isOwnerFunction = getIsOwnerFunction(colIter);
 
 //   const emptyValidationFunction = { content: "", usedFields: [] };
@@ -75,7 +75,7 @@
 //         isCreateValidFunction.usedFields.includes(fName)
 //     )
 //     .map((fIter) => getIsFieldsValidFunction(modules, fIter))
-//     .join("");
+//     ;
 //   return `    match /${colName}/{documentId} {${ruleFunction}
 // ${isOwnerFunction}${fieldIsValidFunctions}${isCreateValidFunction.content}${
 //     isUpdateValidFunction.content
@@ -158,7 +158,7 @@
 //         : `${fName}IsValid()`
 //     )
 //     .map((x) => `\n          && ${x}`)
-//     .join("");
+//     ;
 
 //   const hasOnlies = creatableFields.map(({ fName }) => `'${fName}'`);
 
@@ -194,7 +194,7 @@
 //     ])
 //     .flatMap()
 //     .map((x) => `\n          && ${x}`)
-//     .join("");
+//     ;
 
 //   const hasOnlies = updatableFields.map(({ fName }) => `'${fName}'`);
 

@@ -14,7 +14,7 @@ export function getImageTrigger(
   if (!ownerField) throw Error("ownerField required to upload image");
 
   const idStr = getOwnerRefIdStr(ownerField);
-  const metadatasStr = field.metadatas.map((x) => t`"${x}"`);
+  const metadatasStr = field.metadatas.map((x) => t`"${x}"`).join(",");
   const imageDataStr = getImageDataStr(
     t`"${colName}"`,
     t`"${fName}"`,

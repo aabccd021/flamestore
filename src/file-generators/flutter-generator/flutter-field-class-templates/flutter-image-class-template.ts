@@ -11,8 +11,8 @@ export function getImageClassStr(
 ): string {
   const { fName, colName } = fData;
   const classNameStr = "_" + toPascalColName(colName) + _.upperFirst(fName);
-  const fieldsStr = field.metadatas.map((x) => t`int ${x};`).join("");
-  const fmStr = field.metadatas.map((x) => t`${x} = map['${x}'];`).join("");
+  const fieldsStr = field.metadatas.map((x) => t`int ${x};`);
+  const fmStr = field.metadatas.map((x) => t`${x} = map['${x}'];`);
   return t`class ${classNameStr} {
     String url;
     ${fieldsStr}

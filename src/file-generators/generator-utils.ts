@@ -28,13 +28,20 @@ export function fieldColEntriesOfCol(
   return colEntry.col.fields.map((field) => ({ ...field, ...colEntry }));
 }
 
+type StrOrNum = string | number;
 type AllowedTypes = string | number | string[] | _.Collection<string>;
 export function t(
   strings: TemplateStringsArray,
   ...values: AllowedTypes[]
 ): string {
-  const arrStr = _.range(0, strings.length - 1)
-    .map((i) => strings[i] + values[i])
+  const processedValues: StrOrNum[] = values.map((x) => {
+    if (_.isArray(x)) return x.join("");
+    if (_.isString(x)) return x;
+    if (_.isNumber(x)) return x;
+    return x.join("");
+  });
+  const arrStr: string = _.range(0, strings.length - 1)
+    .map((i) => strings[i] + processedValues[i])
     .join("");
   return arrStr + strings[strings.length - 1];
 }

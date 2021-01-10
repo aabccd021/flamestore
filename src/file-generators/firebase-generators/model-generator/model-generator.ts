@@ -31,11 +31,11 @@ export function generateFirebaseModel(
       return getNonComputedInterfaceStr({ colName, modelContentStr });
     })
     .join("\n\n");
-  const modelFileStr = [
+  const modelFileStr: string[] = [
     modelImportsStr,
     nonComputedModelStr,
     computedModelStr,
-  ].join("\n\n");
+  ];
   const fileName = path.join(outputFilePath, "models.ts");
-  fs.writeFileSync(fileName, modelFileStr);
+  fs.writeFileSync(fileName, modelFileStr.join("\n\n"));
 }
