@@ -2,7 +2,7 @@ import _ from "lodash";
 import { mapPick } from "../../../lodash-utils";
 import { PathField } from "../../generator-types";
 import { suf, t, toPascalColName } from "../../generator-utils";
-import { toFieldStr } from "../flutter-generator-template";
+import { toFieldStr } from "../flutter-class-template";
 
 export function getPathClassStr(
   field: PathField,
