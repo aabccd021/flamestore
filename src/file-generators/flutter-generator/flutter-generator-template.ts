@@ -62,16 +62,20 @@ export function colEntryToStr(colEntry: CollectionEntry): string {
   const cwNamedConstrAssgStr = compactSuf(fs, toCwNamedConstrAssgStr, ",");
   const cwAnonConstrAssgStr = compactSuf(fs, toCwAnonConstrAssgStr, ",");
   const keyGetterStr = getKeyGetterStr(fs);
+  // TODO: remove empty lines
   //
   return t`${fieldClassStr}
   class ${pascal} extends Document{
     ${pascal}({${constructorArgStr}}): ${constructorAssgStr} super(null);
+
     ${pascal}._fromMap(Map<String, dynamic> data)
       : ${fromMapConstrAssgStr} super(data['reference']);
+
     ${pascal}._(${anonPrivConstrArgStr}{
       ${namedPrivConstrArgStr}
       @required DocumentReference reference,
     }):super(reference);
+
     ${pascal} copyWith({${cwConstrArgStr}}){
       return ${pascal}._(
         ${cwAnonConstrAssgStr}
@@ -79,8 +83,10 @@ export function colEntryToStr(colEntry: CollectionEntry): string {
         reference: this.reference,
       );}
     ${fieldStr}
+
     @override
     String get colName => "${colName}";
+
     ${keyGetterStr}
   }`;
 }
