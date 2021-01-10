@@ -15,13 +15,15 @@ import {
   isSumField,
   PathField,
 } from "../../generator-types";
-import { filterMap, sur, t, toPascalColName } from "../../generator-utils";
+import { filterMap, suf, sur, t, toPascalColName } from "../../generator-utils";
 import { valueOfFieldStr } from "./model-generator-utils";
 
 export function toComputedModelStr(colEntry: CollectionEntry): string | null {
   const { colName, col } = colEntry;
   const computedFields = filterMap(col.fields, isComputedField, sur('"', '"'));
+  //
   if (computedFields.isEmpty()) return null;
+  //
   const pascal = toPascalColName(colName);
   return t`const ${colName}ComputeFields = [${computedFields}] as const;
     type ${pascal}C = typeof ${colName}ComputeFields[number];
@@ -47,7 +49,7 @@ import {computeDocument} from "./utils";`;
 
 export function getNonComputedInterfaceStr(param: {
   colName: string;
-  modelContentStr: string;
+  modelContentStr: _.Collection<string>;
 }) {
   const { colName, modelContentStr } = param;
   const pascalColName = toPascalColName(colName);
@@ -80,9 +82,7 @@ export function getNonComputedFieldStr(param: {
 }
 
 export function getTypeOfImageStr(field: ImageField): string {
-  const imageMetadataStr = field.metadatas
-    .map((data) => t`${data}?: number;`)
-    .join("\n");
+  const imageMetadataStr = field.metadatas.map(suf("?: number;")).join("\n");
   return t`{
     url?: string;
     ${imageMetadataStr}
