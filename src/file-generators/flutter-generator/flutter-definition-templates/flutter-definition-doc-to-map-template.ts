@@ -1,4 +1,3 @@
-import _ from "lodash";
 import { assertNever } from "../../../utils";
 import {
   DynamicLinkAttribute,
@@ -14,7 +13,7 @@ import {
   isStringField,
   isSumField,
 } from "../../generator-types";
-import { t } from "../../generator-utils";
+import { nilOr, t } from "../../generator-utils";
 
 export function toDocToMapStr(fcEntry: FieldCollectionEntry): string {
   const { fName } = fcEntry;
@@ -33,15 +32,11 @@ export function toDocToMapValueStr(fcEntry: FieldCollectionEntry): string {
     return t`TimestampField(${docFieldStr}, isServerTimestamp: true,)`;
   }
   if (isFloatField(field)) {
-    const deleteOnStr = field.deleteDocWhen
-      ? t`, deleteOn:${field.deleteDocWhen}`
-      : "";
+    const deleteOnStr = nilOr(field.deleteDocWhen, (x) => t`, deleteOn:${x}`);
     return t`FloatField(${docFieldStr}${deleteOnStr})`;
   }
   if (isIntField(field)) {
-    const deleteOnStr = _.isNil(field.deleteDocWhen)
-      ? ""
-      : t`, deleteOn:${field.deleteDocWhen}`;
+    const deleteOnStr = nilOr(field.deleteDocWhen, (x) => t`, deleteOn:${x}`);
     return t`IntField(${docFieldStr}${deleteOnStr})`;
   }
   if (isDynamicLinkField(field)) {

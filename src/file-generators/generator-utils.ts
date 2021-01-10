@@ -64,3 +64,8 @@ export function filterMap(
     .filter(({ field }) => filter(field))
     .map(({ fName }) => map(fName));
 }
+
+export function nilOr<T>(val: T | undefined, fn: (val: T) => string): string {
+  if (_.isNil(val)) return "";
+  return fn(val);
+}
