@@ -107,7 +107,7 @@ export function getTriggerPrepareStr(param: {
   }
   if (triggerType === "Update") {
     return t`const before = snapshot.before.data() as ${pascalColName};
-            const after = snapshot.after.data() as ${pascalColName};`;
+             const after = snapshot.after.data() as ${pascalColName};`;
   }
   assertNever(triggerType);
 }

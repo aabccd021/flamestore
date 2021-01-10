@@ -38,9 +38,8 @@ export function toConstrAssgStr(fcEntry: FieldCollectionEntry): string[] {
     const pascalColName = toPascalColName(colName);
     const pascalFieldName = _.upperFirst(fName);
     const pascalSyncColName = toPascalColName(field.colName);
-    return [
-      t`${fName} = _${pascalColName}${pascalFieldName}._from${pascalSyncColName}(${fName})`,
-    ];
+    const assignPathStr = t`${fName} = _${pascalColName}${pascalFieldName}._from${pascalSyncColName}(${fName})`;
+    return [assignPathStr];
   }
   assertNever(field);
 }
@@ -56,16 +55,16 @@ export function toConstrArgStr(fEntry: FieldEntry): string[] {
   return [requiredStr + getCreatableConstrArgStr(fName, field)];
 }
 
+type UncreatableFields =
+  | CountField
+  | ServerTimestampField
+  | SumField
+  | DynamicLinkField
+  | ComputedField;
+
 function getCreatableConstrArgStr(
   fName: string,
-  field: Exclude<
-    Field,
-    | CountField
-    | ServerTimestampField
-    | SumField
-    | DynamicLinkField
-    | ComputedField
-  >
+  field: Exclude<Field, UncreatableFields>
 ): string {
   const thisStr = t`this.${fName}`;
   if (isImageField(field)) return t`File ${fName}`;

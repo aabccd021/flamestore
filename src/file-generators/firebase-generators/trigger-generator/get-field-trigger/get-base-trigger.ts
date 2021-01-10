@@ -17,19 +17,10 @@ export function getBaseTrigger(fieldEntry: {
       "snapshot",
       "context"
     );
-    const handleDuplicateStr = getHandleDuplicateStr({ foundDuplicateStr });
-    triggers.push({
-      colName,
-      type: "Create",
-      useContext: true,
-      header: handleDuplicateStr,
-    });
-    triggers.push({
-      colName,
-      type: "Update",
-      useContext: true,
-      header: handleDuplicateStr,
-    });
+    const header = getHandleDuplicateStr({ foundDuplicateStr });
+    const useContext = true;
+    triggers.push({ colName, type: "Create", useContext, header });
+    triggers.push({ colName, type: "Update", useContext, header });
   }
   return triggers;
 }

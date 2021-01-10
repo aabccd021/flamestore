@@ -6,7 +6,7 @@ import {
   isCountField,
   isImageField,
   isPathField,
-  isServerTimestampField,
+  isServerTimestampField as isServerTimeField,
   isSumField,
 } from "../../generator-types";
 import { getBaseTrigger } from "./get-field-trigger/get-base-trigger";
@@ -14,7 +14,7 @@ import { getCountTrigger } from "./get-field-trigger/get-count-trigger";
 import { getImageTrigger } from "./get-field-trigger/get-image-trigger";
 import { getPathTrigger } from "./get-field-trigger/get-path-trigger";
 import { getSumTrigger } from "./get-field-trigger/get-sum-trigger";
-import { getTimestampTrigger } from "./get-field-trigger/get-timestamp-trigger";
+import { getServerTimestampTrigger as getServerTimeTrigger } from "./get-field-trigger/get-timestamp-trigger";
 import {
   getBatchCommitStr,
   getPromiseCallStr,
@@ -100,15 +100,14 @@ export function getTriggerStr(param: {
   });
 }
 
-export function fcEntryToTriggers(fcEntry: FieldCollectionEntry): Trigger[] {
-  const { field } = fcEntry;
-  const triggers: Trigger[][] = [getBaseTrigger(fcEntry)];
-  if (isPathField(field)) triggers.push(getPathTrigger(field, fcEntry));
-  if (isCountField(field)) triggers.push(getCountTrigger(field, fcEntry));
-  if (isSumField(field)) triggers.push(getSumTrigger(field, fcEntry));
-  if (isImageField(field)) triggers.push(getImageTrigger(field, fcEntry));
-  if (isServerTimestampField(field))
-    triggers.push(getTimestampTrigger(field, fcEntry));
+export function fcEntryToTriggers(fcE: FieldCollectionEntry): Trigger[] {
+  const { field } = fcE;
+  const triggers: Trigger[][] = [getBaseTrigger(fcE)];
+  if (isPathField(field)) triggers.push(getPathTrigger(field, fcE));
+  if (isCountField(field)) triggers.push(getCountTrigger(field, fcE));
+  if (isSumField(field)) triggers.push(getSumTrigger(field, fcE));
+  if (isImageField(field)) triggers.push(getImageTrigger(field, fcE));
+  if (isServerTimeField(field)) triggers.push(getServerTimeTrigger(field, fcE));
   return _.flatMap(triggers);
 }
 
@@ -127,32 +126,30 @@ export function dataOfTriggers(
 ): ProcessedTrigger {
   const useDocData = triggers.some(({ useDocData }) => useDocData ?? false);
   const useContext = triggers.some(({ useContext }) => useContext ?? false);
-  const headers = flatCompact(triggers, "header");
+  const headerStrs = flatComp(triggers, "header");
   const docData = mapPick(triggers, "docData").compact().flatMap();
-  const resultCommits = flatCompact(triggers, "resultPromise");
-  const updatedData = flatCompact(triggers, "updatedData").map(toTriggerData);
-  const nonUpdatedData = flatCompact(triggers, "nonUpdatedData").map(
-    toTriggerData
-  );
+  const resultCommits = flatComp(triggers, "resultPromise");
+  const updatedData = flatComp(triggers, "updatedData").map(toTriggerD);
+  const nonUpdatedData = flatComp(triggers, "nonUpdatedData").map(toTriggerD);
   const dependencies = mapPick(triggers, "dependency").compact().flatMap();
   return {
     useDocData,
     useContext,
     dependencies,
-    headerStrs: headers,
+    headerStrs,
     resultCommits,
     updatedData,
     nonUpdatedData,
     docData,
   };
 }
-function toTriggerData(schemaTriggerData: SchemaTriggerData): TriggerData {
+function toTriggerD(schemaTriggerData: SchemaTriggerData): TriggerData {
   const { dataName } = schemaTriggerData;
   const fields = _.flatMap([schemaTriggerData.field]);
   return { fields, dataName };
 }
 
-function flatCompact<T extends { [key: string]: any }, V extends keyof T>(
+function flatComp<T extends { [key: string]: any }, V extends keyof T>(
   array: _.Collection<T> | T[],
   key: V
 ): _.Truthy<T[V] extends ArrayOr<infer R> ? R : T[V]>[] {
