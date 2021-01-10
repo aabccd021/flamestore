@@ -14,10 +14,11 @@ export function generateFlutter(
   colEntries: CollectionEntry[],
   project: { [name: string]: ProjectConfiguration }
 ): void {
-  const colContent = colEntries.map(toColStr).join("\n");
+  const colContent = colEntries.map(toColStr).join("");
   const colNames = mapPick(colEntries, "colName").value();
   const configStr = getConfigStr(colNames, project);
   const dlBuilderStr = getDynamicBuilderStr(colEntries);
-  const content = importsStr + colContent + configStr + dlBuilderStr;
+  const content =
+    importsStr + colContent + "\n\n" + configStr + "\n\n" + dlBuilderStr;
   fs.writeFileSync(path.join(outputFilePath, t`flamestore.g.dart`), content);
 }

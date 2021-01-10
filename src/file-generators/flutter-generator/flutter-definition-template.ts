@@ -19,8 +19,6 @@ export function getDefStr(colEntry: CollectionEntry): string {
     docToMap: (doc) {return {${docToMapStr}};},
     creatableFields: [${creatableFieldsStr}],
     updatableFields: [${updatableFieldsStr}],
-    counts: (doc) { return [];},
-    sums: (doc) { return [];},
   );`;
 }
 

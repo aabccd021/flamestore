@@ -47,7 +47,6 @@ export function getPathClassStr(
       : ${fcAssgStr}super(${fName}.reference${fcFieldAssgStr});
     ${classNameStr}._fromMap(Map<String, dynamic> map)
       : ${fromMapStr}super.fromMap(map);
-
     ${fieldsStr}
   }`;
 }

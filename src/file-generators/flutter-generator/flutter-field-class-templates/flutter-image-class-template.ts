@@ -16,7 +16,6 @@ export function getImageClassStr(
   return t`class ${classNameStr} {
     String url;
     ${fieldsStr}
-
     ${classNameStr}._fromMap(Map<String, dynamic> map) {
       if (map != null) {
         url = map['url'];
