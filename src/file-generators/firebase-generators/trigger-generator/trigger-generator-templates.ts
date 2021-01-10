@@ -31,7 +31,7 @@ export const utilImports = t`
   ${imageDataStr},
   } from '../utils';`;
 export function getModelImportsStr(colEntries: CollectionEntry[]): string {
-  const names = mapPick(colEntries, "colName").map(toPascalColName).join(",");
+  const names = mapPick(colEntries, "colName").map(toPascalColName).join();
   return t`import {${names}} from "../models"`;
 }
 
@@ -127,18 +127,18 @@ export function getDocDataAssignStr(param: {
 }): string {
   const { colName, docData } = param;
   if (docData.isEmpty()) return "";
-  const dataContent = docData.map(fieldToAssignmentStr).join(",");
+  const dataContent = docData.map(fieldToAssignmentStr).join();
   const dataName = getDataStr(toSingularColName(colName));
   return t`const ${dataName} = {${dataContent}};`;
 }
 export function toNonUpdatedDataAssignStr(triggerData: TriggerData): string {
   const { fields, dataName } = triggerData;
-  const dataContent = fields.map(fieldToAssignmentStr).join(",");
+  const dataContent = fields.map(fieldToAssignmentStr).join();
   return t`const ${dataName} = {${dataContent}};`;
 }
 export function toUpdatedDataAssignStr(triggerData: TriggerData): string {
   const { fields, dataName } = triggerData;
-  const dataContent = fields.map(fieldToAssignmentStr).join(",");
+  const dataContent = fields.map(fieldToAssignmentStr).join();
   const dataStr = getDataStr(dataName);
   return t`const ${dataStr} = {${dataContent}};`;
 }
@@ -172,8 +172,8 @@ export function getPromiseCallStr(
   dependencies: _.Collection<TriggerDependency>
 ): string {
   if (dependencies.isEmpty()) return "";
-  const names = mapPick(dependencies, "key").map(getSnapshotStr).join(",");
-  const promises = dependencies.map(toPromiseStr).join(",");
+  const names = mapPick(dependencies, "key").map(getSnapshotStr).join();
+  const promises = dependencies.map(toPromiseStr).join();
   const assignments = dependencies.map(dependencyToPromiseAssignmentStr);
   return t`const [${names}] = await Promise.all([${promises}]);${assignments}`;
 }

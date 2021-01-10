@@ -1,7 +1,7 @@
 import _ from "lodash";
 import { mapPick } from "../../../lodash-utils";
 import { PathField } from "../../generator-types";
-import { suf, t, toPascalColName } from "../../generator-utils";
+import { emptyOr, suf, t, toPascalColName } from "../../generator-utils";
 import { toFieldStr } from "../flutter-class-template";
 
 export function getPathClassStr(
@@ -25,16 +25,12 @@ export function getPathClassStr(
   const constrArgs = syncFieldNames.map((x) => t`@required this.${x}`);
   const constrArgStr = constrArgs.isEmpty() ? "" : t`, {${constrArgs}}`;
   const constrAssgs = syncFieldNames.map((x) => t`'${x}': ${x},`);
-  const constrAssgStr = constrAssgs.isEmpty()
-    ? ""
-    : t`,fields:{${constrAssgs}},`;
+  const constrAssgStr = emptyOr(constrAssgs, (x) => `,fields: {${x}},`);
   //
   // TODO: unhandle if empty
   const fcAssgStr = syncFieldNames.map((x) => t`${x} = ${fName}.${x},`).join();
   const fcFieldAssgs = syncFieldNames.map((x) => t`'${x}' : ${fName}.${x},`);
-  const fcFieldAssgStr = fcFieldAssgs.isEmpty()
-    ? ""
-    : t`,fields: {${fcFieldAssgs}},`;
+  const fcFieldAssgStr = emptyOr(fcFieldAssgs, (x) => `,fields: {${x}},`);
   //
   const fromMapStr = syncFieldNames.map((x) => t`${x} = map['${x}'],`);
   return t`class ${classNameStr} extends ReferenceField {

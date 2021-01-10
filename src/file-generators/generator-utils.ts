@@ -69,3 +69,11 @@ export function nilOr<T>(val: T | undefined, fn: (val: T) => string): string {
   if (_.isNil(val)) return "";
   return fn(val);
 }
+
+export function emptyOr(
+  strs: _.Collection<string>,
+  fn: (str: _.Collection<string>) => string
+): string {
+  if (strs.isEmpty()) return "";
+  return fn(strs);
+}
