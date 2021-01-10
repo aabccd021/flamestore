@@ -19,7 +19,7 @@ export function process(
   }
 ): ImageField {
   const properties = getSchemaFieldProperties({ field, ...data });
-  const metadatas = chain([field.metadata]).compact().flatMap().value();
+  const metadatas = chain([field.metadata]).compact().flatMap().sort().value();
   return { ...field, ...properties, metadatas };
 }
 

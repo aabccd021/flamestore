@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { CollectionEntry } from "../generator-types";
+import { CollectionEntry, isImageField, isPathField } from "../generator-types";
 import { fieldColEntriesOfCol, t, toPascalColName } from "../generator-utils";
 import {
   toCwAnonConstrAssgStr,
@@ -17,15 +17,26 @@ import {
   toAnonPrivConstrArgStr,
   toNamedPrivConstrArgStr,
 } from "./flutter-class-template/flutter-class-private-constructor-template";
+import { getImageClassStr } from "./flutter-field-class-template/flutter-image-class-template";
+import { getPathClassStr } from "./flutter-field-class-template/flutter-path-class-template";
 import { flatSuf, compactSuf } from "./flutter-generator-utils";
 
 export function colEntryToStr(colEntry: CollectionEntry): string {
   //
-  const { colName } = colEntry;
-  const fs = _(fieldColEntriesOfCol(colEntry));
+  const { colName, col } = colEntry;
   //
   const pascal = toPascalColName(colName);
   //
+  const fieldClassStr = col.fields
+    .map(({ field, fName }) => {
+      const fData = { fName, colName };
+      if (isImageField(field)) return getImageClassStr(field, fData);
+      if (isPathField(field)) return getPathClassStr(field, fData);
+      return "";
+    })
+    .join("");
+  //
+  const fs = _(fieldColEntriesOfCol(colEntry));
   const constructorArgStr = flatSuf(fs, toConstrArgStr, ",");
   const constructorAssgStr = flatSuf(fs, toConstrAssgStr, ",");
   const fieldStr = flatSuf(fs, toFieldStr, ";");
@@ -37,7 +48,8 @@ export function colEntryToStr(colEntry: CollectionEntry): string {
   const cwAnonConstrAssgStr = compactSuf(fs, toCwAnonConstrAssgStr, ",");
   const keyGetterStr = getKeyGetterStr(fs);
   //
-  return t`class ${pascal} extends Document{
+  return t`${fieldClassStr}
+  class ${pascal} extends Document{
     ${pascal}({${constructorArgStr}}): ${constructorAssgStr} super(null);
     ${pascal}._fromMap(Map<String, dynamic> data)
       : ${fromMapConstrAssgStr} super(data['reference']);
