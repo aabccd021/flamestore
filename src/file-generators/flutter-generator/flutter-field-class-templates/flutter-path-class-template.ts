@@ -22,7 +22,7 @@ export function getPathClassStr(
   const classNameStr = "_" + toPascalColName(colName) + _.upperFirst(fName);
   const syncFieldNames = mapPick(field.syncFields, "fName");
   //
-  const fieldsStr = field.syncFields
+  const fieldsStr = _(field.syncFields)
     .map((f) => toFieldStr({ ...f, colName: syncColName }))
     .flatMap()
     .map(suf(";"));

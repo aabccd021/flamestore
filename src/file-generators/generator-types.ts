@@ -83,7 +83,7 @@ export type PathField = Readonly<
   FieldProperty & {
     type: "path";
     colName: string;
-    syncFields: _.Collection<FieldEntry>;
+    syncFields: FieldEntry[];
   }
 >;
 

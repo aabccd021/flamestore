@@ -1,6 +1,5 @@
 // import chain instead of default import _ to be compatible with
 // ts-json-schema-generator
-import _ from "lodash";
 import { chain } from "lodash";
 import { ArrayOr } from "../../../types";
 import { PathField } from "../../generator-types";
@@ -31,11 +30,10 @@ export function process(
   const schemaCol = schemaColMap[syncColName];
   const properties = getSchemaFieldProperties({ field, ...params });
   const syncFieldNames = chain([field.syncField]).compact().flatMap().value();
-  const syncFieldsArr = syncFieldNames.map((fName) => {
+  const syncFields = syncFieldNames.map((fName) => {
     const schemaField = schemaCol.fields[fName];
     const field = processSchemaField({ ...params, schemaCol, schemaField });
     return { fName: fName, field };
   });
-  const syncFields = _(syncFieldsArr);
   return { ...field, ...properties, syncFields, colName: syncColName };
 }

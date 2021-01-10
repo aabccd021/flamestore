@@ -1,3 +1,4 @@
+import _ from "lodash";
 import { assertNever } from "../../../utils";
 import {
   CollectionEntry,
@@ -90,7 +91,7 @@ export function getTypeOfImageStr(field: ImageField): string {
 }
 
 export function getTypeOfPathStr(field: PathField): string {
-  const syncFieldsStr = field.syncFields
+  const syncFieldsStr = _(field.syncFields)
     .map(({ fName, field }) => t`${fName}?: ${valueOfFieldStr(field)};`)
     .join("\n");
   return t`{

@@ -49,8 +49,7 @@
             "int",
             "float",
             "string",
-            "timestamp",
-            "path"
+            "timestamp"
           ],
           "type": "string"
         }
@@ -175,7 +174,6 @@
       "enum": [
         "isUnique",
         "isOptional",
-        "isNotCreatable",
         "isNotUpdatable"
       ],
       "type": "string"
