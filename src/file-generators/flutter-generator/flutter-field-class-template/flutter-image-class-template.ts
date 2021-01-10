@@ -10,14 +10,13 @@ export function getImageClassStr(
   }
 ): string {
   const { fName, colName } = fData;
-  const pascal = toPascalColName(colName);
-  const pascalFName = _.upperFirst(fName);
+  const classNameStr = "_" + toPascalColName(colName) + _.upperFirst(fName);
   const fieldsStr = field.metadatas.map((x) => t`int ${x};`).join("");
   const fmStr = field.metadatas.map((x) => t`${x} = map['${x}'];`).join("");
-  return t`class _${pascal}${pascalFName} {
+  return t`class ${classNameStr} {
     String url;
     ${fieldsStr}
-    _${pascal}${pascalFName}._fromMap(Map<String, dynamic> map) {
+    ${classNameStr}._fromMap(Map<String, dynamic> map) {
       if (map != null) {
         url = map['url'];
         ${fmStr}

@@ -9,7 +9,7 @@ export function getPathTrigger(
   { fName, colName }: { fName: string; colName: string }
 ): Trigger[] {
   const syncFields = field.syncFields;
-  if (syncFields.length === 0) return [];
+  if (syncFields.isEmpty()) return [];
 
   //
   const pascalFName = _.upperFirst(fName);

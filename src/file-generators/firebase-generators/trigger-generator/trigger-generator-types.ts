@@ -22,10 +22,10 @@ export type ProcessedTrigger = Readonly<{
   useContext: boolean;
   updatedData: TriggerData[];
   nonUpdatedData: TriggerData[];
-  docData: FieldTuple[];
+  docData: _.Collection<FieldTuple>;
   resultCommits: string[];
   headerStrs: string[];
-  dependencies: TriggerDependency[];
+  dependencies: _.Collection<TriggerDependency>;
 }>;
 
 export type FieldTuple = Readonly<{

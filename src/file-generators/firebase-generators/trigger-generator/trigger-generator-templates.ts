@@ -66,10 +66,10 @@ export function getUpdateUpdatedDataStr(
 export function getDocDataCommits(param: {
   colName: string;
   suffix: DataSuffix;
-  docData: FieldTuple[];
+  docData: _.Collection<FieldTuple>;
 }): string[] {
   const { suffix, docData, colName } = param;
-  if (docData.length === 0) return [];
+  if (docData.isEmpty()) return [];
   const dataName = getDataStr(toSingularColName(colName));
   return [`${updateStr}(snapshot${suffix}.ref, ${dataName})`];
 }
@@ -120,10 +120,10 @@ export function getBatchCommitStr(commits: string[]): string {
 // assign data
 export function getDocDataAssignStr(param: {
   colName: string;
-  docData: FieldTuple[];
+  docData: _.Collection<FieldTuple>;
 }): string {
   const { colName, docData } = param;
-  if (docData.length === 0) return "";
+  if (docData.isEmpty()) return "";
   const dataContent = docData.map(fieldToAssignmentStr);
   const dataName = getDataStr(toSingularColName(colName));
   return t`const ${dataName} = {${dataContent}};`;
@@ -166,8 +166,10 @@ export function getTriggerFunctionStr(param: {
 }
 
 // promise
-export function getPromiseCallStr(dependencies: TriggerDependency[]): string {
-  if (dependencies.length === 0) return "";
+export function getPromiseCallStr(
+  dependencies: _.Collection<TriggerDependency>
+): string {
+  if (dependencies.isEmpty()) return "";
   const names = mapPick(dependencies, "key").map(getSnapshotStr);
   const promises = dependencies.map(toPromiseStr);
   const assignments = dependencies

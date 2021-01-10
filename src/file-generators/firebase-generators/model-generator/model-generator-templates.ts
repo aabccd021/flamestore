@@ -1,3 +1,4 @@
+import _ from "lodash";
 import { assertNever } from "../../../utils";
 import {
   CollectionEntry,
@@ -20,10 +21,10 @@ import { valueOfFieldStr } from "./model-generator-utils";
 
 export function toComputedModelStr(colEntry: CollectionEntry): string | null {
   const { colName, col } = colEntry;
-  const computedFields = col.fields
+  const computedFields = _(col.fields)
     .filter(({ field }) => isComputedField(field))
     .map(({ fName }) => t`"${fName}"`);
-  if (computedFields.length === 0) return null;
+  if (computedFields.isEmpty()) return null;
   const pascal = toPascalColName(colName);
   return t`const ${colName}ComputeFields = [${computedFields}] as const;
     type ${pascal}C = typeof ${colName}ComputeFields[number];

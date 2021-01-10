@@ -128,13 +128,13 @@ export function dataOfTriggers(
   const useDocData = triggers.some(({ useDocData }) => useDocData ?? false);
   const useContext = triggers.some(({ useContext }) => useContext ?? false);
   const headers = flatCompact(triggers, "header");
-  const docData = flatCompact(triggers, "docData");
+  const docData = mapPick(triggers, "docData").compact().flatMap();
   const resultCommits = flatCompact(triggers, "resultPromise");
   const updatedData = flatCompact(triggers, "updatedData").map(toTriggerData);
   const nonUpdatedData = flatCompact(triggers, "nonUpdatedData").map(
     toTriggerData
   );
-  const dependencies = flatCompact(triggers, "dependency");
+  const dependencies = mapPick(triggers, "dependency").compact().flatMap();
   return {
     useDocData,
     useContext,

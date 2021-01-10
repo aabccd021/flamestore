@@ -3,8 +3,7 @@ import {
   isPathField,
   isStringField,
 } from "../../generator-types";
-import { t } from "../../generator-utils";
-import { compactSuf } from "../flutter-generator-utils";
+import { suf, t } from "../../generator-utils";
 
 export function toKeysStr(fcEntry: FieldCollectionEntry): string | null {
   const { field, fName } = fcEntry;
@@ -17,10 +16,11 @@ export function toKeysStr(fcEntry: FieldCollectionEntry): string | null {
 export function getKeyGetterStr(
   fs: _.Collection<FieldCollectionEntry>
 ): string {
-  const keyStrs = compactSuf(fs, toKeysStr, ",");
-  if (keyStrs.length === 0) return "";
-  return `@override
+  const keyStrs = fs.map(toKeysStr).compact().map(suf(","));
+  if (keyStrs.isEmpty()) return "";
+  const keyStr = keyStrs.join("");
+  return t`@override
     List<String> get keys {
-      return [${keyStrs}];
+      return [${keyStr}];
     }`;
 }
