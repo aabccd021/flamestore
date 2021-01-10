@@ -1,6 +1,10 @@
-import { mapPick } from "../../lodash-utils";
 import { CollectionEntry, isDynamicLinkField } from "../generator-types";
-import { t, toPascalColName, toSingularColName } from "../generator-utils";
+import {
+  mapPick,
+  t,
+  toPascalColName,
+  toSingularColName,
+} from "../generator-utils";
 
 export function getDynamicBuilderStr(colEntries: CollectionEntry[]): string {
   const dlColEntries = colEntries.filter(({ col }) =>

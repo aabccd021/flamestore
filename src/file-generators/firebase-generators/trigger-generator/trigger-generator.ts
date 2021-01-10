@@ -13,8 +13,7 @@ import {
   utilImports,
 } from "./trigger-generator-templates";
 import { CollectionEntry } from "../../generator-types";
-import { fieldColEntriesOf, t } from "../../generator-utils";
-import { mapPick } from "../../../lodash-utils";
+import { fieldColEntriesOf, mapPick, t } from "../../generator-utils";
 
 export function generateFirebaseTrigger(
   outputFilePath: string,

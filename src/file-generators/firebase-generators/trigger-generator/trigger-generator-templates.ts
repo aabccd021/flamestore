@@ -1,7 +1,11 @@
-import { mapPick } from "../../../lodash-utils";
 import { assertNever } from "../../../utils";
 import { CollectionEntry, ColOwnerField } from "../../generator-types";
-import { t, toPascalColName, toSingularColName } from "../../generator-utils";
+import {
+  mapPick,
+  t,
+  toPascalColName,
+  toSingularColName,
+} from "../../generator-utils";
 import {
   FieldTuple,
   TriggerData,

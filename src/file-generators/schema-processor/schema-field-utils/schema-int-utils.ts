@@ -15,10 +15,7 @@ export function isTypeOf(field: SchemaField): field is SchemaIntField {
 
 export function process(
   field: SchemaIntField,
-  data: {
-    fName: string;
-    schemaCol: SchemaCollection;
-  }
+  data: { fName: string; schemaCol: SchemaCollection }
 ): IntField {
   const properties = getSchemaFieldProperties({ field, ...data });
   return { ...field, ...properties };

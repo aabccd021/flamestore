@@ -12,10 +12,7 @@ export function isTypeOf(
 
 export function process(
   field: ServerTimestampSchemaField,
-  data: {
-    fName: string;
-    schemaCol: SchemaCollection;
-  }
+  data: { fName: string; schemaCol: SchemaCollection }
 ): ServerTimestampField {
   const properties = getSchemaFieldProperties({ field, ...data });
   return { ...properties, type: "serverTimestamp" };

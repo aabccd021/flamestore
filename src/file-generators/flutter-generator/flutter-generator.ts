@@ -1,12 +1,11 @@
 import path from "path";
 import * as fs from "fs";
 import { CollectionEntry } from "../generator-types";
-import { t } from "../generator-utils";
+import { mapPick, t } from "../generator-utils";
 import { importsStr } from "./flutter-template";
 import { toColStr } from "./flutter-collection-template";
 import { ProjectConfiguration } from "../schema-processor/schema-types";
 import { getConfigStr } from "./flutter-config-template";
-import { mapPick } from "../../lodash-utils";
 import { getDynamicBuilderStr } from "./flutter-dynamic-link-builders-template";
 
 export function generateFlutter(

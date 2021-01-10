@@ -1,5 +1,4 @@
 import _ from "lodash";
-import { mapPick } from "../../../lodash-utils";
 import { ArrayOr } from "../../../types";
 import {
   FieldCollectionEntry,
@@ -9,6 +8,7 @@ import {
   isServerTimestampField as isServerTimeField,
   isSumField,
 } from "../../generator-types";
+import { mapPick } from "../../generator-utils";
 import { getBaseTrigger } from "./get-field-trigger/get-base-trigger";
 import { getCountTrigger } from "./get-field-trigger/get-count-trigger";
 import { getImageTrigger } from "./get-field-trigger/get-image-trigger";
