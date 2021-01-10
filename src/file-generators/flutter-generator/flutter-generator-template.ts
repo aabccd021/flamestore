@@ -10,17 +10,17 @@ import {
   toCwAnonConstrAssgStr,
   toCwConstrArgStr,
   toCwNamedConstrAssgStr,
-} from "./flutter-generator-utils/flutter-class-copy-with-constructor-utils";
+} from "./flutter-class-template/flutter-class-copy-with-constructor-template";
 import {
   toConstrArgStr,
   toConstrAssgStr,
-} from "./flutter-generator-utils/flutter-class-default-constructor-utils";
-import { toFieldStr } from "./flutter-generator-utils/flutter-class-fields-utils";
-import { toFromMapConstrAssgStr } from "./flutter-generator-utils/flutter-class-from-map-constructor-utils";
+} from "./flutter-class-template/flutter-class-default-constructor-template";
+import { toFieldStr } from "./flutter-class-template/flutter-class-fields-template";
+import { toFromMapConstrAssgStr } from "./flutter-class-template/flutter-class-from-map-constructor-template";
 import {
   toAnonPrivConstrArgStr,
   toNamedPrivConstrArgStr,
-} from "./flutter-generator-utils/flutter-class-private-constructor-utils";
+} from "./flutter-class-template/flutter-class-private-constructor-template";
 
 export function colEntryToStr(colEntry: CollectionEntry): string {
   //
