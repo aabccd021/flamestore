@@ -22,7 +22,10 @@ export function preprocessAuth(
     // If Collection has owner
     if (ownerFName) {
       const newOwnerField = getOwnerField({ fields, ownerFName, authColName });
-      schemaColMap[colName].fields[ownerFName] = newOwnerField;
+      schemaColMap[colName].fields = {
+        [ownerFName]: newOwnerField,
+        ...schemaColMap[colName].fields,
+      };
     }
     if (authentication.userCollection === colName) {
       schemaColMap[colName].keyFields = schemaColMap[colName].keyFields ?? [];

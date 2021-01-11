@@ -1,10 +1,16 @@
+import { assertNever } from "../../../utils";
 import {
   CollectionEntry,
   FieldEntry,
   isComputedField,
   isCountField,
+  isDynamicLinkField,
+  isFloatField,
   isImageField,
+  isIntField,
+  isPathField,
   isServerTimestampField,
+  isStringField,
   isSumField,
 } from "../../generator-types";
 import { t } from "../../generator-utils";
@@ -21,8 +27,11 @@ export function toCollectionRuleStr(colEntry: CollectionEntry): string {
     .compact()
     .map(indent(2))
     .join("\n");
-  // const pascal = toPascalColName(colName);
+  const keyStr = toKeyStr(col.fields).map(indent(2)).join("\n");
   return t`match /${colName}/{documentId} {
+${keyStr}
+  function isReqOwner(){}
+  function isResOwner(){}
 ${fieldsStr}
   function isCreateValid(){
     return reqData().keys().hasOnly([]);
@@ -59,4 +68,27 @@ function toFieldRuleStr(fEntry: FieldEntry): string | null {
   let ${fName} = reqData().${fName};
   return ${validationStr};
 }`;
+}
+
+function toKeyStr(fEntries: _.Collection<FieldEntry>): _.Collection<string> {
+  return fEntries
+    .filter(isKeyField)
+    .map(
+      ({ fName }, idx) =>
+        t`function ${fName}OfDocumentId(){ return documentId.split('_')[${idx}]; }`
+    );
+}
+
+function isKeyField({ field }: FieldEntry): boolean {
+  if (isCountField(field)) return false;
+  if (isImageField(field)) return false;
+  if (isServerTimestampField(field)) return false;
+  if (isSumField(field)) return false;
+  if (isComputedField(field)) return false;
+  if (isDynamicLinkField(field)) return false;
+  if (isFloatField(field)) return false;
+  if (isIntField(field)) return false;
+  if (isStringField(field)) return field.isKeyField;
+  if (isPathField(field)) return field.isKeyField;
+  assertNever(field);
 }

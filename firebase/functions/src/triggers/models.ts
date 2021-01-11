@@ -27,11 +27,11 @@ export interface Tweet {
 }
 
 export interface Like {
-  likeValue: number;
-  tweet: {
+  user: {
     reference: firestore.DocumentReference;
   };
-  user: {
+  likeValue: number;
+  tweet: {
     reference: firestore.DocumentReference;
   };
 }
