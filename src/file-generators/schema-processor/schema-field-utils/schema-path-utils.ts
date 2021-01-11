@@ -5,7 +5,11 @@ import { ArrayOr } from "../../../types";
 import { PathField } from "../../generator-types";
 import { getSchemaFieldProperties } from "../schema-preprocess-utils/schema-field-property-utils";
 import { processSchemaField } from "../schema-preprocess-utils/schema-field-utils";
-import { SchemaCollection, SchemaField } from "../schema-types";
+import {
+  ProjectConfiguration,
+  SchemaCollection,
+  SchemaField,
+} from "../schema-types";
 
 export type PathSchemaField = {
   type: "path";
@@ -23,17 +27,31 @@ export function process(
     fName: string;
     schemaCol: SchemaCollection;
     schemaColMap: { [colName: string]: SchemaCollection };
+    projects: { [name: string]: ProjectConfiguration };
   }
 ): PathField {
-  const { schemaColMap } = params;
+  // TODO: validate key field is only string and path
+  const { schemaColMap, fName, schemaCol } = params;
   const syncColName = field.collection;
-  const schemaCol = schemaColMap[syncColName];
+  const syncSchemaCol = schemaColMap[syncColName];
   const properties = getSchemaFieldProperties({ field, ...params });
   const syncFieldNames = chain([field.syncField]).compact().flatMap().value();
   const syncFields = syncFieldNames.map((fName) => {
-    const schemaField = schemaCol.fields[fName];
-    const field = processSchemaField({ ...params, schemaCol, schemaField });
+    const schemaField = syncSchemaCol.fields[fName];
+    const field = processSchemaField({
+      ...params,
+      schemaCol: syncSchemaCol,
+      schemaField,
+    });
     return { fName: fName, field };
   });
-  return { ...field, ...properties, syncFields, colName: syncColName };
+  const keyFields = schemaCol.keyFields ?? [];
+  const isKeyField = keyFields.includes(fName);
+  return {
+    ...field,
+    ...properties,
+    syncFields,
+    colName: syncColName,
+    isKeyField,
+  };
 }

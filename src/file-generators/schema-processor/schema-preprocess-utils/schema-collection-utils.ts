@@ -1,7 +1,11 @@
 import _ from "lodash";
 import { Collection } from "../../generator-types";
 import { processSchemaField } from "./schema-field-utils";
-import { SchemaCollection, SchemaField } from "../schema-types";
+import {
+  ProjectConfiguration,
+  SchemaCollection,
+  SchemaField,
+} from "../schema-types";
 import * as path from "../schema-field-utils/schema-path-utils";
 import * as string from "../schema-field-utils/schema-string-utils";
 
@@ -9,6 +13,7 @@ export function processSchemaCollection(param: {
   schemaCol: SchemaCollection;
   schemaColMap: { [colName: string]: SchemaCollection };
   colName: string;
+  projects: { [name: string]: ProjectConfiguration };
 }): Collection {
   const { schemaCol } = param;
   const { fields: schemaFields, ownerField: schemaOwnerField } = schemaCol;

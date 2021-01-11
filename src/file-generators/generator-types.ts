@@ -8,7 +8,6 @@ export type FieldProperty = Readonly<{
   isOptional: boolean;
   isUnique: boolean;
   isNotUpdatable: boolean;
-  isKeyField: boolean;
 }>;
 
 export type Field =
@@ -63,6 +62,7 @@ export type DynamicLinkField = Readonly<
     description?: DynamicLinkAttribute;
     imageURL?: DynamicLinkAttribute;
     isSuffixShort: boolean;
+    domains: _.Collection<string>;
   }
 >;
 
@@ -74,6 +74,7 @@ export type DynamicLinkAttribute = Readonly<{
 export type StringField = Readonly<
   FieldProperty & {
     type: "string";
+    isKeyField: boolean;
     minLength?: number;
     maxLength?: number;
   }
@@ -82,6 +83,7 @@ export type StringField = Readonly<
 export type PathField = Readonly<
   FieldProperty & {
     type: "path";
+    isKeyField: boolean;
     colName: string;
     syncFields: FieldEntry[];
   }

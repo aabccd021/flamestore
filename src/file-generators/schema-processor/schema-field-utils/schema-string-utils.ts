@@ -16,6 +16,9 @@ export function process(
   field: StringSchemaField,
   data: { fName: string; schemaCol: SchemaCollection }
 ): StringField {
+  const { schemaCol, fName } = data;
   const properties = getSchemaFieldProperties({ field, ...data });
-  return { ...field, ...properties };
+  const keyFields = schemaCol.keyFields ?? [];
+  const isKeyField = keyFields.includes(fName);
+  return { ...field, ...properties, isKeyField };
 }

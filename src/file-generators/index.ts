@@ -7,6 +7,7 @@ import { generateFirebaseTrigger } from "./firebase-generators/trigger-generator
 import { generateFirebaseModel } from "./firebase-generators/model-generator/model-generator";
 import generateFirebaseUtil from "./firebase-generators/util-generator";
 import { generateFlutter } from "./flutter-generator/flutter-generator";
+import { generateFirebaseRule } from "./firebase-generators/rule-generator/rule-generator";
 
 const schemaJson = fs.readFileSync("../flamestore.json");
 const schemaJsonString = schemaJson.toString();
@@ -19,14 +20,15 @@ const schema: FlameSchema = rawSchema;
 // TODO: user col auth field should not be specified in json
 // modules.forEach(module => module.validate && module.validate(schema));
 const colEntries = processSchema(schema);
-// const rulePath = schema.ruleOutputPath ?? "firestore/firestore.rules";
+const rulePath = schema.ruleOutputPath ?? "firestore/firestore.rules";
 const triggerDir = schema.triggerOutputPath ?? "functions/src/triggers";
 const flutterPath = schema.flutterOutputPath ?? "../flutter/lib/flamestore";
-// generateRule(schema, rulePath, modules);
-if (!fs.existsSync(triggerDir)) {
-  fs.mkdirSync(triggerDir, { recursive: true });
-}
+//
+generateFirebaseRule(rulePath, colEntries);
+//
+if (!fs.existsSync(triggerDir)) fs.mkdirSync(triggerDir, { recursive: true });
 generateFirebaseModel(triggerDir, colEntries);
 generateFirebaseTrigger(triggerDir, colEntries);
 generateFirebaseUtil(triggerDir, schema.region);
+//
 generateFlutter(flutterPath, colEntries, schema.project);

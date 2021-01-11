@@ -1,4 +1,8 @@
-import { SchemaCollection, SchemaField } from "../schema-types";
+import {
+  ProjectConfiguration,
+  SchemaCollection,
+  SchemaField,
+} from "../schema-types";
 import { Field } from "../../generator-types";
 import * as computed from "../schema-field-utils/schema-computed-utils";
 import * as count from "../schema-field-utils/schema-count-utils";
@@ -17,6 +21,7 @@ export function processSchemaField(param: {
   fName: string;
   schemaCol: SchemaCollection;
   schemaColMap: { [colName: string]: SchemaCollection };
+  projects: { [name: string]: ProjectConfiguration };
 }): Field {
   const { schemaField: field } = param;
   if (computed.isTypeOf(field)) return computed.process(field, param);

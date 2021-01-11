@@ -7,11 +7,9 @@ export function getSchemaFieldProperties(param: {
   field: SchemaField;
   schemaCol: SchemaCollection;
 }): FieldProperty {
-  const { field, schemaCol, fName } = param;
+  const { field } = param;
   const isOptional = hasFieldProperty(field, "isOptional");
   const isUnique = hasFieldProperty(field, "isUnique");
   const isNotUpdatable = hasFieldProperty(field, "isNotUpdatable");
-  const keyFields = schemaCol.keyFields ?? [];
-  const isKeyField = keyFields.includes(fName);
-  return { isOptional, isNotUpdatable, isUnique, isKeyField };
+  return { isOptional, isNotUpdatable, isUnique };
 }

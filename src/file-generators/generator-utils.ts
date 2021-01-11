@@ -49,6 +49,11 @@ export function suf(suffix: string): (str: string) => string {
     return str + suffix;
   };
 }
+export function pref(prefix: string): (str: string) => string {
+  return function _prepend(str: string): string {
+    return prefix + str;
+  };
+}
 export function sur(prefix: string, suffix: string): (str: string) => string {
   return function _append(str: string): string {
     return prefix + str + suffix;

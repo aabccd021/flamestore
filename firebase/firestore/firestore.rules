@@ -10,12 +10,6 @@ service cloud.firestore {
       return fieldName in reqData() && fieldName in resData();
     }
     match /users/{documentId} {
-      function uidOfDocumentId(){ return documentId.split('_')[0]; }
-      function isReqOwner(){ return request.auth.uid == reqData().uid; }
-      function isResOwner(){
-        return !(exists(/databases/$(database)/documents/users/$(documentId)))
-          || request.auth.uid == resData().uid;
-      }
       function userNameIsValid(){
         let userName = reqData().userName;
         return userName is string
@@ -31,37 +25,24 @@ service cloud.firestore {
         return uid is string && uid == uidOfDocumentId();
       }
       function isCreateValid(){
-        return reqData().keys().hasOnly(['userName','bio','uid'])
-          && userNameIsValid()
-          && (!('bio' in reqData()) || bioIsValid())
-          && uidIsValid();
+        return reqData().keys().hasOnly([]);
       }
       function isUpdateValid(){
-        return updatedKeys().hasOnly(['userName','bio'])
-          && (!('userName' in reqData()) || userNameIsValid())
-          && isNotDeleted('userName')
-          && (!('bio' in reqData()) || bioIsValid());
+        return updatedKeys().hasOnly([]);
       }
-      allow get: if true;
-      allow list: if isAuthenticated();
-      allow create: if isReqOwner() && isCreateValid();
-      allow update: if isReqOwner() && isResOwner() && isUpdateValid();
+      allow get: if false;
+      allow list: if false;
+      allow create: if false;
+      allow update: if false;
       allow delete: if false;
     }
     match /tweets/{documentId} {
-      function isReqOwner(){
-        return request.auth.uid == get(reqData().user.reference).data.uid;
-      }
-      function isResOwner(){
-        return !(exists(/databases/$(database)/documents/tweets/$(documentId)))
-          || request.auth.uid == get(resData().user.reference).data.uid;
-      }
-      function userIsValid(){
-        let user = reqData().user;
-        return user is map
-          && user.keys() == ['reference']
-          && user.reference is path
-          && exists(user.reference);
+      function ownerIsValid(){
+        let owner = reqData().owner;
+        return owner is map
+          && owner.keys() == ['reference']
+          && owner.reference is path
+          && exists(owner.reference);
       }
       function tweetTextIsValid(){
         let tweetText = reqData().tweetText;
@@ -75,32 +56,18 @@ service cloud.firestore {
           && dynamicLink[0:29] == 'https://flamestore.page.link/';
       }
       function isCreateValid(){
-        return reqData().keys().hasOnly(['user','tweetText','dynamicLink'])
-          && userIsValid()
-          && tweetTextIsValid()
-          && dynamicLinkIsValid();
+        return reqData().keys().hasOnly([]);
       }
       function isUpdateValid(){
-        return updatedKeys().hasOnly(['tweetText'])
-          && (!('tweetText' in reqData()) || tweetTextIsValid())
-          && isNotDeleted('tweetText');
+        return updatedKeys().hasOnly([]);
       }
-      allow get: if true;
-      allow list: if true;
-      allow create: if isReqOwner() && isCreateValid();
-      allow update: if isReqOwner() && isResOwner() && isUpdateValid();
-      allow delete: if isResOwner();
+      allow get: if false;
+      allow list: if false;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
     }
     match /likes/{documentId} {
-      function userOfDocumentId(){ return documentId.split('_')[0]; }
-      function tweetOfDocumentId(){ return documentId.split('_')[1]; }
-      function isReqOwner(){
-        return request.auth.uid == get(reqData().user.reference).data.uid;
-      }
-      function isResOwner(){
-        return !(exists(/databases/$(database)/documents/likes/$(documentId)))
-          || request.auth.uid == get(resData().user.reference).data.uid;
-      }
       function likeValueIsValid(){
         let likeValue = reqData().likeValue;
         return likeValue is int
@@ -125,21 +92,16 @@ service cloud.firestore {
           && get(user.reference).id == userOfDocumentId();
       }
       function isCreateValid(){
-        return reqData().keys().hasOnly(['likeValue','tweet','user'])
-          && likeValueIsValid()
-          && tweetIsValid()
-          && userIsValid();
+        return reqData().keys().hasOnly([]);
       }
       function isUpdateValid(){
-        return updatedKeys().hasOnly(['likeValue'])
-          && (!('likeValue' in reqData()) || likeValueIsValid())
-          && isNotDeleted('likeValue');
+        return updatedKeys().hasOnly([]);
       }
-      allow get: if isResOwner();
+      allow get: if false;
       allow list: if false;
-      allow create: if isReqOwner() && isCreateValid();
-      allow update: if isReqOwner() && isResOwner() && isUpdateValid();
-      allow delete: if isResOwner();
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
     }
   }
 }

@@ -1,6 +1,12 @@
-import { SchemaCollection, SchemaField } from "../schema-types";
+import {
+  ProjectConfiguration,
+  SchemaCollection,
+  SchemaField,
+} from "../schema-types";
 import { DynamicLinkAttribute, DynamicLinkField } from "../../generator-types";
 import { getSchemaFieldProperties } from "../schema-preprocess-utils/schema-field-property-utils";
+import _ from "lodash";
+import { t } from "../../generator-utils";
 
 export type DynamicLinkSchemaField = {
   type: "dynamicLink";
@@ -22,12 +28,22 @@ export function toDynamicLinkAttribute(
 
 export function process(
   field: DynamicLinkSchemaField,
-  data: { fName: string; schemaCol: SchemaCollection }
+  data: {
+    fName: string;
+    schemaCol: SchemaCollection;
+    projects: { [name: string]: ProjectConfiguration };
+  }
 ): DynamicLinkField {
+  const { projects } = data;
   const properties = getSchemaFieldProperties({ field, ...data });
   const isSuffixShort = field.isSuffixShort ?? false;
   const fieldAttrs = [field.title, field.description, field.imageURL];
   const [title, description, imageURL] = fieldAttrs.map(toDynamicLinkAttribute);
+  const domains = _(projects).map((project, pName) => {
+    const domain = project.domain ?? t`${pName}.web.app`;
+    const dynamicLinkDomain = project.dynamicLinkDomain ?? t`${domain}/links`;
+    return t`https://${dynamicLinkDomain}/`;
+  });
   return {
     ...field,
     ...properties,
@@ -35,6 +51,7 @@ export function process(
     description,
     imageURL,
     isSuffixShort,
+    domains,
   };
 }
 export function isTypeOf(field: SchemaField): field is DynamicLinkSchemaField {

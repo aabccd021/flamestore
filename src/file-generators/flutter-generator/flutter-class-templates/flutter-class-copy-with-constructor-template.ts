@@ -20,13 +20,13 @@ import { t } from "../../generator-utils";
 
 export function toCwConstrArgStr(fcEntry: FieldCollectionEntry): string | null {
   const { field, fName } = fcEntry;
-  if (field.isKeyField) return null;
   if (isCountField(field)) return null;
   if (isDynamicLinkField(field)) return null;
   if (isServerTimestampField(field)) return null;
   if (isSumField(field)) return null;
   if (isComputedField(field)) return null;
   if (isPathField(field)) return null;
+  if (isStringField(field) && field.isKeyField) return null;
   const fileTypeStr = toPrimCwConstrArgStr(field);
   return t`${fileTypeStr} ${fName}`;
 }
@@ -47,7 +47,6 @@ export function toCwNamedConstrAssgStr(
   const { field, fName } = fcEntry;
   const useExistingStr = t`${fName}: this.${fName}`;
   const assignIfAbsentStr = t`${fName}: ${fName}?? this.${fName}`;
-  if (field.isKeyField) return useExistingStr;
   if (isCountField(field)) return useExistingStr;
   if (isDynamicLinkField(field)) return useExistingStr;
   if (isServerTimestampField(field)) return useExistingStr;
@@ -57,7 +56,10 @@ export function toCwNamedConstrAssgStr(
   if (isPathField(field)) return useExistingStr;
   if (isIntField(field)) return assignIfAbsentStr;
   if (isFloatField(field)) return assignIfAbsentStr;
-  if (isStringField(field)) return assignIfAbsentStr;
+  if (isStringField(field)) {
+    if (field.isKeyField) return useExistingStr;
+    return assignIfAbsentStr;
+  }
   assertNever(field);
 }
 

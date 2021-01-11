@@ -34,7 +34,6 @@ export function isFieldFirestoreUpdatable(
   fcEntry: FieldCollectionEntry
 ): boolean {
   const { field } = fcEntry;
-  if (field.isKeyField) return false;
   if (field.isNotUpdatable) return false;
   if (isDynamicLinkField(field)) return false;
   if (isPathField(field)) return false;
@@ -45,6 +44,9 @@ export function isFieldFirestoreUpdatable(
   if (isImageField(field)) return false;
   if (isFloatField(field)) return true;
   if (isIntField(field)) return true;
-  if (isStringField(field)) return true;
+  if (isStringField(field)) {
+    if (field.isKeyField) return false;
+    return true;
+  }
   assertNever(field);
 }
