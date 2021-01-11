@@ -27,13 +27,13 @@ export function toFromMapConstrAssgStr(
     const pascalFieldName = _.upperFirst(fName);
     const fmAssgStr = t`${fName} = _${pascalColName}${pascalFieldName}._fromMap(data['${fName}'])`;
     const fmAssgNullStr = t`_${fName} = null`;
-    return [ fmAssgStr, fmAssgNullStr];
+    return [fmAssgStr, fmAssgNullStr];
   }
   if (isPathField(field)) {
     const pascalColName = toPascalColName(colName);
     const pascalFieldName = _.upperFirst(fName);
-      const assgStr = t`${fName} = _${pascalColName}${pascalFieldName}._fromMap(data['${fName}'])`;
-    return [ assgStr ];
+    const assgStr = t`${fName} = _${pascalColName}${pascalFieldName}._fromMap(data['${fName}'])`;
+    return [assgStr];
   }
   const fieldClassName = normalFieldToFromMapConstrAssgStr(field);
   return [t`${fName} = ${fieldClassName}Field.fromMap(data['${fName}']).value`];

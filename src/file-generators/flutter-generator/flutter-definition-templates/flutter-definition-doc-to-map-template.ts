@@ -1,5 +1,6 @@
 import { assertNever } from "../../../utils";
 import {
+  ColOwnerField,
   DynamicLinkAttribute,
   FieldCollectionEntry,
   isComputedField,
@@ -46,8 +47,7 @@ export function toDocToMapValueStr(fcEntry: FieldCollectionEntry): string {
     const isSuffixShortStr = field.isSuffixShort ? "true" : "false";
     return t`DynamicLinkField(
       ${docFieldStr},${titleStr}${descStr}${imgUrlStr}
-      isSuffixShort:${isSuffixShortStr},
-      )`;
+      isSuffixShort:${isSuffixShortStr},)`;
   }
   if (isComputedField(field)) {
     const fieldType = field.computedFieldType;
@@ -68,10 +68,7 @@ export function toDocToMapValueStr(fcEntry: FieldCollectionEntry): string {
   assertNever(field);
 }
 
-function getImageOwnerFieldStr(ownerField: {
-  name: string;
-  type: "string" | "reference";
-}): string {
+function getImageOwnerFieldStr(ownerField: ColOwnerField): string {
   const { name, type } = ownerField;
   if (type === "string") return name;
   if (type === "reference") return t`${name}.reference.id`;

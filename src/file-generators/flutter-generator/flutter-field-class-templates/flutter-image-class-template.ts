@@ -13,6 +13,7 @@ export function getImageClassStr(
   const classNameStr = "_" + toPascalColName(colName) + _.upperFirst(fName);
   const fieldsStr = field.metadatas.map((x) => t`int ${x};`);
   const fmStr = field.metadatas.map((x) => t`${x} = map['${x}'];`);
+  //
   return t`class ${classNameStr} { String url; ${fieldsStr}
     ${classNameStr}._fromMap(Map<String, dynamic> map) {
       if (map != null) {url = map['url'];${fmStr}}
