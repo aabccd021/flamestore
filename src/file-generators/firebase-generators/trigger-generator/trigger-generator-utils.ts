@@ -8,7 +8,7 @@ import {
   isServerTimestampField as isServerTimeField,
   isSumField,
 } from "../../generator-types";
-import { mapPick } from "../../generator-utils";
+import { mapPick, t } from "../../generator-utils";
 import { getBaseTrigger } from "./get-field-trigger/get-base-trigger";
 import { getCountTrigger } from "./get-field-trigger/get-count-trigger";
 import { getImageTrigger } from "./get-field-trigger/get-image-trigger";
@@ -20,10 +20,8 @@ import {
   getPromiseCallStr,
   getTriggerPrepareStr,
   toNonUpdatedDataAssignStr,
-  suffixStrOfType,
   toUpdatedDataAssignStr,
   getDocDataAssignStr,
-  snapshotStrOf,
   getTriggerFunctionStr,
   getDocDataCommits,
   getUpdateUpdatedDataStr,
@@ -53,21 +51,19 @@ export function getTriggerStr(param: {
     useContext,
   } = trigger;
 
-  const suffix = suffixStrOfType(triggerType);
-  const snapshotType = snapshotStrOf(triggerType);
   const promiseCallStr = getPromiseCallStr(dependencies);
 
+  // data
   const updatedDataStrs = updatedData.map(toUpdatedDataAssignStr);
   const nonUpdatedDataStrs = nonUpdatedData.map(toNonUpdatedDataAssignStr);
-  const docDataStr = getDocDataAssignStr({ colName, docData });
 
-  const docDataCommits = getDocDataCommits({
-    colName,
-    suffix,
-    docData,
-  });
+  // doc data
+  const docDataPayload = { colName, triggerType, docData };
+  const docDataStr = getDocDataAssignStr(docDataPayload);
+  const docDataCommits = getDocDataCommits(docDataPayload);
+
   const updatedDataCommits = updatedData.map(({ dataName }) =>
-    getUpdateUpdatedDataStr(snapshotType, dataName)
+    getUpdateUpdatedDataStr(triggerType, dataName)
   );
   const batchCommitStr = getBatchCommitStr([
     ...docDataCommits,
@@ -87,17 +83,11 @@ export function getTriggerStr(param: {
 
   if (_.isEmpty(contentStr)) return "";
 
-  const prepareStr = getTriggerPrepareStr({
-    triggerType,
-    colName,
-    useDocData,
-  });
-  return getTriggerFunctionStr({
-    useContext,
-    colName,
-    triggerType,
-    triggerContentStr: prepareStr + contentStr,
-  });
+  const triggerPrepareData = { triggerType, colName, useDocData };
+  const prepareStr = getTriggerPrepareStr(triggerPrepareData);
+  const triggerStr = t`${prepareStr}${contentStr}`;
+  const triggerFunctionStr = { useContext, colName, triggerType, triggerStr };
+  return getTriggerFunctionStr(triggerFunctionStr);
 }
 
 export function fcEntryToTriggers(fcE: FieldCollectionEntry): Trigger[] {

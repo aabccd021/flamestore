@@ -84,20 +84,14 @@ export function getNonComputedFieldStr(param: {
 
 export function getTypeOfImageStr(field: ImageField): string {
   const imageMetadataStr = field.metadatas.map(suf("?: number;")).join("\n");
-  return t`{
-    url?: string;
-    ${imageMetadataStr}
-  }`;
+  return t`{\nurl?: string;\n${imageMetadataStr}\n}`;
 }
 
 export function getTypeOfPathStr(field: PathField): string {
   const syncFieldsStr = _(field.syncFields)
     .map(({ fName, field }) => t`${fName}?: ${valueOfFieldStr(field)};`)
     .join("\n");
-  return t`{
-    reference: firestore.DocumentReference;
-    ${syncFieldsStr}
-  }`;
+  return t`{\nreference: firestore.DocumentReference;\n${syncFieldsStr}\n}`;
 }
 
 export function getTypeOfPrimitiveStr(

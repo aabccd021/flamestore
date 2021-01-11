@@ -9,19 +9,16 @@ import {
 } from "./model-generator-templates";
 import { CollectionEntry, FieldEntry } from "../../generator-types";
 import { valueOfFieldStr } from "./model-generator-utils";
+import { t } from "../../generator-utils";
+import _ from "lodash";
 
 export function generateFirebaseModel(
   outputFilePath: string,
   cols: CollectionEntry[]
 ): void {
-  const computedModelStr = cols.map(toComputedModelStr).join("");
-  const nonComputedModelStr = cols.map(toNonComputedModelStr).join("\n\n");
-  const modelFileStrs: string[] = [
-    modelImportsStr,
-    nonComputedModelStr,
-    computedModelStr,
-  ];
-  const modelFileStr = modelFileStrs.join("\n\n");
+  const nonComputedModelStr = _(cols).map(toNonComputedModelStr).join("\n\n");
+  const computedModelStr = _(cols).map(toComputedModelStr).compact();
+  const modelFileStr = t`${modelImportsStr}\n\n${nonComputedModelStr}\n\n${computedModelStr}\n\n`;
   const fileName = path.join(outputFilePath, "models.ts");
   fs.writeFileSync(fileName, modelFileStr);
 }

@@ -6,12 +6,7 @@ export function getServerTimestampTrigger(
   _: ServerTimestampField,
   { fName, colName }: { fName: string; colName: string }
 ): Trigger[] {
-  const serverTimestampStr = getServerTimestampStr();
-  return [
-    {
-      colName,
-      type: "Create",
-      docData: { fName, fValue: serverTimestampStr },
-    },
-  ];
+  const fValue = getServerTimestampStr();
+  const type = "Create";
+  return [{ colName, type, docData: { fName, fValue } }];
 }

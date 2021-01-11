@@ -63,21 +63,23 @@ export function getOwnerRefIdStr(ownerField: ColOwnerField) {
 
 // update data
 export function getUpdateUpdatedDataStr(
-  snapshotDataName: SnapshotDataName,
+  triggerType: TriggerType,
   dataName: string
 ): string {
   const dataStr = getDataStr(dataName);
+  const snapshotDataName = snapshotStrOf(triggerType);
   const referenceStr = t`${snapshotDataName}.${dataName}.reference`;
   return t`${updateStr}(${referenceStr}, ${dataStr})`;
 }
 export function getDocDataCommits(param: {
   colName: string;
-  suffix: DataSuffix;
+  triggerType: TriggerType;
   docData: _.Collection<FieldTuple>;
 }): string[] {
-  const { suffix, docData, colName } = param;
+  const { triggerType, docData, colName } = param;
   if (docData.isEmpty()) return [];
   const dataName = getDataStr(toSingularColName(colName));
+  const suffix = suffixStrOfType(triggerType);
   return [`${updateStr}(snapshot${suffix}.ref, ${dataName})`];
 }
 
@@ -159,15 +161,15 @@ export function getTriggerFunctionStr(param: {
   useContext: boolean;
   colName: string;
   triggerType: TriggerType;
-  triggerContentStr: string;
+  triggerStr: string;
 }): string {
-  const { useContext, colName, triggerType, triggerContentStr } = param;
+  const { useContext, colName, triggerType, triggerStr } = param;
   const context = useContext ? ", context" : "";
   return t`
     export const on${triggerType} = ${functionsString}.firestore
     .document('/${colName}/{documentId}')
     .on${triggerType}(async (snapshot${context})=>{
-      ${triggerContentStr}
+      ${triggerStr}
     });`;
 }
 
