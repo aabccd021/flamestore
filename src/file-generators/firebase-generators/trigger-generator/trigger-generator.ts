@@ -9,7 +9,7 @@ import {
 } from "./trigger-generator-utils";
 import {
   getModelImportsStr,
-  toIndexFileExportStr,
+  toIndexExportStr,
   utilImports,
 } from "./trigger-generator-templates";
 import { CollectionEntry } from "../../generator-types";
@@ -34,12 +34,10 @@ export function generateFirebaseTrigger(
       return getTriggerStr({ triggerType, processedTrigger, colName });
     });
     const modelImportsStr = getModelImportsStr(colEntries);
-    const triggerFileStr = t`${modelImportsStr}${utilImports}\n${triggerStr}`;
-
+    const triggerFileStr = t`${modelImportsStr}${utilImports}\n\n${triggerStr}`;
+    // write
     fs.writeFileSync(path.join(triggerDir, t`${colName}.ts`), triggerFileStr);
   });
-  const indexFileContent = mapPick(colEntries, "colName").map(
-    toIndexFileExportStr
-  );
-  fs.writeFileSync(path.join(triggerDir, t`index.ts`), t`${indexFileContent}`);
+  const indexContent = mapPick(colEntries, "colName").map(toIndexExportStr);
+  fs.writeFileSync(path.join(triggerDir, t`index.ts`), t`${indexContent}`);
 }

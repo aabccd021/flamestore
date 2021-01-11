@@ -3,6 +3,7 @@ import { assertNever } from "../../../utils";
 import {
   CollectionEntry,
   Field,
+  FieldEntry,
   ImageField,
   isComputedField,
   isCountField,
@@ -19,6 +20,12 @@ import {
 import { filterMap, suf, sur, t, toPascalColName } from "../../generator-utils";
 import { valueOfFieldStr } from "./model-generator-utils";
 
+// import
+export const modelImportsStr = t`import { firestore } from 'firebase-admin';
+import { onCreateFn, onUpdateFn } from "flamestore/lib";
+import {computeDocument} from "./utils";`;
+
+// get computed model interface
 export function toComputedModelStr(colEntry: CollectionEntry): string | null {
   const { colName, col } = colEntry;
   const computedFields = filterMap(col.fields, isComputedField, sur('"', '"'));
@@ -44,49 +51,39 @@ export function toComputedModelStr(colEntry: CollectionEntry): string | null {
     }`;
 }
 
-export const modelImportsStr = t`import { firestore } from 'firebase-admin';
-import { onCreateFn, onUpdateFn } from "flamestore/lib";
-import {computeDocument} from "./utils";`;
-
-export function getNonComputedInterfaceStr(param: {
-  colName: string;
-  modelContentStr: _.Collection<string>;
-}) {
-  const { colName, modelContentStr } = param;
+// get non computed model interface
+export function getNonComputedInterfaceStr(colEntry: CollectionEntry) {
+  const { colName, col } = colEntry;
+  const modelContentStr = col.fields.map(getNonComputedFieldStr);
   const pascalColName = toPascalColName(colName);
   return t`export interface ${pascalColName} {${modelContentStr}}`;
 }
-
-type FieldRequiredString = "" | "?";
-export function getFieldRequiredStr(field: Field): FieldRequiredString {
-  if (field.isOptional) return "?";
-  if (isSumField(field)) return "?";
-  if (isCountField(field)) return "?";
-  if (isImageField(field)) return "?";
-  if (isServerTimestampField(field)) return "?";
-  if (isComputedField(field)) return "?";
-  if (isDynamicLinkField(field)) return "";
-  if (isFloatField(field)) return "";
-  if (isIntField(field)) return "";
-  if (isPathField(field)) return "";
-  if (isStringField(field)) return "";
+function getNonComputedFieldStr(fEntry: FieldEntry): string {
+  const { fName, field } = fEntry;
+  const fieldRequiredStr = isFieldRequired(field) ? "" : "?";
+  const fieldValueStr = valueOfFieldStr(field);
+  return t`${fName}${fieldRequiredStr}: ${fieldValueStr};`;
+}
+function isFieldRequired(field: Field): boolean {
+  if (field.isOptional) return false;
+  if (isSumField(field)) return false;
+  if (isCountField(field)) return false;
+  if (isImageField(field)) return false;
+  if (isServerTimestampField(field)) return false;
+  if (isComputedField(field)) return false;
+  if (isDynamicLinkField(field)) return true;
+  if (isFloatField(field)) return true;
+  if (isIntField(field)) return true;
+  if (isPathField(field)) return true;
+  if (isStringField(field)) return true;
   assertNever(field);
 }
 
-export function getNonComputedFieldStr(param: {
-  fName: string;
-  fieldRequiredStr: FieldRequiredString;
-  fieldValueStr: string;
-}): string {
-  const { fName, fieldRequiredStr, fieldValueStr } = param;
-  return t`${fName}${fieldRequiredStr}: ${fieldValueStr};`;
-}
-
+// special field str
 export function getTypeOfImageStr(field: ImageField): string {
   const imageMetadataStr = field.metadatas.map(suf("?: number;")).join("\n");
   return t`{\nurl?: string;\n${imageMetadataStr}\n}`;
 }
-
 export function getTypeOfPathStr(field: PathField): string {
   const syncFieldsStr = _(field.syncFields)
     .map(({ fName, field }) => t`${fName}?: ${valueOfFieldStr(field)};`)
@@ -94,6 +91,7 @@ export function getTypeOfPathStr(field: PathField): string {
   return t`{\nreference: firestore.DocumentReference;\n${syncFieldsStr}\n}`;
 }
 
+// primitive field str
 export function getTypeOfPrimitiveStr(
   field: Exclude<Field, ImageField | PathField>
 ): tsTypes {

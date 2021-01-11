@@ -148,11 +148,8 @@ export function toUpdatedDataAssignStr(triggerData: TriggerData): string {
   const dataStr = getDataStr(dataName);
   return t`const ${dataStr} = {${dataContent}};`;
 }
-function fieldToAssignmentStr(param: {
-  fName: string;
-  fValue: string;
-}): string {
-  const { fName, fValue } = param;
+function fieldToAssignmentStr(field: FieldTuple): string {
+  const { fName, fValue } = field;
   return t`${fName}: ${fValue}`;
 }
 
@@ -165,12 +162,9 @@ export function getTriggerFunctionStr(param: {
 }): string {
   const { useContext, colName, triggerType, triggerStr } = param;
   const context = useContext ? ", context" : "";
-  return t`
-    export const on${triggerType} = ${functionsString}.firestore
+  return t`export const on${triggerType} = ${functionsString}.firestore
     .document('/${colName}/{documentId}')
-    .on${triggerType}(async (snapshot${context})=>{
-      ${triggerStr}
-    });`;
+    .on${triggerType}(async (snapshot${context})=>{${triggerStr}});`;
 }
 
 // promise
@@ -227,6 +221,6 @@ export function getServerTimestampStr(): string {
 }
 
 // index file exports
-export function toIndexFileExportStr(colName: string): string {
+export function toIndexExportStr(colName: string): string {
   return t`export * as ${colName} from "./${colName}";`;
 }
