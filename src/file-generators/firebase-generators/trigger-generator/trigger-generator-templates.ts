@@ -1,5 +1,5 @@
 import { assertNever } from "../../../utils";
-import { CollectionEntry, ColOwnerField } from "../../generator-types";
+import { CollectionEntry } from "../../generator-types";
 import {
   mapPick,
   t,
@@ -54,11 +54,14 @@ export function getDataFieldStr({ fName }: { fName: string }): string {
 export function toPromiseStr({ fName }: { fName: string }): string {
   return t`data.${fName}.reference.get()`;
 }
-export function getOwnerRefIdStr(ownerField: ColOwnerField) {
-  const { type, name } = ownerField;
-  if (type === "reference") return t`data.${name}.reference.id`;
-  if (type === "string") return t`data.${name}`;
-  assertNever(type);
+export function getOwnerRefIdStr(param: {
+  isOwnerCol: boolean;
+  ownerField?: string;
+}): string {
+  const { ownerField, isOwnerCol } = param;
+  if (isOwnerCol) return t`data.uid`;
+  if (ownerField) return t`data.${ownerField}.reference.id`;
+  throw Error("ownerField required to upload image");
 }
 
 // update data

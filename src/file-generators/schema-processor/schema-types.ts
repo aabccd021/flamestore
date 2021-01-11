@@ -26,7 +26,6 @@ export type FlameSchemaMetadata = {
 
 export type FlameSchemaAuth = {
   userCollection: string;
-  uidField: string;
 };
 
 export type FirebaseRegion =

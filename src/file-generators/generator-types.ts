@@ -24,11 +24,10 @@ export type Field =
 
 export type Collection = Readonly<{
   fields: _.Collection<FieldEntry>;
-  ownerField?: ColOwnerField;
+  ownerField?: string;
+  isOwnerCol: boolean;
   keyFieldNames: string[];
 }>;
-
-export type ColOwnerField = { name: string; type: "reference" | "string" };
 
 export type ImageField = Readonly<
   FieldProperty & {

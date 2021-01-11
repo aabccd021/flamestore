@@ -9,11 +9,11 @@ export function preprocessAuth(
 ): { [colName: string]: SchemaCollection } {
   const { authentication } = schemaMetadata;
   if (!authentication) return schemaColMap;
-  const { userCollection: authColName, uidField } = authentication;
+  const { userCollection: authColName } = authentication;
 
   // Create auth uid field to user collection
   const newAuthField = { type: "string" } as StringSchemaField;
-  schemaColMap[authColName].fields[uidField] = newAuthField;
+  schemaColMap[authColName].fields["uid"] = newAuthField;
 
   // Create owner field for all collections
   _(schemaColMap).forEach((col, colName) => {
@@ -29,7 +29,7 @@ export function preprocessAuth(
     }
     if (authentication.userCollection === colName) {
       schemaColMap[colName].keyFields = schemaColMap[colName].keyFields ?? [];
-      schemaColMap[colName].keyFields?.push(authentication.uidField);
+      schemaColMap[colName].keyFields?.push("uid");
     }
   });
   return schemaColMap;

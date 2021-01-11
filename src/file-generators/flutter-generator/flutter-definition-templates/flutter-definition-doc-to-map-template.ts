@@ -1,6 +1,5 @@
 import { assertNever } from "../../../utils";
 import {
-  ColOwnerField,
   DynamicLinkAttribute,
   FieldCollectionEntry,
   isComputedField,
@@ -58,8 +57,7 @@ export function toDocToMapValueStr(fcEntry: FieldCollectionEntry): string {
     assertNever(fieldType);
   }
   if (isImageField(field)) {
-    if (!col.ownerField) throw Error();
-    const userIdStr = getImageOwnerFieldStr(col.ownerField);
+    const userIdStr = getImageOwnerFieldStr(col);
     return t`ImageField(
       doc?.${fName}?.url,
       file: doc._${fName},
@@ -68,11 +66,14 @@ export function toDocToMapValueStr(fcEntry: FieldCollectionEntry): string {
   assertNever(field);
 }
 
-function getImageOwnerFieldStr(ownerField: ColOwnerField): string {
-  const { name, type } = ownerField;
-  if (type === "string") return name;
-  if (type === "reference") return t`${name}.reference.id`;
-  assertNever(type);
+function getImageOwnerFieldStr(param: {
+  ownerField?: string;
+  isOwnerCol: boolean;
+}): string {
+  const { isOwnerCol, ownerField } = param;
+  if (isOwnerCol) return "uid";
+  if (ownerField) return t`${ownerField}.reference.id`;
+  throw Error("Image needs owner");
 }
 
 function toDynamicLinkAttributeStr(

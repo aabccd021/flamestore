@@ -27,11 +27,14 @@ export function toCollectionRuleStr(colEntry: CollectionEntry): string {
     .compact()
     .map(indent(2))
     .join("\n");
+  const ownerRuleStr = getOwnerRuleStr({ ...col, colName })
+    .split("\n")
+    .map(indent(2))
+    .join("\n");
   const keyStr = toKeyStr(col.fields).map(indent(2)).join("\n");
   return t`match /${colName}/{documentId} {
 ${keyStr}
-  function isReqOwner(){}
-  function isResOwner(){}
+${ownerRuleStr}
 ${fieldsStr}
   function isCreateValid(){
     return reqData().keys().hasOnly([]);
@@ -45,6 +48,31 @@ ${fieldsStr}
   allow update: if false;
   allow delete: if false;
 }`;
+}
+function getOwnerRuleStr(params: {
+  isOwnerCol: boolean;
+  colName: string;
+  ownerField?: string;
+}): string {
+  const { colName, ownerField, isOwnerCol } = params;
+  // TODO: add space between bracket
+  if (isOwnerCol) {
+    return `function isReqOwner(){ return request.auth.uid == reqData().uid; }
+function isResOwner(){
+  return !(exists(/databases/$(database)/documents/${colName}/$(documentId)))
+    || request.auth.uid == resData().uid;
+}`;
+  }
+  if (ownerField) {
+    return `function isReqOwner(){
+  return request.auth.uid == get(reqData().${ownerField}.reference).data.uid;
+}
+function isResOwner(){
+  return !(exists(/databases/$(database)/documents/${colName}/$(documentId)))
+    || request.auth.uid == get(resData().${ownerField}.reference).data.uid;
+}`;
+  }
+  return "";
 }
 
 function toFieldRuleStr(fEntry: FieldEntry): string | null {
