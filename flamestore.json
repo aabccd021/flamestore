@@ -9,8 +9,7 @@
     }
   },
   "authentication": {
-    "userCollection": "users",
-    "uidField": "uid"
+    "userCollection": "users"
   },
   "collections": {
     "users": {

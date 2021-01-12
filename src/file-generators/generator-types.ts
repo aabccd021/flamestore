@@ -61,7 +61,7 @@ export type DynamicLinkField = Readonly<
     description?: DynamicLinkAttribute;
     imageURL?: DynamicLinkAttribute;
     isSuffixShort: boolean;
-    domains: _.Collection<string>;
+    domains: string[];
   }
 >;
 

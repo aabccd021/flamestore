@@ -149,16 +149,12 @@
     "FlameSchemaAuth": {
       "additionalProperties": false,
       "properties": {
-        "uidField": {
-          "type": "string"
-        },
         "userCollection": {
           "type": "string"
         }
       },
       "required": [
-        "userCollection",
-        "uidField"
+        "userCollection"
       ],
       "type": "object"
     },

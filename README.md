@@ -16,7 +16,7 @@ npx flamestore
 - `collections`: Firestore collections definitions in key-value pairs with collection name as key.
 
 ## Collection
-- `rule:{get|list|create|update|delete}`: Granular update rules for the collection. Avaliable options:
+- `rule`:{`get`|`list`|`create`|`update`|`delete`}`: Granular update rules for the collection. Avaliable options:
   - `all`: Allow any requests
   - `authenticated`: Allow authenticated user
   - `owner`: Allow owner of the document

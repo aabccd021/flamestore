@@ -6,8 +6,8 @@ export function getDynamicLinkValStr(
   fName: string
 ): string[] {
   const { domains } = field;
-  const validations = domains
-    .map((domain) => t`${fName}[0:${domain.length}] == '${domain}'`)
-    .value();
+  const validations = domains.map(
+    (domain) => t`${fName}[0:${domain.length}] == '${domain}'`
+  );
   return validations;
 }
