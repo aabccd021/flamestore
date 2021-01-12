@@ -32,7 +32,7 @@ npx flamestore
 
 ## Field Types
 
-### Path Field [`path` ]
+### Path Field `path`
 Firestore Document Reference (Path) Field
 - `collection`: Name of referenced document's collection
 - `syncFields`: Array or name of field synced from reference document
@@ -48,7 +48,7 @@ Example:
 }
 ```
 
-### String Field [`string`]
+### String Field `string`
 - `minLength`: Minimum length of the string
 - `maxLength`: Maximum length of the string
 
@@ -63,7 +63,7 @@ Example:
 }
 ```
 
-### Integer Field [`int`]
+### Integer Field `int`
 - `min`: Minimum value of the integer
 - `max`: Maximum length of the integer
 - `deleteDocWhen`: The document will be deleted if the integer equals to this value
@@ -80,7 +80,7 @@ Example:
 }
 ```
 
-### Float Field [`float`]
+### Float Field `float`
 - `min`: Minimum value of the integer
 - `max`: Maximum length of the integer
 - `deleteDocWhen`: The document will be deleted if the integer equals to this value
@@ -98,7 +98,7 @@ Example:
 ```
 
 
-### Image Field [`image`]
+### Image Field `image`
 - `metadata`: Array of values of image metadata name
   - `height`: Height of image
   - `width`: Width of image
@@ -117,7 +117,7 @@ Example:
 }
 ```
 
-### Dynamic Link Field [`dynamicLink`]
+### Dynamic Link Field `dynamicLink`
 - `title`: String of field used as dynamic link data
   - `field`: Use value of the field as dynamic link data
 - `description`: String of field used as dynamic link data
@@ -141,7 +141,7 @@ Example:
 ```
 
 
-### Count Field [`count`]
+### Count Field `count`
 Count certain field in documents with same reference.
 - `collection`: Name of document's collection to be counted
 - `reference`: Name of reference field which points to counting document
@@ -158,7 +158,7 @@ Example:
 ```
 
 
-### Sum Field [`sum`]
+### Sum Field `sum`
 Sums certain field in documents with same reference.
 - `collection`: Name of document's collection to be summed
 - `reference`: Name of reference field which points to summing document
@@ -177,7 +177,7 @@ Example:
 ```
 
 
-### Computed Field [`compute`]
+### Computed Field `compute`
 Computes field using custom function on firebase trigger.
 - `compute`: Type of field to be computed. Available options are `int` , `float` , `string` , `timestamp` .
 
@@ -193,7 +193,7 @@ Example:
 
 
 
-### Server Timestamp Field [`serverTimestamp`]
+### Server Timestamp Field `serverTimestamp`
 Records time when document created
 
 Example:
