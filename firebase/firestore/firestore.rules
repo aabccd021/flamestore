@@ -2,8 +2,129 @@ rules_version = '2';
 service cloud.firestore {
 
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if true;
+    function isAuthenticated(){ return request.auth != null; }
+    function reqData(){ return request.resource.data; }
+    function resData(){ return resource.data; }
+    function updatedKeys(){ return reqData().diff(resData()).affectedKeys(); }
+    function isNotDeleted(fieldName){
+      return fieldName in reqData() && fieldName in resData();
+    }
+    match /users/{documentId} {
+      function uidOfDocumentId(){ return documentId.split('_')[0]; }
+      function isReqOwner(){ return request.auth.uid == reqData().uid; }
+      function isResOwner(){
+        return !(exists(/databases/$(database)/documents/users/$(documentId)))
+          || request.auth.uid == resData().uid;
+      }
+      function userNameIsValid(){
+        let userName = reqData().userName;
+        return userName is string
+          && userName.size() <= 15
+          && userName.size() >= 1;
+      }
+      function bioIsValid(){
+        let bio = reqData().bio;
+        return bio is string && bio.size() <= 160 && bio.size() >= 1;
+      }
+      function uidIsValid(){
+        let uid = reqData().uid;
+        return uid is string && uid == uidOfDocumentId();
+      }
+      function isCreateValid(){
+        return reqData().keys().hasOnly([]);
+      }
+      function isUpdateValid(){
+        return updatedKeys().hasOnly([]);
+      }
+      allow get: if false;
+      allow list: if false;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+    match /tweets/{documentId} {
+    
+      function isReqOwner(){
+        return request.auth.uid == get(reqData().owner.reference).data.uid;
+      }
+      function isResOwner(){
+        return !(exists(/databases/$(database)/documents/tweets/$(documentId)))
+          || request.auth.uid == get(resData().owner.reference).data.uid;
+      }
+      function ownerIsValid(){
+        let owner = reqData().owner;
+        return owner is map
+          && owner.keys() == ['reference']
+          && owner.reference is path
+          && exists(owner.reference);
+      }
+      function tweetTextIsValid(){
+        let tweetText = reqData().tweetText;
+        return tweetText is string
+          && tweetText.size() <= 280
+          && tweetText.size() >= 1;
+      }
+      function dynamicLinkIsValid(){
+        let dynamicLink = reqData().dynamicLink;
+        return dynamicLink is string
+          && dynamicLink[0:29] == 'https://flamestore.page.link/';
+      }
+      function isCreateValid(){
+        return reqData().keys().hasOnly([]);
+      }
+      function isUpdateValid(){
+        return updatedKeys().hasOnly([]);
+      }
+      allow get: if false;
+      allow list: if false;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+    match /likes/{documentId} {
+      function userOfDocumentId(){ return documentId.split('_')[0]; }
+      function tweetOfDocumentId(){ return documentId.split('_')[1]; }
+      function isReqOwner(){
+        return request.auth.uid == get(reqData().user.reference).data.uid;
+      }
+      function isResOwner(){
+        return !(exists(/databases/$(database)/documents/likes/$(documentId)))
+          || request.auth.uid == get(resData().user.reference).data.uid;
+      }
+      function userIsValid(){
+        let user = reqData().user;
+        return user is map
+          && user.keys() == ['reference']
+          && user.reference is path
+          && exists(user.reference)
+          && get(user.reference).id == userOfDocumentId();
+      }
+      function likeValueIsValid(){
+        let likeValue = reqData().likeValue;
+        return likeValue is int
+          && likeValue >= 0
+          && likeValue <= 5
+          && likeValue != 0;
+      }
+      function tweetIsValid(){
+        let tweet = reqData().tweet;
+        return tweet is map
+          && tweet.keys() == ['reference']
+          && tweet.reference is path
+          && exists(tweet.reference)
+          && get(tweet.reference).id == tweetOfDocumentId();
+      }
+      function isCreateValid(){
+        return reqData().keys().hasOnly([]);
+      }
+      function isUpdateValid(){
+        return updatedKeys().hasOnly([]);
+      }
+      allow get: if false;
+      allow list: if false;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
     }
   }
 }

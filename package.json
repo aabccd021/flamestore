@@ -58,7 +58,7 @@
   ],
   "keywords": [],
   "author": "Muhamad Abdurahman <aabccd021@gmail.com>",
-  "license": "ISC",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aabccd021/flamestore.git"
