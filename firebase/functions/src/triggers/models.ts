@@ -1,22 +1,21 @@
-import { firestore } from "firebase-admin";
 import { onCreateFn, onUpdateFn } from "flamestore/lib";
 import { computeDocument } from "./utils";
 
-export interface User {
+export type User = {
   userName: string;
   bio?: string;
   tweetsCount?: number;
   uid: string;
-}
+};
 
 export interface Tweet {
   owner: {
-    reference: firestore.DocumentReference;
+    reference: FirebaseFirestore.DocumentReference;
     userName?: string;
   };
   tweetText: string;
   likesSum?: number;
-  creationTime?: firestore.Timestamp;
+  creationTime?: FirebaseFirestore.Timestamp;
   hotness?: number;
   image?: {
     url?: string;
@@ -28,13 +27,37 @@ export interface Tweet {
 
 export interface Like {
   user: {
-    reference: firestore.DocumentReference;
+    reference: FirebaseFirestore.DocumentReference;
   };
   likeValue: number;
   tweet: {
-    reference: firestore.DocumentReference;
+    reference: FirebaseFirestore.DocumentReference;
   };
 }
+const a: User = { userName: "a", uid: "z" };
+const z = a as Document;
+
+type Document = { [key: string]: Field };
+
+type Field =
+  | ImageField
+  | ReferenceField
+  | string
+  | number
+  | FirebaseFirestore.Timestamp
+  | undefined;
+
+type ImageField = {
+  image?: {
+    url?: string;
+    height?: number;
+    width?: number;
+  };
+};
+
+type ReferenceField = {
+  reference: FirebaseFirestore.DocumentReference;
+} & Document;
 
 const tweetsComputeFields = ["hotness"] as const;
 type TweetC = typeof tweetsComputeFields[number];

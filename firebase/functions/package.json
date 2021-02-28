@@ -11,13 +11,14 @@
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
-    "test": "mocha --exit -r ts-node/register tests/**/*.ts",
-    "test-watch": "mocha --watch -r ts-node/register tests/**/*.ts"
+    "test": "mocha --timeout 10000 --exit -r ts-node/register --reporter spec test/**/*.ts",
+    "test-watch": "mocha --watch -r ts-node/register test/**/*.ts",
+    "supertest": "yarn build && firebase emulators:exec --only firestore,functions --inspect-functions 9229 \"yarn test\""
   },
   "engines": {
     "node": "10"
   },
-  "main": "lib/index.js",
+  "main": "lib/src/index.js",
   "dependencies": {
     "firebase-admin": "^9.4.2",
     "firebase-functions": "^3.13.0",
@@ -27,6 +28,7 @@
     "@firebase/testing": "^0.20.11",
     "@types/mocha": "^8.0.3",
     "@types/node": "^14.10.1",
+    "@types/sinon": "^9.0.10",
     "@typescript-eslint/eslint-plugin": "^4.9.1",
     "@typescript-eslint/parser": "^4.9.1",
     "eslint": "^7.15.0",
@@ -36,6 +38,7 @@
     "firebase-functions-test": "^0.2.0",
     "mocha": "^8.1.3",
     "prettier": "^2.2.1",
+    "sinon": "^9.2.3",
     "ts-node": "^9.0.0",
     "tslint": "^5.12.0",
     "tslint-etc": "^1.13.9",
